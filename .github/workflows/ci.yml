@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & Test
+    name: Build & Test  
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +27,14 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: GitGuardian scan
+        uses: GitGuardian/ggshield-action@v1.23.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
       - name: Check Types & Linting
         run: pnpm turbo run lint
