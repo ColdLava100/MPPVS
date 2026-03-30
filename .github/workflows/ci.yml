@@ -1,0 +1,39 @@
+name: KitaBuild CI
+
+# This tells the "Robot" to only wake up when someone makes a Pull Request to main
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Types & Linting
+        run: pnpm turbo run lint
+
+      - name: Build Apps (NestJS & Next.js)
+        run: pnpm turbo run build
+        
+      # Note: We will uncomment this once Nurin writes the Vitest tests!
+      # - name: Run Tests
+      #   run: pnpm turbo run test
