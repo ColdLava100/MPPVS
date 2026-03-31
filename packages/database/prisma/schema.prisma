@@ -7,8 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MPP_ADVISOR
+  STUDENT
+  CANDIDATE
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         Role     @default(STUDENT)
+  
+  icNumber     String?  @unique
+  studentId    String?  @unique
+  
+  securityCode String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
