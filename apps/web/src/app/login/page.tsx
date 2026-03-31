@@ -23,7 +23,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Passwordsss</label>
             <input
               id="password"
               type="password"
