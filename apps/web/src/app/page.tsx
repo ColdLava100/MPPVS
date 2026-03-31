@@ -92,7 +92,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button className="text-gray-400 hover:text-white"><span className="text-xl">🔔</span></button>
+          <button className="text-gray-400 hover:text-white"><span className="text-xl"></span></button>
           <button className="text-gray-400 hover:text-white"><span className="text-xl">🏛️</span></button>
           <button onClick={() => router.push('/login')} className="bg-[#0a1120] border border-white/20 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-white/5 transition-all">Sign In</button>
           <button className="bg-white/5 text-white px-6 py-2 rounded-lg font-bold text-sm border border-white/10">Support</button>
