@@ -16,13 +16,16 @@ export class RolesGuard implements CanActivate {
       return true; // if no specific roles required, allow
     }
 
-    const { user } = context.switchToHttp().getRequest();
-    
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const request = context.switchToHttp().getRequest<any>();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const user = request.user as { role: Role } | undefined;
+
     if (!user) {
-        return false;
+      return false;
     }
-    
+
     // Match the roles provided against the user's encoded role inside JWT
-    return requiredRoles.some((role) => user?.role === role);
+    return requiredRoles.some((role) => user.role === role);
   }
 }
