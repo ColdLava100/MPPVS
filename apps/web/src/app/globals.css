@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Deep Navy/Black for the main background */
+  --navy-dark: #0a1120; 
+  /* Signature Yellow from the new design */
+  --mpp-yellow: #ffdc00;
+  /* Soft background for the Identity Gateway card */
+  --card-bg: #e2e8f0;
+  /* Dark slate for primary text/buttons on the card */
+  --slate-dark: #0f172a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background-color: var(--navy-dark);
+  /* A very subtle blue glow to add depth to the dark side */
+  background-image: 
+    radial-gradient(at 0% 50%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
+  min-height: 100vh;
+  color: white;
+}
+
+/* Updated for a smoother, more professional entrance */
+@keyframes slideUpFade {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-ios {
+  animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom scrollbar for the role selector to keep it clean */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Utility for the input fields on the light-colored card */
+.corporate-input {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.corporate-input:focus {
+  border-color: var(--slate-dark);
+  ring: 2px;
+  ring-color: rgba(15, 23, 42, 0.1);
+  outline: none;
+}
+
+/* The dotted border effect for Admin Quick Access icons */
+.dotted-container {
+  border: 2px dashed #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+.dotted-container:hover {
+  border-style: solid;
+  border-color: var(--slate-dark);
+  background-color: white;
+  transform: translateY(-2px);
 }
