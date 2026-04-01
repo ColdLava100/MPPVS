@@ -29,4 +29,7 @@ model User {
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  twoFactorAuthenticationSecret  String?
+  isTwoFactorAuthenticationEnabled Boolean @default(false)
 }
