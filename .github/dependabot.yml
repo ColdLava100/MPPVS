@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Dependabot uses 'npm' to read pnpm workspaces
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
