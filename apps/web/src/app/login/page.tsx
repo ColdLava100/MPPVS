@@ -1,45 +1,162 @@
 "use client";
 
-import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Student Login</h1>
-          <p className="text-gray-500">Enter your credentials to access your ballot.</p>
-        </div>
+  const [selectedRole, setSelectedRole] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [icNumber, setIcNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [step, setStep] = useState(1);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <div className="space-y-2">
-            <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">Student ID</label>
-            <input
-              id="studentId"
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-              placeholder="e.g. 20210001"
-              disabled
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              id="password"
-              type="password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-              placeholder="••••••••"
-              disabled
-            />
-          </div>
-          <Link
-            href="/ballot"
-            className="w-full block text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition"
+  const handleInitialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    // Mock the first step for all roles and seamlessly transition to Unified Step 2
+    setStep(2);
+  };
+
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (twoFactorCode === '000000') {
+      alert('Magic Code Accepted! Bypassing security for testing...');
+      
+      let rolePath = selectedRole.toLowerCase();
+      
+      // Standardize the dashboard string routes from the precise enum states
+      if (selectedRole === 'SUPER_ADMIN') rolePath = 'superadmin';
+      if (selectedRole === 'MPP_ADVISOR') rolePath = 'advisor';
+
+      router.push(`/dashboard/${rolePath}`);
+    } else {
+      alert('Invalid code. For testing, please use 000000.');
+    }
+  };
+
+  const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
+  const isStaff = selectedRole === 'SUPER_ADMIN' || selectedRole === 'ADMIN' || selectedRole === 'MPP_ADVISOR';
+
+  return (
+    <div style={{ backgroundColor: '#fff', color: '#000', minHeight: '100vh', padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>System Login (Tracer Bullet UI)</h1>
+
+      {step === 1 && (
+        <div style={{ marginBottom: '2rem', marginTop: '1rem' }}>
+          <label htmlFor="roleSelect" style={{ fontWeight: 'bold' }}>Select Your Role:</label><br />
+          <select 
+            id="roleSelect" 
+            value={selectedRole} 
+            onChange={(e) => {
+              setSelectedRole(e.target.value);
+              setStep(1);
+              setError('');
+            }} 
+            style={{ padding: '0.5rem', width: '300px', marginTop: '0.5rem' }}
           >
-            Sign In
-          </Link>
+            <option value="" disabled>-- Choose a Role --</option>
+            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+            <option value="CANDIDATE">CANDIDATE</option>
+            <option value="STUDENT">STUDENT</option>
+          </select>
+        </div>
+      )}
+
+      {step === 1 && isStudentOrCandidate && (
+        <form onSubmit={handleInitialSubmit} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '1rem' }}>
+          <h3>{selectedRole} Authentication - Step 1</h3>
+          <div>
+            <label htmlFor="studentId">Student ID:</label><br />
+            <input 
+              id="studentId" 
+              type="text" 
+              value={studentId} 
+              onChange={(e) => setStudentId(e.target.value)} 
+              required 
+              style={{ padding: '0.5rem', width: '100%' }}
+            />
+          </div>
+          <div>
+            <label htmlFor="icNumber">IC Number:</label><br />
+            <input 
+              id="icNumber" 
+              type="text" 
+              value={icNumber} 
+              onChange={(e) => setIcNumber(e.target.value)} 
+              required 
+              style={{ padding: '0.5rem', width: '100%' }}
+            />
+          </div>
+          <button type="submit" style={{ padding: '0.75rem', cursor: 'pointer' }}>Next</button>
         </form>
-      </div>
+      )}
+
+      {step === 1 && isStaff && (
+        <form onSubmit={handleInitialSubmit} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '1rem' }}>
+          <h3>{selectedRole} Authentication - Step 1</h3>
+          <div>
+            <label htmlFor="email">Email Address:</label><br />
+            <input 
+              id="email" 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              style={{ padding: '0.5rem', width: '100%' }}
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password:</label><br />
+            <input 
+              id="password" 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={{ padding: '0.5rem', width: '100%' }}
+            />
+          </div>
+          <button type="submit" style={{ padding: '0.75rem', cursor: 'pointer' }}>Next</button>
+        </form>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={handleVerifyCode} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '1rem', marginTop: '1rem' }}>
+          <h3>{selectedRole} Authentication - Step 2 (Verification)</h3>
+          <div>
+            <label htmlFor="twoFactorCode">6-Digit Code:</label><br />
+            <input 
+              id="twoFactorCode" 
+              type="text" 
+              value={twoFactorCode} 
+              placeholder="e.g. 000000"
+              onChange={(e) => setTwoFactorCode(e.target.value)} 
+              maxLength={6}
+              required 
+              style={{ padding: '0.5rem', width: '100%' }}
+            />
+          </div>
+          <button type="submit" style={{ padding: '0.75rem', cursor: 'pointer' }}>Verify Code</button>
+          
+          <button 
+            type="button" 
+            onClick={() => setStep(1)} 
+            style={{ padding: '0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #000' }}
+          >
+            Back
+          </button>
+        </form>
+      )}
+
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
     </div>
   );
 }
