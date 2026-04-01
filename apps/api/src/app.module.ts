@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ElectionsModule } from './elections/elections.module';
+import { MailModule } from './mail/mail.module';
+import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ElectionsModule } from './elections/elections.module';
     UsersModule,
     AuthModule,
     ElectionsModule,
+    MailModule,
+    TwoFactorAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
