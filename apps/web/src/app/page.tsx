@@ -1,170 +1,170 @@
 "use client";
 
 import React from 'react';
-// FIX: Added the missing import below
-import Link from 'next/link';
+import { 
+  Briefcase, 
+  Cpu, 
+  Calculator, 
+  Leaf, 
+  Coins, 
+  ChevronRight,
+  Activity,
+  BarChart3
+} from 'lucide-react';
+import Header from '@/components/ui/header1';
+import Footer from '@/components/ui/footer';
 
 export default function MPPVotingPortal() {
+  const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
+
   return (
-    <div className="min-h-screen">
-      {/* 1. TOP NAV */}
-      <nav className="flex justify-between items-center px-10 py-5 border-b border-slate-100 bg-white">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#630d16] rounded flex items-center justify-center text-white text-xs">🏛️</div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">DevOps</span>
-        </div>
-        <div className="flex items-center gap-8">
-          {['Elections', 'Candidates', 'Bylaws', 'Results'].map((link) => (
-            <a key={link} href="#" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-[#630d16]">
-              {link}
-            </a>
-          ))}
-          {/* Link is now defined and will work */}
-          <Link href="/login">
-            <button className="bg-[#4c0519] text-white px-6 py-2 rounded text-[11px] font-bold uppercase tracking-widest ml-4 shadow-lg shadow-maroon-900/20">
-              Login
-            </button>
-          </Link>
-        </div>
-      </nav>
+    <div className="min-h-screen flex flex-col relative">
+      {/* BACKGROUND LAYER WITH BLUR */}
+      <div 
+        className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat transition-all duration-700"
+        style={{ 
+          backgroundImage: `url(${bgImageUrl})`,
+          filter: 'blur(8px) brightness(0.4)' // Blur and darken for readability
+        }}
+      />
 
-      {/* 2. LIVE METRICS SECTION */}
-      <main className="max-w-7xl mx-auto px-10 py-10">
-        <div className="flex justify-between items-end mb-6">
-          <div>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-ultra mb-1">MPP 2024 Live Metrics</p>
-            <h1 className="text-3xl font-bold uppercase tracking-tight text-slate-800">Campus-Wide Election Pulse</h1>
+      <Header />
+
+      <main className="flex-grow max-w-7xl mx-auto px-10 py-10 w-full relative z-10">
+        
+        {/* 1. LIVE METRICS SECTION - FONT CHANGED TO ARIAL */}
+        <div className="flex justify-between items-end mb-8">
+          <div style={{ fontFamily: 'Arial, sans-serif' }}>
+            <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
+              <Activity size={12} className="text-red-500" /> MPP 2026 Live Metrics
+            </p>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter text-white italic">
+              Campus-Wide Election Pulse
+            </h1>
           </div>
-          <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full border border-slate-200">
+          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-sm">
             <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Live Updates</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">Live Updates</span>
           </div>
         </div>
 
-        {/* METRIC GRID */}
-        <div className="grid grid-cols-5 gap-4 mb-8">
-          <MetricBox code="DEG" votes="412" seats="3/5" color="border-red-900" />
-          <MetricBox code="DOG" votes="284" seats="4/5" color="border-blue-700" />
-          <MetricBox code="DIA" votes="198" seats="2/5" color="border-orange-600" />
-          <MetricBox code="DLH" votes="106" seats="1/5" color="border-indigo-900" />
-          <MetricBox code="CEAD" votes="324" seats="5/5" color="border-red-950" />
+        {/* METRIC GRID (DBS, DCS, DIA, DLH, CFAB) */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <MetricBox code="DBS" votes="412" seats="3/5" color="border-b-blue-600" icon={<Briefcase size={20}/>} />
+          <MetricBox code="DCS" votes="284" seats="4/5" color="border-b-red-900" icon={<Cpu size={20}/>} />
+          <MetricBox code="DIA" votes="198" seats="2/5" color="border-b-orange-600" icon={<Calculator size={20}/>} />
+          <MetricBox code="DLH" votes="106" seats="1/5" color="border-b-green-700" icon={<Leaf size={20}/>} />
+          <MetricBox code="CFAB" votes="324" seats="5/5" color="border-b-yellow-600" icon={<Coins size={20}/>} />
         </div>
 
         {/* TIME & STATS BAR */}
-        <div className="grid grid-cols-4 bg-slate-50 rounded-lg border border-slate-100 mb-16">
-          <StatItem label="Total Population" value="1,024" />
-          <StatItem label="Votes Cast" value="842" color="text-red-900" />
-          <StatItem label="Closed In" value="02 : 14 : 55" color="text-red-900" />
-          <StatItem label="Next Update" value="00 : 15" color="text-blue-700" />
+        <div className="grid grid-cols-2 md:grid-cols-4 bg-white/5 backdrop-blur-lg rounded-sm border border-white/10 mb-16 overflow-hidden shadow-2xl">
+          <StatItem label="Total Population" value="1,024" light />
+          <StatItem label="Votes Cast" value="842" color="text-red-400" light />
+          <StatItem label="Closed In" value="02 : 14 : 55" color="text-red-400" light />
+          <StatItem label="Next Update" value="00 : 15" color="text-blue-400" light />
         </div>
 
-        {/* 3. HERO BANNER */}
-        <section className="hero-gradient rounded-xl p-16 text-white mb-20 relative overflow-hidden">
-          <div className="relative z-10 max-w-xl">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-60 mb-4">Student Representative Council 2024</p>
-            <h2 className="text-6xl font-black mb-6 leading-[0.9]">LEAD THE <br/> FUTURE</h2>
-            <p className="text-sm opacity-80 leading-relaxed mb-8">
+        {/* 2. HERO BANNER */}
+        <section className="relative rounded-xl p-20 text-white mb-24 overflow-hidden bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black shadow-2xl border border-white/5 backdrop-blur-sm">
+          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
+            <div className="w-full h-full border-[40px] border-white/20 rounded-full -mr-40 mt-10" />
+          </div>
+          
+          <div className="relative z-10 max-w-2xl">
+            <p className="text-[11px] font-black uppercase tracking-[0.5em] text-yellow-500 mb-6">Student Representative Council 2024</p>
+            <h2 className="text-7xl font-bold mb-8 leading-[0.85] tracking-tighter italic uppercase">LEAD THE <br/> FUTURE</h2>
+            <p className="text-base opacity-80 leading-relaxed mb-10 font-light max-w-lg">
               Your vote is the cornerstone of academic excellence. Choose the visionaries who will shape the next era of our institutional governance.
             </p>
-            <div className="flex gap-4">
-              <button className="bg-[#c5a021] text-slate-900 px-8 py-3 rounded text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition">Vote Now</button>
-              <button className="border border-white/30 px-8 py-3 rounded text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition">Learn More</button>
+            <div className="flex gap-6">
+              <button className="bg-[#c5a021] text-slate-900 px-10 py-4 rounded-sm text-[11px] font-black uppercase tracking-[0.2em] hover:bg-yellow-400 transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                Vote Now <ChevronRight size={14} />
+              </button>
             </div>
           </div>
         </section>
 
-        {/* 4. VISIONARY LEADERS */}
+        {/* 3. VISIONARY LEADERS */}
         <section className="mb-20">
-          <h2 className="text-4xl font-bold uppercase tracking-tighter mb-12 border-b-4 border-red-900 w-fit pr-10 pb-2">Visionary Leaders</h2>
-          <div className="grid grid-cols-3 gap-10">
+          <div className="flex items-center gap-6 mb-16">
+             <h2 className="text-5xl font-medium uppercase tracking-tighter italic text-white">Visionary Leaders</h2>
+             <div className="flex-grow h-[1px] bg-white/20" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <LeaderCard 
               name="Ahmad Daniel" 
               dept="Computer Science" 
+              img="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop"
               quote="Proposing a digital-first governance model to streamline student feedback and faculty collaboration."
             />
             <LeaderCard 
               name="Sarah Alisya" 
               dept="Business Admin" 
+              img="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop"
               quote="Focused on sustainable student commerce initiatives and developing industry-standard leadership workshops."
             />
             <LeaderCard 
               name="Farhan Razak" 
               dept="Accounting" 
+              img="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop"
               quote="Advocating for financial transparency in student funds and a multi-year audit program."
             />
           </div>
         </section>
       </main>
 
-      {/* 5. FOOTER */}
-      <footer className="bg-slate-50 px-10 py-12 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto flex justify-between text-[9px] font-bold uppercase tracking-widest text-slate-400">
-          <div>
-            <p className="text-blue-900 mb-4">MPP Voting System</p>
-            <p>© 2024 THE ACADEMIC VANGUARD. ALL RIGHTS RESERVED.</p>
-            <p className="mt-1">DEVOPS @ ITA BUILD STUDIO | EST. 2024</p>
-          </div>
-          <div className="flex gap-12">
-            <div className="flex flex-col gap-2">
-              <span className="footer-link">University Home</span>
-              <span className="footer-link">Contact Support</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <span className="footer-link">Dean of Students</span>
-              <span className="footer-link">Privacy Policy</span>
-            </div>
-            <span className="footer-link">Election Board</span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
 
 /* Sub-components */
-function MetricBox({ code, votes, seats, color }: any) {
+function MetricBox({ code, votes, seats, color, icon }: any) {
   return (
-    <div className={`metric-card ${color}`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="text-lg">📊</div>
-        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{code}</span>
+    <div className={`p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
+      <div className="flex justify-between items-start mb-6">
+        <div className="text-slate-400 group-hover:text-slate-900 transition-colors">
+          {icon || <BarChart3 size={20} />}
+        </div>
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{code}</span>
       </div>
-      <div className="text-3xl font-bold mb-1">{votes}</div>
-      <p className="text-[8px] font-bold text-slate-400 uppercase mb-4 tracking-tighter">Verified Ballots</p>
-      <div className="flex justify-between text-[8px] font-black uppercase mb-1">
-        <span className="text-blue-900">Seats Filled</span>
-        <span>{seats}</span>
+      <div className="text-4xl font-medium mb-1 tracking-tighter text-slate-900">{votes}</div>
+      <p className="text-[9px] font-black text-slate-400 uppercase mb-6 tracking-widest">Verified Ballots</p>
+      
+      <div className="flex justify-between text-[9px] font-black uppercase mb-2">
+        <span className="text-slate-400">Seats Filled</span>
+        <span className="text-slate-900">{seats}</span>
       </div>
-      <div className="w-full h-[2px] bg-slate-100">
-        <div className="h-full bg-slate-800 w-[60%]" />
+      <div className="w-full h-[3px] bg-slate-100 overflow-hidden">
+        <div className={`h-full bg-slate-800 transition-all duration-1000`} style={{ width: '70%' }} />
       </div>
     </div>
   );
 }
 
-function StatItem({ label, value, color = "text-slate-900" }: any) {
+function StatItem({ label, value, color = "text-white", light = false }: any) {
   return (
-    <div className="p-6 border-r border-slate-200 last:border-0">
-      <span className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</span>
-      <span className={`text-2xl font-mono-metrics font-bold ${color}`}>{value}</span>
+    <div className="p-8 border-r border-white/10 last:border-0 hover:bg-white/5 transition-colors">
+      <span className={`block text-[10px] font-black ${light ? 'text-slate-300' : 'text-slate-400'} uppercase tracking-[0.2em] mb-2`}>{label}</span>
+      <span className={`text-2xl font-bold tracking-tighter ${color}`}>{value}</span>
     </div>
   );
 }
 
-function LeaderCard({ name, dept, quote }: any) {
+function LeaderCard({ name, dept, quote, img }: any) {
   return (
-    <div className="group cursor-pointer">
-      <div className="leader-img-container mb-6">
-        <div className="w-full h-full bg-slate-300" />
-        <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
-          <p className="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-1">{dept}</p>
-          <h3 className="text-2xl font-bold text-white uppercase">{name}</h3>
+    <div className="group">
+      <div className="relative aspect-[4/5] overflow-hidden mb-6 bg-slate-200 grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl group-hover:shadow-red-900/20 group-hover:-translate-y-2 rounded-sm border border-white/10">
+        <img src={img} alt={name} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-90" />
+        <div className="absolute bottom-0 left-0 w-full p-8">
+          <p className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-2">{dept}</p>
+          <h3 className="text-3xl font-medium text-white uppercase tracking-tighter italic leading-none">{name}</h3>
         </div>
       </div>
-      <p className="text-xs text-slate-500 italic leading-relaxed mb-4">"{quote}"</p>
-      <div className="text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group-hover:text-red-900">
-        View Profile <span>→</span>
-      </div>
+      <p className="text-sm text-slate-300 italic leading-relaxed mb-6 px-2 font-light">"{quote}"</p>
     </div>
   );
 }
