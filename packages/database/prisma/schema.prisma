@@ -97,17 +97,60 @@ model Announcement {
   updatedAt   DateTime  @updatedAt
 }
 
-// Basic Candidate structure
 model Candidate {
   id          String   @id @default(uuid())
   userId      String   @unique
   electionId  String
-  courseCode  String   // To tie them to the specific course chairs
-  status      String   @default("APPROVED")
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   user        User     @relation(fields: [userId], references: [id])
   election    Election @relation(fields: [electionId], references: [id])
   votes       Vote[]
+
+  // The 1-to-Many relationships from your class diagram
+  manifestos  Manifesto[]
+  videos      Video[]
+  posters     Poster[]
+  slides      Slide[]
+}
+
+model Manifesto {
+  id               String   @id @default(uuid())
+  candidateId      String
+  manifestoTitle   String
+  manifestoDesc    String   @db.Text
+  manifestoLink    String
+  
+  candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model Video {
+  id               String   @id @default(uuid())
+  candidateId      String
+  videoTitle       String
+  videoDescription String   @db.Text
+  videoLink        String
+  
+  candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model Slide {
+  id               String   @id @default(uuid())
+  candidateId      String
+  slideTitle       String
+  slideLink        String
+  
+  candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model Poster {
+  id               String   @id @default(uuid())
+  candidateId      String
+  posterLink       String
+  
+  candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }
 
 // The secure ledger
