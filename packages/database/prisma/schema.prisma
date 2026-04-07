@@ -8,7 +8,7 @@ datasource db {
 }
 
 enum Role {
-  SUPER_ADMIN
+  SUPERADMIN   // Removed the underscore so it matches your seed script!
   ADMIN
   MPP_ADVISOR
   STUDENT
@@ -16,20 +16,107 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  password     String
-  name         String
-  role         Role     @default(STUDENT)
+  id                               String   @id @default(uuid())
+  email                            String   @unique
+  password                         String
+  name                             String
+  role                             Role     @default(STUDENT)
   
-  icNumber     String?  @unique
-  studentId    String?  @unique
+  icNumber                         String?  @unique
+  studentId                        String?  @unique
   
-  securityCode String?
+  securityCode                     String?
   
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
 
-  twoFactorAuthenticationSecret  String?
-  isTwoFactorAuthenticationEnabled Boolean @default(false)
+  twoFactorAuthenticationSecret    String?
+  isTwoFactorAuthenticationEnabled Boolean  @default(false)
+
+  // THE FIX: The missing two-way relationships!
+  auditLogs                        AuditLog[]
+  candidateProfile                 Candidate? // A user can only be ONE candidate
+  votes                            Vote[]
+}
+
+// Master configuration for the voting event
+model Election {
+  id              String   @id @default(uuid())
+  title           String   // e.g., "MPP Election 2026"
+  status          String   @default("DRAFT") // DRAFT, ACTIVE, COMPLETED
+  
+  // DYNAMIC ATTRIBUTES: Defines chairs and votes per course
+  // Example: { "DCS": { "chairs": 3, "maxVotes": 3 }, "DIA": { "chairs": 2, "maxVotes": 2 } }
+  courseSettings  Json     
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sessions        VotingSession[]
+  candidates      Candidate[]
+  votes           Vote[]
+}
+
+// Handles the dynamic time slots and student ID batching
+model VotingSession {
+  id              String   @id @default(uuid())
+  electionId      String
+  title           String   // e.g., "Session 1 DCS"
+  courseCode      String   // e.g., "DCS"
+  startTime       DateTime
+  endTime         DateTime
+  
+  // Batch constraints for the session
+  studentIdStart  String?  // e.g., "BCS2311-001"
+  studentIdEnd    String?  // e.g., "BCS2311-100"
+
+  election        Election @relation(fields: [electionId], references: [id])
+}
+
+// Tracks all system actions for the Superadmin to monitor
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String   
+  action    String   // e.g., "CREATED_SESSION", "UPDATED_SETTINGS"
+  details   Json?    // DYNAMIC ATTRIBUTES: Stores exact changes made
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// Handles the pop-up announcements
+model Announcement {
+  id          String    @id @default(uuid())
+  title       String
+  content     String    @db.Text
+  deadline    DateTime?
+  createdBy   String    // ID of the Superadmin who made it
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Basic Candidate structure
+model Candidate {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  electionId  String
+  courseCode  String   // To tie them to the specific course chairs
+  status      String   @default("APPROVED")
+
+  user        User     @relation(fields: [userId], references: [id])
+  election    Election @relation(fields: [electionId], references: [id])
+  votes       Vote[]
+}
+
+// The secure ledger
+model Vote {
+  id          String   @id @default(uuid())
+  voterId     String
+  candidateId String
+  electionId  String
+  createdAt   DateTime @default(now())
+
+  voter       User     @relation(fields: [voterId], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  election    Election @relation(fields: [electionId], references: [id])
 }
