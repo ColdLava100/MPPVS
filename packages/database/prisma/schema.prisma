@@ -37,6 +37,8 @@ model User {
   auditLogs                        AuditLog[]
   candidateProfile                 Candidate? // A user can only be ONE candidate
   votes                            Vote[]
+  courseId    String?  // Optional, populated by our Regex extractor
+  course      Course?  @relation(fields: [courseId], references: [id])
 }
 
 // Master configuration for the voting event
@@ -119,4 +121,14 @@ model Vote {
   voter       User     @relation(fields: [voterId], references: [id])
   candidate   Candidate @relation(fields: [candidateId], references: [id])
   election    Election @relation(fields: [electionId], references: [id])
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g., "BCS", "DCS"
+  name        String   // e.g., "Bachelor in Computer Science"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
 }

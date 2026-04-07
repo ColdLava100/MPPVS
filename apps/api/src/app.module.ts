@@ -10,6 +10,7 @@ import { MailModule } from './mail/mail.module';
 import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
     TwoFactorAuthModule,
     AuditLogsModule,
     VotingSessionsModule,
+    CoursesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

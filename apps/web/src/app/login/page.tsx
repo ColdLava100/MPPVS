@@ -32,8 +32,8 @@ export default function LoginPage() {
 
     const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
     const endpoint = isStudentOrCandidate 
-      ? 'http://localhost:3001/auth/student/login' 
-      : 'http://localhost:3001/auth/staff/login';
+      ? `${process.env.NEXT_PUBLIC_API_URL}/auth/student/login` 
+      : `${process.env.NEXT_PUBLIC_API_URL}/auth/staff/login`;
     
     const payload = isStudentOrCandidate 
       ? { studentId, icNumber } 
