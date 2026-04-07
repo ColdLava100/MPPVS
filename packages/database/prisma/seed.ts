@@ -9,7 +9,7 @@ async function main() {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash('password123', saltRounds);
 
-    const roles = ['STUDENT', 'CANDIDATE', 'SUPER_ADMIN', 'ADMIN', 'MPP_ADVISOR'];
+    const roles = ['STUDENT', 'CANDIDATE', 'SUPERADMIN', 'ADMIN', 'MPP_ADVISOR'];
 
     for (const role of roles) {
         const icNumber = `01020304050${roles.indexOf(role)}`;
