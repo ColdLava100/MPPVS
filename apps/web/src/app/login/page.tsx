@@ -20,15 +20,46 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Updated Login Logic to match your directory structure
-  const handleLogin = (e: React.FormEvent) => {
+  // Updated Login Logic to actually hit authentication endpoints
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
+    const endpoint = isStudentOrCandidate 
+      ? 'http://localhost:3001/auth/student/login' 
+      : 'http://localhost:3001/auth/staff/login';
     
-    // Normalizing role to match folder names (e.g., MPP_ADVISOR -> mppadvisor)
-    const folderName = selectedRole.toLowerCase().replace('_', '');
-    router.push(`/dashboard/${folderName}`);
+    const payload = isStudentOrCandidate 
+      ? { studentId, icNumber } 
+      : { email, password };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include', // Ensures HttpOnly cookie is saved automatically
+      });
+
+      if (response.ok) {
+        // Normalizing role to match folder names (e.g., MPP_ADVISOR -> mppadvisor)
+        const folderName = selectedRole.toLowerCase().replace('_', '');
+        router.push(`/dashboard/${folderName}`);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setError(data.message || 'Invalid credentials. Please try again.');
+        setIsLoading(false);
+      }
+    } catch (err: any) {
+      setError('Network error. Ensure the server is running.');
+      setIsLoading(false);
+    }
   };
 
   const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
@@ -174,8 +205,14 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <button type="submit" className="w-full bg-[#4c0519] text-white py-4 flex items-center justify-center gap-3 hover:bg-black transition-all uppercase text-[9px] font-black tracking-[0.3em] shadow-xl active:scale-95 mt-2">
-                Login
+              {error && (
+                <div className="text-red-500 text-[10px] font-bold uppercase tracking-widest text-center mt-4">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={isLoading} className="w-full bg-[#4c0519] text-white py-4 flex items-center justify-center gap-3 hover:bg-black transition-all uppercase text-[9px] font-black tracking-[0.3em] shadow-xl active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {isLoading ? 'Authenticating...' : 'Login'}
               </button>
             </form>
           </div>
