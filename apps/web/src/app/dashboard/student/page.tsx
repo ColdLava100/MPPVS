@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  Briefcase, 
-  Cpu, 
-  Calculator, 
-  Leaf, 
-  Coins, 
+import {
+  Briefcase,
+  Cpu,
+  Calculator,
+  Leaf,
+  Coins,
   ChevronRight,
   Activity,
   BarChart3
@@ -19,12 +19,12 @@ import UniversalSidebar from '@/components/ui/sidebar';
 
 export default function StudentDashboard() {
   const router = useRouter();
-  
+
   // Official KPM Beranang background
   const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
   const handleVoteNowClick = () => {
-    router.push('/ballot');
+    router.push('/dashboard/student/ballot');
   };
 
   const handleStopImpersonation = async () => {
@@ -43,15 +43,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      
+
       {/* 1. UNIVERSAL SIDEBAR (Replaced manual code) */}
       <UniversalSidebar role="student" />
 
       {/* 2. MAIN CONTENT AREA */}
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24"> 
+      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
         {/* Note: ml-24 accounts for the collapsed sidebar width */}
-        
-        <button 
+
+        <button
           onClick={handleStopImpersonation}
           className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
         >
@@ -62,26 +62,26 @@ export default function StudentDashboard() {
 
         <main className="flex-grow overflow-y-auto relative custom-scrollbar">
           {/* Background Image Layer */}
-          <div 
+          <div
             className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ 
+            style={{
               backgroundImage: `url(${bgImageUrl})`,
-              filter: 'blur(10px) brightness(0.2)' 
+              filter: 'blur(10px) brightness(0.2)'
             }}
           />
 
           {/* Centered Content Container */}
           <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
-            
+
             {/* Header Section */}
             <div className="flex justify-between items-end mb-12">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                  <Activity size={14} className="text-red-600 animate-pulse" /> 
+                  <Activity size={14} className="text-red-600 animate-pulse" />
                   MPP 2026 Live Metrics
                 </p>
                 <h1 className="text-6xl font-bold uppercase tracking-tighter text-white italic leading-none">
-                  Campus-Wide <br/> Election Pulse
+                  Campus-Wide <br /> Election Pulse
                 </h1>
               </div>
               <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl px-6 py-3 rounded-full border border-white/10 shadow-2xl">
@@ -92,11 +92,11 @@ export default function StudentDashboard() {
 
             {/* Metric Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-12">
-              <MetricBox code="DBS" votes="412" seats="3/5" color="border-b-blue-600" icon={<Briefcase size={22}/>} />
-              <MetricBox code="DCS" votes="284" seats="4/5" color="border-b-red-700" icon={<Cpu size={22}/>} />
-              <MetricBox code="DIA" votes="198" seats="2/5" color="border-b-orange-600" icon={<Calculator size={22}/>} />
-              <MetricBox code="DLH" votes="106" seats="1/5" color="border-b-green-700" icon={<Leaf size={22}/>} />
-              <MetricBox code="CFAB" votes="324" seats="5/5" color="border-b-yellow-600" icon={<Coins size={22}/>} />
+              <MetricBox code="DBS" votes="412" seats="3/5" color="border-b-blue-600" icon={<Briefcase size={22} />} />
+              <MetricBox code="DCS" votes="284" seats="4/5" color="border-b-red-700" icon={<Cpu size={22} />} />
+              <MetricBox code="DIA" votes="198" seats="2/5" color="border-b-orange-600" icon={<Calculator size={22} />} />
+              <MetricBox code="DLH" votes="106" seats="1/5" color="border-b-green-700" icon={<Leaf size={22} />} />
+              <MetricBox code="CFAB" votes="324" seats="5/5" color="border-b-yellow-600" icon={<Coins size={22} />} />
             </div>
 
             {/* Stat Bar */}
@@ -114,11 +114,11 @@ export default function StudentDashboard() {
               </div>
               <div className="relative z-10 max-w-2xl">
                 <p className="text-[11px] font-black uppercase tracking-[0.6em] text-yellow-500 mb-10">Student Representative Council 2026</p>
-                <h2 className="text-8xl font-bold mb-10 leading-[0.8] tracking-tighter italic uppercase">LEAD THE <br/> FUTURE</h2>
+                <h2 className="text-8xl font-bold mb-10 leading-[0.8] tracking-tighter italic uppercase">LEAD THE <br /> FUTURE</h2>
                 <p className="text-lg opacity-60 leading-relaxed mb-14 font-light max-w-lg">
                   Your vote is the cornerstone of academic excellence. Choose the visionaries who will shape the next era of our institutional governance.
                 </p>
-                <button 
+                <button
                   onClick={handleVoteNowClick}
                   className="bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl active:scale-95 flex items-center gap-4 group"
                 >
@@ -130,26 +130,26 @@ export default function StudentDashboard() {
             {/* Visionaries Grid */}
             <section className="pb-32">
               <div className="flex items-center gap-8 mb-24">
-                  <h2 className="text-7xl font-bold uppercase tracking-tighter italic text-white leading-none">Visionaries</h2>
-                  <div className="flex-grow h-[1px] bg-white/10" />
+                <h2 className="text-7xl font-bold uppercase tracking-tighter italic text-white leading-none">Visionaries</h2>
+                <div className="flex-grow h-[1px] bg-white/10" />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-                <LeaderCard 
-                  name="Ahmad Daniel" 
-                  dept="DCS" 
+                <LeaderCard
+                  name="Ahmad Daniel"
+                  dept="DCS"
                   img="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974"
                   quote="Proposing a digital-first governance model to streamline student feedback and faculty collaboration."
                 />
-                <LeaderCard 
-                  name="Sarah Alisya" 
-                  dept="DBS" 
+                <LeaderCard
+                  name="Sarah Alisya"
+                  dept="DBS"
                   img="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974"
                   quote="Focused on sustainable student commerce initiatives and developing industry-standard leadership workshops."
                 />
-                <LeaderCard 
-                  name="Farhan Razak" 
-                  dept="DIA" 
+                <LeaderCard
+                  name="Farhan Razak"
+                  dept="DIA"
                   img="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974"
                   quote="Advocating for financial transparency in student funds and a multi-year audit program."
                 />
@@ -166,7 +166,7 @@ export default function StudentDashboard() {
   );
 }
 
-{/* REFINED HELPER COMPONENTS */}
+{/* REFINED HELPER COMPONENTS */ }
 
 function MetricBox({ code, votes, seats, color, icon }: any) {
   return (

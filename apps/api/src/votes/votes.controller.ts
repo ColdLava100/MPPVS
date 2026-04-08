@@ -11,7 +11,7 @@ export class VotesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.STUDENT)
+  @Roles(Role.STUDENT, Role.CANDIDATE)
   async submitVote(@Req() req: any, @Body() dto: SubmitVoteDto) {
     const voterId = req.user?.sub || req.user?.id;
     return this.votesService.submitVote(voterId, dto.electionId, dto.candidateIds);

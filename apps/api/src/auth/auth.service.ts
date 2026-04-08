@@ -20,7 +20,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid student credentials');
         }
 
-        const payload = { sub: user.id, role: user.role };
+        const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             accessToken: this.jwtService.sign(payload),
         };
@@ -44,7 +44,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid staff credentials');
         }
 
-        const payload = { sub: user.id, role: user.role };
+        const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             accessToken: this.jwtService.sign(payload),
         };
@@ -58,7 +58,7 @@ export class AuthService {
 
         await this.auditLogsService.logAction(superadminId, 'IMPERSONATED_USER', { targetUserId });
 
-        const payload = { sub: user.id, role: user.role };
+        const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             accessToken: this.jwtService.sign(payload),
         };

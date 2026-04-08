@@ -4,7 +4,7 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class VotesService {
-  constructor(private readonly auditLogsService: AuditLogsService) {}
+  constructor(private readonly auditLogsService: AuditLogsService) { }
 
   async submitVote(voterId: string, electionId: string, candidateIds: string[]) {
     // Rule 1: No double voting
@@ -16,27 +16,8 @@ export class VotesService {
       throw new ConflictException('You have already cast a ballot for this election.');
     }
 
-    // Rule 2: Max Votes Check
-    const voter = await prisma.user.findUnique({
-      where: { id: voterId },
-    });
-
-    if (!voter || !voter.studentId) {
-      throw new BadRequestException('Voter is not a valid student.');
-    }
-
-    const prefixMatch = voter.studentId.match(/^[A-Za-z]+/);
-    if (!prefixMatch) {
-      throw new BadRequestException('Invalid student ID format.');
-    }
-    const studentPrefix = prefixMatch[0];
-
-    const course = await prisma.course.findUnique({
-      where: { studentPrefix },
-    });
-
-    if (!course) {
-      throw new BadRequestException('Course not found for student prefix.');
+    if (candidateIds.length === 0) {
+      throw new BadRequestException('You must vote for at least one candidate.');
     }
 
     const election = await prisma.election.findUnique({
@@ -47,29 +28,50 @@ export class VotesService {
       throw new BadRequestException('Election not found.');
     }
 
-    // Safely parse JSON
-    let maxVotes = 0;
+    let courseSettingsBlock: Record<string, any> = {};
     try {
-      const courseSettingsBlock = typeof election.courseSettings === 'string' 
-        ? JSON.parse(election.courseSettings) 
+      courseSettingsBlock = typeof election.courseSettings === 'string'
+        ? JSON.parse(election.courseSettings)
         : election.courseSettings;
-      
-      const courseSettings = (courseSettingsBlock as Record<string, any>)?.[course.code];
-      if (!courseSettings) {
-        throw new Error('Course settings missing for specific course.');
+    } catch {
+      throw new BadRequestException('Election configuration is malformed.');
+    }
+
+    // Rule 2: Segmented Ballot checks based on Candidates' course
+    const candidates = await prisma.candidate.findMany({
+      where: { id: { in: candidateIds } },
+      include: {
+        user: {
+          include: {
+            course: true,
+          },
+        },
+      },
+    });
+
+    if (candidates.length !== candidateIds.length) {
+      throw new BadRequestException('One or more selected candidates are invalid.');
+    }
+
+    const prefixTally: Record<string, number> = {};
+
+    for (const c of candidates) {
+      const prefix = c.user?.course?.studentPrefix;
+      if (!prefix) {
+        throw new BadRequestException('One or more selected candidates have invalid or missing course data.');
       }
-      maxVotes = parseInt(courseSettings.maxVotes, 10);
-      if (isNaN(maxVotes)) { maxVotes = 0; }
-    } catch (e) {
-      throw new BadRequestException('Failed to determine maximum allowed votes for your course.');
+      prefixTally[prefix] = (prefixTally[prefix] || 0) + 1;
     }
 
-    if (candidateIds.length > maxVotes) {
-      throw new BadRequestException(`Exceeded maximum allowed votes. You can select up to ${maxVotes} candidate(s).`);
-    }
+    for (const [prefix, count] of Object.entries(prefixTally)) {
+      const allowedChairs = parseInt(courseSettingsBlock[prefix], 10);
+      if (isNaN(allowedChairs)) {
+        throw new BadRequestException(`Course configuration missing or invalid for category ${prefix}.`);
+      }
 
-    if (candidateIds.length === 0) {
-      throw new BadRequestException('You must vote for at least one candidate.');
+      if (count > allowedChairs) {
+        throw new BadRequestException(`You selected too many candidates for the ${prefix} category. Maximum allowed is ${allowedChairs}.`);
+      }
     }
 
     // Execution: Create votes mapping

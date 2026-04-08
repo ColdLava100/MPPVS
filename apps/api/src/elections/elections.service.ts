@@ -30,6 +30,7 @@ export class ElectionsService {
     let updateData: any = {};
     if (data.title) updateData.title = data.title;
     if (data.courseSettings) updateData.courseSettings = data.courseSettings;
+    if (data.status) updateData.status = data.status;
 
     const election = await prisma.election.update({
       where: { id },

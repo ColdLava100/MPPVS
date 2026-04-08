@@ -37,11 +37,21 @@ export default function SuperAdminDashboard() {
 
   // 1. Election Form State
   const [electionTitle, setElectionTitle] = useState('');
-  const [courseSettings, setCourseSettings] = useState('{"DCS": {"chairs": 3, "maxVotes": 3}}');
+  const [electionCourseConfig, setElectionCourseConfig] = useState<Record<string, { enabled: boolean, chairs: number }>>({});
 
   const [modElectionId, setModElectionId] = useState('');
   const [modElectionTitle, setModElectionTitle] = useState('');
-  const [modCourseSettings, setModCourseSettings] = useState('');
+  const [modElectionCourseConfig, setModElectionCourseConfig] = useState<Record<string, { enabled: boolean, chairs: number }>>({});
+
+  useEffect(() => {
+    if (courses.length > 0) {
+      const initialConfig: Record<string, { enabled: boolean, chairs: number }> = {};
+      courses.forEach(c => {
+        initialConfig[c.studentPrefix] = { enabled: false, chairs: 1 };
+      });
+      setElectionCourseConfig(initialConfig);
+    }
+  }, [courses]);
 
   // 2. Voting Session Form State
   const [vsTitle, setVsTitle] = useState('');
@@ -111,15 +121,20 @@ export default function SuperAdminDashboard() {
   // ==============================
   const submitElection = async (e: React.FormEvent) => {
     e.preventDefault();
-    let parsedSettings;
-    try { parsedSettings = JSON.parse(courseSettings); } catch (err) { alert("Invalid JSON!"); return; }
+    
+    const courseSettings = Object.entries(electionCourseConfig)
+      .filter(([_, config]) => config.enabled)
+      .reduce((acc, [prefix, config]) => {
+        acc[prefix] = config.chairs;
+        return acc;
+      }, {} as Record<string, number>);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ title: electionTitle, courseSettings: parsedSettings })
+        body: JSON.stringify({ title: electionTitle, courseSettings })
       });
       if (res.ok) {
         alert(`Election Created! ID: ${(await res.json()).id}`);
@@ -139,6 +154,20 @@ export default function SuperAdminDashboard() {
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
+  const toggleElectionStatus = async (id: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'DRAFT' ? 'ACTIVE' : 'DRAFT';
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) { fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
   const handleSelectElection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
     setModElectionId(id);
@@ -146,22 +175,39 @@ export default function SuperAdminDashboard() {
     const el = elections.find(x => x.id === id);
     if (el) {
       setModElectionTitle(el.title);
-      setModCourseSettings(JSON.stringify(el.courseSettings, null, 2));
+      
+      const loadedConfig: Record<string, { enabled: boolean, chairs: number }> = {};
+      const savedSettings = el.courseSettings || {};
+      
+      courses.forEach(c => {
+        const p = c.studentPrefix;
+        if (savedSettings[p] !== undefined) {
+          loadedConfig[p] = { enabled: true, chairs: Number(savedSettings[p]) };
+        } else {
+          loadedConfig[p] = { enabled: false, chairs: 1 };
+        }
+      });
+      setModElectionCourseConfig(loadedConfig);
     }
   };
 
   const submitModifyElection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!modElectionId) return;
-    let parsedSettings;
-    try { parsedSettings = JSON.parse(modCourseSettings); } catch (err) { alert("Invalid JSON!"); return; }
+
+    const courseSettings = Object.entries(modElectionCourseConfig)
+      .filter(([_, config]) => config.enabled)
+      .reduce((acc, [prefix, config]) => {
+        acc[prefix] = config.chairs;
+        return acc;
+      }, {} as Record<string, number>);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${modElectionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ title: modElectionTitle, courseSettings: parsedSettings })
+        body: JSON.stringify({ title: modElectionTitle, courseSettings })
       });
       if (res.ok) { alert(`Election Modified!`); fetchActiveData(); }
       else alert(`Failed: ${res.status} - ${await res.text()}`);
@@ -549,9 +595,24 @@ export default function SuperAdminDashboard() {
               <h2>1. Elections</h2>
               <ul style={{ marginBottom: '1rem' }}>
                 {elections.map(el => (
-                  <li key={el.id}>
-                    <strong>{el.title}</strong> ({el.id})
-                    <button type="button" onClick={() => deleteElection(el.id)} style={{ color: 'red', marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}>✖</button>
+                  <li key={el.id} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <span><strong>{el.title}</strong> ({el.id}) - <span style={{ fontWeight: 'bold', color: el.status === 'DRAFT' ? '#ca8a04' : '#16a34a' }}>{el.status}</span></span>
+                    
+                    <button 
+                      type="button" 
+                      onClick={() => toggleElectionStatus(el.id, el.status)} 
+                      style={{ 
+                        padding: '0.25rem 0.5rem', 
+                        background: el.status === 'DRAFT' ? '#16a34a' : '#ca8a04', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}>
+                      {el.status === 'DRAFT' ? 'Publish' : 'Set to Draft'}
+                    </button>
+
+                    <button type="button" onClick={() => deleteElection(el.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>✖</button>
                   </li>
                 ))}
               </ul>
@@ -559,7 +620,38 @@ export default function SuperAdminDashboard() {
               <form onSubmit={submitElection} style={formStyle}>
                 <label>Create New Election</label>
                 <input type="text" value={electionTitle} onChange={e => setElectionTitle(e.target.value)} placeholder="Title" required style={inputStyle} />
-                <textarea rows={5} value={courseSettings} onChange={e => setCourseSettings(e.target.value)} required style={{ ...inputStyle, fontFamily: 'monospace' }} />
+                
+                <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}>
+                  <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Course Capacities (Chairs)</p>
+                  {courses.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={electionCourseConfig[c.studentPrefix]?.enabled || false}
+                          onChange={e => setElectionCourseConfig(prev => ({
+                            ...prev,
+                            [c.studentPrefix]: { ...prev[c.studentPrefix], enabled: e.target.checked }
+                          }))}
+                        />
+                        {c.code} ({c.studentPrefix})
+                      </label>
+                      {electionCourseConfig[c.studentPrefix]?.enabled && (
+                        <input 
+                          type="number" 
+                          min="1"
+                          value={electionCourseConfig[c.studentPrefix]?.chairs || 1}
+                          onChange={e => setElectionCourseConfig(prev => ({
+                            ...prev,
+                            [c.studentPrefix]: { ...prev[c.studentPrefix], chairs: parseInt(e.target.value) || 1 }
+                          }))}
+                          style={{ width: '80px', padding: '0.25rem' }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
                 <button type="submit" style={btnStyle}>Submit POST /elections</button>
               </form>
 
@@ -571,7 +663,38 @@ export default function SuperAdminDashboard() {
               {modElectionId && (
                 <form onSubmit={submitModifyElection} style={formStyle}>
                   <input type="text" value={modElectionTitle} onChange={e => setModElectionTitle(e.target.value)} placeholder="Title" required style={inputStyle} />
-                  <textarea rows={5} value={modCourseSettings} onChange={e => setModCourseSettings(e.target.value)} required style={{ ...inputStyle, fontFamily: 'monospace' }} />
+                  
+                  <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}>
+                    <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Course Capacities (Chairs)</p>
+                    {courses.map(c => (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, cursor: 'pointer' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={modElectionCourseConfig[c.studentPrefix]?.enabled || false}
+                            onChange={e => setModElectionCourseConfig(prev => ({
+                              ...prev,
+                              [c.studentPrefix]: { ...prev[c.studentPrefix], enabled: e.target.checked }
+                            }))}
+                          />
+                          {c.code} ({c.studentPrefix})
+                        </label>
+                        {modElectionCourseConfig[c.studentPrefix]?.enabled && (
+                          <input 
+                            type="number" 
+                            min="1"
+                            value={modElectionCourseConfig[c.studentPrefix]?.chairs || 1}
+                            onChange={e => setModElectionCourseConfig(prev => ({
+                              ...prev,
+                              [c.studentPrefix]: { ...prev[c.studentPrefix], chairs: parseInt(e.target.value) || 1 }
+                            }))}
+                            style={{ width: '80px', padding: '0.25rem' }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
                   <button type="submit" style={btnStyle}>Submit PATCH /elections</button>
                 </form>
               )}
