@@ -182,6 +182,9 @@ model Vote {
   voter       User     @relation(fields: [voterId], references: [id])
   candidate   Candidate @relation(fields: [candidateId], references: [id])
   election    Election @relation(fields: [electionId], references: [id])
+
+  // A student can only vote for a specific candidate once per election
+  @@unique([voterId, electionId, candidateId])
 }
 
 model Course {

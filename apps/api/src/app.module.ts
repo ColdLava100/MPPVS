@@ -12,6 +12,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
 import { CoursesModule } from './courses/courses.module';
 import { CandidatesModule } from './candidates/candidates.module';
+import { VotesModule } from './votes/votes.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CandidatesModule } from './candidates/candidates.module';
     VotingSessionsModule,
     CoursesModule,
     CandidatesModule,
+    VotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
