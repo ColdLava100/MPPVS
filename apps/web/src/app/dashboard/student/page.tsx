@@ -13,7 +13,7 @@ import {
   BarChart3
 } from 'lucide-react';
 
-import StudentHeader from '@/components/ui/header2';
+import StudentHeader from '@/components/ui/header';
 import Footer from '@/components/ui/footer';
 import UniversalSidebar from '@/components/ui/sidebar';
 

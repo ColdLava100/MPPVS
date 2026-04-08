@@ -11,7 +11,12 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  ShieldCheck, 
+  Settings,    
+  History,     // Icon for Audit Logs
+  Upload,      // Icon for Campaign Override
+  CheckSquare  // Icon for Ballot Preview
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -67,7 +72,40 @@ export default function UniversalSidebar({ role }: SidebarProps) {
       { label: 'LIVE RESULTS', icon: Radio, path: '/dashboard/student/results' },
     ],
     admin: [], 
-    superadmin: []
+    // 3. SUPERADMIN SIDEBAR CONFIGURATION
+    superadmin: [
+      { label: 'DASHBOARD', icon: Home, path: '/dashboard/superadmin' },
+      { 
+        label: 'CANDIDATE HUB', 
+        icon: ShieldCheck, 
+        path: '#',
+        subItems: [
+          { label: 'VALIDATION', path: '/dashboard/superadmin/candidates/validate' },
+          { label: 'INTERVIEWS', path: '/dashboard/superadmin/candidates/interviews' },
+        ]
+      },
+      { 
+        label: 'ELECTION CONTROL', 
+        icon: Settings, 
+        path: '#',
+        subItems: [
+          { label: 'VOTING SLOTS', path: '/dashboard/superadmin/election/slots' },
+          { label: 'TIME SETTINGS', path: '/dashboard/superadmin/election/timing' },
+        ]
+      },
+      { label: 'BROADCAST', icon: Megaphone, path: '/dashboard/superadmin/broadcast' },
+      { 
+        label: 'SYSTEM & TESTING', 
+        icon: CheckSquare, 
+        path: '#',
+        subItems: [
+          { label: 'CAMPAIGN OVERRIDE', path: '/dashboard/superadmin/testing/override' },
+          { label: 'BALLOT PREVIEW', path: '/dashboard/superadmin/testing/preview' },
+        ]
+      },
+      { label: 'AUDIT LOGS', icon: History, path: '/dashboard/superadmin/logs' },
+      { label: 'LIVE ANALYTICS', icon: Radio, path: '/dashboard/superadmin/analytics' },
+    ]
   };
 
   const menuItems = menuConfigs[role] || [];

@@ -8,13 +8,12 @@ import {
   CheckCircle2,
   ShieldCheck,
   Users,
-  AlertTriangle,
   RotateCcw,
   UserCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import StudentHeader from '@/components/ui/header2';
+import StudentHeader from '@/components/ui/header';
 import Footer from '@/components/ui/footer';
 import UniversalSidebar from '@/components/ui/sidebar';
 
@@ -31,8 +30,6 @@ export default function BallotPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("ALL");
   const [userRole] = useState<'student' | 'candidate'>('student');
-  const [isVoteSuccess, setIsVoteSuccess] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
@@ -54,21 +51,15 @@ export default function BallotPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (completedCourses.length > 0) {
-      localStorage.setItem('mpp_completed_votes', JSON.stringify(completedCourses));
-    }
-  }, [completedCourses]);
-
   const resetSimulation = () => {
     localStorage.removeItem('mpp_completed_votes');
+    localStorage.removeItem('temp_selection');
     setCompletedCourses([]);
     setSelectedCourse("ALL");
     window.location.reload();
   };
 
   const allCandidates: Candidate[] = [
-    // Updated ID 101 to eventually use your local image via the Card logic below
     { id: 101, name: "Muhammad Haziq Bin Razak", dept: "DCS", img: "/candidates/handsome.jpeg" },
     { id: 102, name: "Nurul Ain Binti Mansor", dept: "DCS", img: "https://images.pexels.com/photos/1181682/pexels-photo-1181682.jpeg" },
     { id: 103, name: "Ahmad Syahmi Bin Idris", dept: "DCS", img: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg" },
@@ -101,14 +92,12 @@ export default function BallotPage() {
     });
   };
 
-  const handleFinalSubmit = () => {
-    setIsVoteSuccess(true);
-    setTimeout(() => {
-      setCompletedCourses(prev => [...prev, selectedCourse]);
-      setSelectedCandidateIds([]);
-      setIsVoteSuccess(false);
-      setShowConfirmModal(false);
-    }, 2000);
+  const handleReviewSelection = () => {
+    localStorage.setItem('temp_selection', JSON.stringify({
+      ids: selectedCandidateIds,
+      course: selectedCourse
+    }));
+    router.push('/ballot/confirm');
   };
 
   return (
@@ -127,10 +116,13 @@ export default function BallotPage() {
         <StudentHeader />
 
         <main className="flex-grow p-12 max-w-7xl mx-auto w-full">
-          {/* HEADER SECTION */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
             <div className="w-full md:w-1/4 flex items-center gap-4">
-              <button onClick={() => router.back()} className="flex items-center gap-3 text-white/60 hover:text-white transition-all bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-md">
+              {/* FIXED: Using direct push instead of .back() */}
+              <button 
+                onClick={() => router.push('/dashboard/student')} 
+                className="flex items-center gap-3 text-white/60 hover:text-white transition-all bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-md"
+              >
                 <ChevronLeft size={18} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">Go Back</span>
               </button>
@@ -193,7 +185,6 @@ export default function BallotPage() {
             </div>
           </div>
 
-          {/* CANDIDATES GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-40">
             {filteredCandidates.map((candidate) => (
               <CandidateCard 
@@ -213,7 +204,6 @@ export default function BallotPage() {
         </div>
       </div>
 
-      {/* FLOATING BALLOT BAR */}
       {selectedCandidateIds.length > 0 && !isCourseVoted && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-lg px-6 animate-in slide-in-from-bottom-8 duration-500">
           <div className="bg-[#1a1a1a] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-2xl flex items-center justify-between">
@@ -222,46 +212,16 @@ export default function BallotPage() {
                 {selectedCandidateIds.length}
               </div>
               <div>
-                <p className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Ballot Status</p>
-                <p className="text-sm font-bold tracking-tight uppercase italic">{selectedCandidateIds.length} / {currentLimit} Selected</p>
+                <p className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Ballot Selection</p>
+                <p className="text-sm font-bold tracking-tight uppercase italic">{selectedCandidateIds.length} Candidates Chosen</p>
               </div>
             </div>
             <button 
-              onClick={() => setShowConfirmModal(true)}
+              onClick={handleReviewSelection}
               className="bg-white text-black px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#c5a021] transition-all"
             >
-              Confirm Vote
+              Review Vote
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* CONFIRMATION MODAL */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => !isVoteSuccess && setShowConfirmModal(false)} />
-          <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 text-center">
-            {!isVoteSuccess ? (
-              <>
-                <div className="flex justify-center mb-6">
-                  <div className="h-16 w-16 bg-[#c5a021]/10 rounded-full flex items-center justify-center border border-[#c5a021]/20">
-                    <AlertTriangle size={32} className="text-[#c5a021]" />
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-2">Final Confirmation</h2>
-                <p className="text-white/60 text-xs leading-relaxed mb-10">
-                  You are voting for <strong>{selectedCandidateIds.length} candidates</strong>. This action is persistent and will lock your ballot for {selectedCourse}.
-                </p>
-                <button onClick={handleFinalSubmit} className="w-full bg-white text-black py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#c5a021] transition-all mb-3">Confirm Submission</button>
-                <button onClick={() => setShowConfirmModal(false)} className="w-full border border-white/10 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Cancel</button>
-              </>
-            ) : (
-              <div className="py-10 flex flex-col items-center">
-                 <CheckCircle2 size={64} className="text-green-500 mb-6 animate-bounce" />
-                 <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-2">Vote Recorded</h2>
-                 <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Updating your portal...</p>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -270,7 +230,6 @@ export default function BallotPage() {
 }
 
 function CandidateCard({ candidate, isSelected, onSelect, disabled, isLocked }: any) {
-  // Logic to ensure ID 101 always uses your specific local file
   const imagePath = candidate.id === 101 ? "/candidates/handsome.jpeg" : candidate.img;
 
   return (
@@ -304,7 +263,6 @@ function CandidateCard({ candidate, isSelected, onSelect, disabled, isLocked }: 
         </p>
 
         <div className="flex flex-col gap-2 w-full mt-auto">
-          {/* VOTE BUTTON */}
           <button 
             onClick={onSelect}
             disabled={disabled || isLocked}
@@ -317,7 +275,6 @@ function CandidateCard({ candidate, isSelected, onSelect, disabled, isLocked }: 
             {isLocked ? 'Vote Recorded' : isSelected ? 'Deselect' : 'Select'}
           </button>
 
-          {/* VIEW PROFILE BUTTON */}
           <Link href={`/dashboard/candidate/${candidate.id}`} className="w-full">
             <button className={`w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] border flex items-center justify-center gap-2 transition-all
               ${isSelected ? 'border-black/20 text-black hover:bg-black/10' : 'border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-900'}

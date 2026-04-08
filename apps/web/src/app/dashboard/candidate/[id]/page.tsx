@@ -11,7 +11,7 @@ import {
   Award,
   CheckCircle2
 } from 'lucide-react';
-import StudentHeader from '@/components/ui/header2';
+import StudentHeader from '@/components/ui/header';
 
 // 1. DYNAMIC DATA SIMULATION
 // In a real scenario, this would be a fetch() call to your backend

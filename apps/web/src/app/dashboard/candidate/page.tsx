@@ -15,7 +15,7 @@ import {
   RefreshCcw 
 } from 'lucide-react';
 import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import StudentHeader from '@/components/ui/header';
 import Footer from '@/components/ui/footer';
 
 export default function CandidateDashboard() {

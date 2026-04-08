@@ -11,7 +11,7 @@ import {
   Activity,
   BarChart3
 } from 'lucide-react';
-import Header from '@/components/ui/header1';
+import Header from '@/components/ui/header';
 import Footer from '@/components/ui/footer';
 
 export default function MPPVotingPortal() {
