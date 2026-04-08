@@ -123,12 +123,10 @@ export default function MPPVotingPortal() {
 /* Sub-components */
 function MetricBox({ code, votes, seats, color, icon }: any) {
   return (
-    <div className={`p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
-      <div className="flex justify-between items-start mb-6">
-        <div className="text-slate-400 group-hover:text-slate-900 transition-colors">
-          {icon || <BarChart3 size={20} />}
-        </div>
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{code}</span>
+    <div className={`metric-card ${color}`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className="text-lg"><Clock></Clock></div>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{code}</span>
       </div>
       <div className="text-4xl font-medium mb-1 tracking-tighter text-slate-900">{votes}</div>
       <p className="text-[9px] font-black text-slate-400 uppercase mb-6 tracking-widest">Verified Ballots</p>

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, HelpCircle, Phone } from 'lucide-react';
+
+
 
 const ROLES = [
   { id: 'ADMIN', label: 'ADMIN', icon: '👤', inputLabel: 'Email Address', placeholder: 'admin@university.edu' },
@@ -25,6 +27,11 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Updated Login Logic to actually hit authentication endpoints
+  // --- UI STATES ---
+  const [hoveredRole, setHoveredRole] = useState<string | null>(null);
+  const activeRoleInfo = ROLES.find(r => r.id === (hoveredRole || selectedRole)) || ROLES[3];
+
+  // --- SUBMISSION LOGIC ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -68,195 +75,174 @@ export default function LoginPage() {
   const heroPanelUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/20/images/lt-2-4.jpg";
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
-      
-      {/* BACKGROUND LAYER */}
-      <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: `url(${mainBgUrl})`,
-          filter: 'blur(8px) brightness(0.45)' 
-        }}
-      />
-
+    <div className="min-h-screen bg-[#F3F4F6] flex flex-col font-sans">
       {/* HEADER */}
-      <header className="relative z-50 px-10 py-5 flex justify-between items-center bg-[#4c0519]/90 backdrop-blur-md border-b border-white/5 shadow-2xl">
-        <Link href="/">
-          <button className="group flex items-center gap-3 text-white/80 hover:text-white transition-all">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/20 group-hover:border-white/40 group-hover:bg-white/10 transition-all">
-              <span className="text-lg">←</span>
-            </div>
-            <span className="text-[13px] font-black uppercase tracking-[0.2em]">Back</span>
-          </button>
-        </Link>
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <h1 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">
-            MPP <span className="opacity-50 font-light">Voting Portal</span>
-          </h1>
+      <header className="p-6 flex justify-between items-center bg-white border-b border-gray-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-800 italic">
+          MPP <span className="font-light text-slate-400">Voting Portal</span>
+        </h1>
+        <div className="flex gap-4 text-slate-400 text-sm">
+          <span>🛡️ SECURE</span>
+          <span>❓ HELP</span>
         </div>
       </header>
 
-      {/* FLOATING MAIN CARD */}
-      <main className="relative z-10 flex-grow flex items-center justify-center p-6">
-        <div className="w-full max-w-4xl bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.55)] flex overflow-hidden min-h-[550px] rounded-sm">
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-5xl bg-white shadow-2xl flex overflow-hidden min-h-[600px] rounded-sm border border-gray-200">
           
-          {/* LEFT HERO PANEL */}
-          <div className="hidden md:flex w-5/12 relative bg-[#2D0A0A]">
+          {/* LEFT HERO */}
+          <div className="hidden md:flex w-1/2 relative bg-[#2D0A0A]">
             <img 
-              src={heroPanelUrl} 
+              src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069" 
               alt="Governance" 
-              className="absolute inset-0 w-full h-full object-cover opacity-35 grayscale"
+              className="absolute inset-0 w-full h-full object-cover opacity-20"
             />
-            <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white bg-gradient-to-t from-[#4c0519]/80 via-transparent to-transparent">
-              <div className="flex items-center gap-2 mb-4 bg-white/10 w-fit px-2 py-1 rounded backdrop-blur-sm">
-                <span className="text-[9px] tracking-[0.2em] font-bold uppercase">Step {step} of 2</span>
+            <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
+              <div className="flex items-center gap-2 mb-4 bg-white/10 w-fit px-3 py-1 rounded backdrop-blur-md">
+                <span className="text-[10px] tracking-[0.2em] font-bold uppercase">Step {step} of 2</span>
               </div>
-              <h2 className="text-4xl font-black mb-4 leading-none italic tracking-tighter uppercase">
-                Voices United<br />Future Ignited
-              </h2>
-              <p className="text-[10px] opacity-60 font-medium leading-relaxed max-w-[240px]">
-                Secure authentication is required to participate in mpp election.
+              <h2 className="text-4xl font-medium mb-6 leading-tight italic">Voices United<br />Future Ignited</h2>
+              <p className="text-sm opacity-60 font-light leading-relaxed max-w-xs">
+                {step === 1 ? "Please authenticate your credentials to access the voting portal." : "A security code has been sent to your registered device for multi-factor authentication."}
               </p>
             </div>
           </div>
 
-          {/* RIGHT FORM PANEL */}
-          <div className="w-full md:w-7/12 p-12 lg:p-13 flex flex-col justify-center">
-            <h3 className="text-6xl font-black text-slate-900 mb-1 tracking-tighter leading-none">
-              LOGIN
+          {/* RIGHT FORM */}
+          <div className="w-full md:w-1/2 p-12 flex flex-col justify-center">
+            <h3 className="text-5xl font-medium text-slate-900 mb-2 italic tracking-tighter">
+              {step === 1 ? 'Login' : 'Verify'}
             </h3>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
-              Select your role and enter credentials to proceed.
+            <p className="text-sm text-slate-400 mb-10">
+              {step === 1 ? 'Select your role and enter credentials.' : 'Enter the 6-digit code to continue.'}
             </p>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Access Role</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {ROLES.map((role) => (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedRole(role.id)}
-                      className={`flex flex-col items-center justify-center py-4 border transition-all rounded-sm ${
-                        selectedRole === role.id 
-                        ? 'border-slate-900 bg-white shadow-lg z-10 scale-105 ring-1 ring-slate-900/5' 
-                        : 'border-transparent bg-slate-50 opacity-40 hover:opacity-100 grayscale'
-                      }`}
-                    >
-                      <span className="text-xl mb-1">{role.icon}</span>
-                      <span className="text-[9px] font-black tracking-tighter text-center">{role.label}</span>
-                    </button>
-                  ))}
+            {step === 1 && (
+              <form onSubmit={handleInitialSubmit} className="space-y-8">
+                {/* ROLE PICKER */}
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Select Access Role</label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {ROLES.map((role) => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onMouseEnter={() => setHoveredRole(role.id)}
+                        onMouseLeave={() => setHoveredRole(null)}
+                        onClick={() => { setSelectedRole(role.id); setError(''); }}
+                        className={`flex flex-col items-center justify-center py-4 border transition-all duration-300 ${
+                          selectedRole === role.id 
+                          ? 'border-slate-900 bg-white shadow-md z-10 scale-105' 
+                          : hoveredRole === role.id 
+                            ? 'border-slate-300 bg-slate-50 opacity-100 scale-105 shadow-sm'
+                            : 'border-transparent bg-slate-50 opacity-40 grayscale'
+                        }`}
+                      >
+                        <span className="text-xl mb-2">{role.icon}</span>
+                        <span className="text-[8px] font-black text-center">{role.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-5">
+                {/* DYNAMIC INPUTS BASED ON ROLE */}
                 {isStudentOrCandidate ? (
                   <>
-                    <div className="space-y-1.5">
-                      <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID Identification</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Student ID</label>
                       <input 
                         type="text" 
                         value={studentId} 
                         onChange={(e) => setStudentId(e.target.value)} 
                         placeholder="BCSXXXX-XXX"
-                        className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors uppercase tracking-widest font-bold"
+                        className="w-full bg-slate-50 border border-transparent px-4 py-4 text-sm outline-none focus:bg-white focus:border-slate-200 rounded-sm"
                         required 
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">National IC Number</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">IC Number</label>
                       <input 
                         type="text" 
                         value={icNumber} 
                         onChange={(e) => setIcNumber(e.target.value)} 
                         placeholder="000000-00-0000"
-                        className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors tracking-[0.2em] font-bold"
+                        className="w-full bg-slate-50 border border-transparent px-4 py-4 text-sm outline-none focus:bg-white focus:border-slate-200 rounded-sm"
                         required 
                       />
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="space-y-1.5">
-                      <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">Institutional Email</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">{activeRoleInfo.inputLabel}</label>
                       <input 
                         type="email" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)} 
-                        placeholder="username@university.edu"
-                        className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold"
+                        placeholder={activeRoleInfo.placeholder}
+                        className="w-full bg-slate-50 border border-transparent px-4 py-4 text-sm outline-none focus:bg-white focus:border-slate-200 rounded-sm"
                         required 
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">System Password</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Password</label>
                       <input 
                         type="password" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 
-                        placeholder="••••••••••••"
-                        className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold"
+                        placeholder="wilHandsome"
+                        className="w-full bg-slate-50 border border-transparent px-4 py-4 text-sm outline-none focus:bg-white focus:border-slate-200 rounded-sm"
                         required 
                       />
                     </div>
                   </>
                 )}
-              </div>
 
-              {error && (
-                <div className="text-red-500 text-[10px] font-bold uppercase tracking-widest text-center mt-4">
-                  {error}
+                <button type="submit" className="w-full bg-[#2D0A0A] text-white py-5 flex items-center justify-center gap-3 hover:bg-[#441212] transition-all uppercase text-[10px] font-black tracking-[0.3em] shadow-xl">
+                  Next Step <span>→</span>
+                </button>
+              </form>
+            )}
+
+            {step === 2 && (
+              <form onSubmit={handleVerifyCode} className="space-y-8">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">6-Digit Multi-Factor Code</label>
+                  <input 
+                    type="text" 
+                    value={twoFactorCode} 
+                    onChange={(e) => setTwoFactorCode(e.target.value)} 
+                    maxLength={6}
+                    placeholder="e.g. 000000"
+                    className="w-full bg-slate-50 border border-transparent px-4 py-4 text-center text-2xl font-mono tracking-[0.5em] outline-none focus:bg-white focus:border-slate-200 rounded-sm"
+                    required 
+                  />
                 </div>
-              )}
 
-              <button type="submit" disabled={isLoading} className="w-full bg-[#4c0519] text-white py-4 flex items-center justify-center gap-3 hover:bg-black transition-all uppercase text-[9px] font-black tracking-[0.3em] shadow-xl active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {isLoading ? 'Authenticating...' : 'Login'}
-              </button>
-            </form>
+                <div className="flex gap-4">
+                  <button type="button" onClick={() => setStep(1)} className="w-1/3 border border-slate-200 py-5 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition">Back</button>
+                  <button type="submit" className="w-2/3 bg-[#2D0A0A] text-white py-5 text-[10px] font-black uppercase tracking-widest shadow-xl">Verify Code</button>
+                </div>
+              </form>
+            )}
+
+            {error && <p className="mt-6 text-[10px] font-bold uppercase text-red-600 bg-red-50 p-3 rounded-sm border border-red-100">{error}</p>}
           </div>
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="relative z-50 bg-[#4c0519] text-white px-10 py-5 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <div className="bg-[#c5a021] p-2 rounded shadow-lg">
-                <Shield className="text-white w-5 h-5" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h2 className="text-[13px] font-bold tracking-tight uppercase leading-none">MPP Voting System</h2>
-                <p className="text-[9px] text-slate-400 font-medium tracking-[0.15em] mt-1 uppercase opacity-80">
-                  © 2026 DevOps KitaBuild Studio
-                </p>
-              </div>
-            </div>
-            <div className="hidden lg:block h-6 w-px bg-white/10" />
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300">
-              Kolej Professional Mara Beranang
-            </span>
+      <footer className="p-8 flex flex-col items-center bg-white border-t border-gray-100 space-y-6">
+        <div className="w-full flex flex-col md:flex-row justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
+          <p>© 2024 Institutional Voting Authority. Protocol V4.2</p>
+          <div className="flex gap-8">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
           </div>
-
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <HelpCircle className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" /> 
-                FAQ
-              </button>
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <Phone className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" /> 
-                Contact Support
-              </button>
-            </div>
-
-            <div className="hidden md:flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.6)]"></span>
-              <span>Server Status: <span className="text-white font-bold">Optimal</span></span>
-            </div>
-          </div>
+        </div>
+        <div className="pt-6 border-t border-gray-50 w-full text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">
+            Developed by <span className="text-slate-900">DevOps KitaBuild Studio</span>
+          </p>
         </div>
       </footer>
     </div>
