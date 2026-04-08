@@ -15,11 +15,12 @@ export class CandidatesService {
         videos: true,
         slides: true,
         posters: true,
+        qualification: true,
       },
     });
   }
 
-  async registerCandidate(userId: string, electionId: string, superAdminId: string) {
+  async registerCandidate(userId: string, electionId: string, superAdminId: string, optionalFields?: { information?: string; profilePicture?: string; spotlightBanner?: string }) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found.');
     if (user.role !== 'CANDIDATE') {
@@ -30,7 +31,14 @@ export class CandidatesService {
     if (existing) throw new BadRequestException('This user is already registered as a candidate.');
 
     const candidate = await prisma.candidate.create({
-      data: { userId, electionId, status: 'PENDING' },
+      data: { 
+        userId, 
+        electionId, 
+        status: 'PENDING',
+        information: optionalFields?.information,
+        profilePicture: optionalFields?.profilePicture,
+        spotlightBanner: optionalFields?.spotlightBanner,
+      },
     });
 
     await this.auditLogsService.logAction(superAdminId, 'REGISTERED_CANDIDATE', {
@@ -92,5 +100,23 @@ export class CandidatesService {
     });
 
     return material;
+  }
+
+  async upsertQualification(candidateId: string, position: string, cgpa: string, justification: string, superAdminId: string) {
+    const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    const qualification = await prisma.qualification.upsert({
+      where: { candidateId },
+      update: { position, cgpa, justification },
+      create: { candidateId, position, cgpa, justification },
+    });
+
+    await this.auditLogsService.logAction(superAdminId, 'UPSERTED_CANDIDATE_QUALIFICATION', {
+      candidateId,
+      qualificationId: qualification.id,
+    });
+
+    return qualification;
   }
 }

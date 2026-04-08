@@ -38,12 +38,14 @@ export class UsersController {
     if (!dto.email || !dto.password || !dto.name || !dto.role) {
       throw new BadRequestException('Email, password, name, and role are required fields.');
     }
-    return this.usersService.createUser(dto, req.user.id);
+    const adminId = req.user?.id || req.user?.sub;
+    return this.usersService.createUser(dto, adminId);
   }
 
   @Patch(':id')
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req: any) {
-    return this.usersService.updateUser(id, dto, req.user.id);
+    const adminId = req.user?.id || req.user?.sub;
+    return this.usersService.updateUser(id, dto, adminId);
   }
 
   @Delete(':id')

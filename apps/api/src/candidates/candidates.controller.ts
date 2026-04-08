@@ -16,8 +16,15 @@ export class CandidatesController {
   }
 
   @Post()
-  async registerCandidate(@Body() body: { userId: string; electionId: string }, @Req() req: any) {
-    return this.candidatesService.registerCandidate(body.userId, body.electionId, req.user.id);
+  async registerCandidate(
+    @Body() body: { userId: string; electionId: string; information?: string; profilePicture?: string; spotlightBanner?: string }, 
+    @Req() req: any
+  ) {
+    return this.candidatesService.registerCandidate(body.userId, body.electionId, req.user.id, {
+      information: body.information,
+      profilePicture: body.profilePicture,
+      spotlightBanner: body.spotlightBanner,
+    });
   }
 
   @Post(':id/materials')
@@ -27,5 +34,14 @@ export class CandidatesController {
     @Req() req: any,
   ) {
     return this.candidatesService.addMaterial(candidateId, body, req.user.id);
+  }
+
+  @Post(':id/qualification')
+  async upsertQualification(
+    @Param('id') candidateId: string,
+    @Body() body: { position: string; cgpa: string; justification: string },
+    @Req() req: any,
+  ) {
+    return this.candidatesService.upsertQualification(candidateId, body.position, body.cgpa, body.justification, req.user.id);
   }
 }

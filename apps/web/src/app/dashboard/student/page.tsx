@@ -27,6 +27,20 @@ export default function StudentDashboard() {
     router.push('/ballot');
   };
 
+  const handleStopImpersonation = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/stop-impersonation`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        router.push('/dashboard/superadmin');
+      } else {
+        alert('Failed to return to superadmin.');
+      }
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
   return (
     <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
       
@@ -37,6 +51,13 @@ export default function StudentDashboard() {
       <div className="flex-grow flex flex-col relative overflow-hidden ml-24"> 
         {/* Note: ml-24 accounts for the collapsed sidebar width */}
         
+        <button 
+          onClick={handleStopImpersonation}
+          className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
+        >
+          Stop Impersonating (Return to Superadmin)
+        </button>
+
         <StudentHeader onVoteClick={handleVoteNowClick} />
 
         <main className="flex-grow overflow-y-auto relative custom-scrollbar">

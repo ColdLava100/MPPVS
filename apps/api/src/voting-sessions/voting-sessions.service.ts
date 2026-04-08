@@ -20,12 +20,12 @@ export class VotingSessionsService {
       throw new BadRequestException('Invalid course selected. Course does not exist.');
     }
 
-    if (data.studentIdStart && !data.studentIdStart.startsWith(course.code)) {
-      throw new BadRequestException('Student ID range must match the selected course code.');
+    if (data.studentIdStart && !data.studentIdStart.startsWith(course.studentPrefix)) {
+      throw new BadRequestException('Student ID range must match the selected course prefix.');
     }
 
-    if (data.studentIdEnd && !data.studentIdEnd.startsWith(course.code)) {
-      throw new BadRequestException('Student ID range must match the selected course code.');
+    if (data.studentIdEnd && !data.studentIdEnd.startsWith(course.studentPrefix)) {
+      throw new BadRequestException('Student ID range must match the selected course prefix.');
     }
 
     const session = await prisma.votingSession.create({
@@ -60,22 +60,25 @@ export class VotingSessionsService {
       if (!existingSession) throw new BadRequestException('Voting session not found');
 
       let courseCode = existingSession.courseCode;
+      const existingCourse = await prisma.course.findUnique({ where: { code: courseCode } });
+      let prefix = existingCourse?.studentPrefix || '';
 
       if (data.courseId) {
         const course = await prisma.course.findUnique({ where: { id: data.courseId } });
         if (!course) throw new BadRequestException('Invalid course selected.');
         courseCode = course.code;
+        prefix = course.studentPrefix;
         updateData.courseCode = courseCode;
       }
 
       const checkStart = data.studentIdStart !== undefined ? data.studentIdStart : existingSession.studentIdStart;
       const checkEnd = data.studentIdEnd !== undefined ? data.studentIdEnd : existingSession.studentIdEnd;
 
-      if (checkStart && !checkStart.startsWith(courseCode)) {
-        throw new BadRequestException(`Student ID range must match the course code ${courseCode}.`);
+      if (checkStart && !checkStart.startsWith(prefix)) {
+        throw new BadRequestException(`Student ID range must match the course prefix ${prefix}.`);
       }
-      if (checkEnd && !checkEnd.startsWith(courseCode)) {
-        throw new BadRequestException(`Student ID range must match the course code ${courseCode}.`);
+      if (checkEnd && !checkEnd.startsWith(prefix)) {
+        throw new BadRequestException(`Student ID range must match the course prefix ${prefix}.`);
       }
 
       if (data.studentIdStart !== undefined) updateData.studentIdStart = data.studentIdStart || null;

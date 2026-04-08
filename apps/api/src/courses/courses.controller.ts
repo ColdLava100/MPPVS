@@ -6,6 +6,7 @@ import { Roles, Role } from '../common/decorators/roles.decorator';
 
 export class CreateCourseDto {
   code!: string;
+  studentPrefix!: string;
   name!: string;
 }
 
@@ -17,8 +18,8 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN)
   async createCourse(@Body() dto: CreateCourseDto) {
-    if (!dto.code || !dto.name) {
-      throw new BadRequestException('Code and name are required fields.');
+    if (!dto.code || !dto.studentPrefix || !dto.name) {
+      throw new BadRequestException('Code, student prefix, and name are required fields.');
     }
     return this.coursesService.createCourse(dto);
   }

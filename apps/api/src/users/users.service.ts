@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { prisma } from '@repo/database';
 import * as bcrypt from 'bcrypt';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -12,7 +12,8 @@ export class UsersService {
     return prisma.user.findMany({ select: { id: true, email: true, name: true, role: true, studentId: true, icNumber: true, courseId: true, createdAt: true }});
   }
 
-  async createUser(data: any, superAdminId: string) {
+  async createUser(data: any, adminId: string) {
+    if (!adminId) throw new InternalServerErrorException('Admin ID missing from request payload');
     const existing = await prisma.user.findFirst({
       where: {
         OR: [
@@ -31,8 +32,8 @@ export class UsersService {
     if (data.studentId) {
       const match = data.studentId.match(/^[A-Za-z]+/);
       if (match) {
-        const code = match[0];
-        const course = await prisma.course.findUnique({ where: { code } });
+        const extractedPrefix = match[0];
+        const course = await prisma.course.findUnique({ where: { studentPrefix: extractedPrefix } });
         if (!course) {
           throw new BadRequestException('Invalid course prefix. Course does not exist.');
         }
@@ -54,7 +55,7 @@ export class UsersService {
       },
     });
 
-    await this.auditLogsService.logAction(superAdminId, 'CREATED_USER', {
+    await this.auditLogsService.logAction(adminId, 'CREATED_USER', {
       createdUserId: user.id,
       role: user.role,
     });
@@ -63,7 +64,8 @@ export class UsersService {
     return result;
   }
 
-  async updateUser(userId: string, data: any, superAdminId: string) {
+  async updateUser(userId: string, data: any, adminId: string) {
+    if (!adminId) throw new InternalServerErrorException('Admin ID missing from request payload');
     let updateData: any = {};
     if (data.name) updateData.name = data.name;
     if (data.email) updateData.email = data.email;
@@ -79,8 +81,8 @@ export class UsersService {
       if (data.studentId) {
         const match = data.studentId.match(/^[A-Za-z]+/);
         if (match) {
-          const code = match[0];
-          const course = await prisma.course.findUnique({ where: { code } });
+          const extractedPrefix = match[0];
+          const course = await prisma.course.findUnique({ where: { studentPrefix: extractedPrefix } });
           if (!course) {
             throw new BadRequestException('Invalid course prefix. Course does not exist.');
           }
@@ -98,7 +100,7 @@ export class UsersService {
       data: updateData,
     });
 
-    await this.auditLogsService.logAction(superAdminId, 'UPDATED_USER', {
+    await this.auditLogsService.logAction(adminId, 'UPDATED_USER', {
       updatedUserId: user.id,
       changes: Object.keys(updateData),
     });

@@ -11,6 +11,7 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
 import { CoursesModule } from './courses/courses.module';
+import { CandidatesModule } from './candidates/candidates.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CoursesModule } from './courses/courses.module';
     AuditLogsModule,
     VotingSessionsModule,
     CoursesModule,
+    CandidatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
