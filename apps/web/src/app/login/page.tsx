@@ -7,7 +7,7 @@ import { Shield, HelpCircle, Phone } from 'lucide-react';
 
 const ROLES = [
   { id: 'ADMIN', label: 'ADMIN', icon: '👤', inputLabel: 'Email Address', placeholder: 'admin@university.edu' },
-  { id: 'SUPER_ADMIN', label: 'SUPERADMIN', icon: '🛡️', inputLabel: 'System Email', placeholder: 'root@university.edu' },
+  { id: 'SUPERADMIN', label: 'SUPERADMIN', icon: '🛡️', inputLabel: 'System Email', placeholder: 'root@university.edu' },
   { id: 'MPP_ADVISOR', label: 'MPP ADVISOR', icon: '🏛️', inputLabel: 'Official Email', placeholder: 'advisor@mpp.edu' },
   { id: 'STUDENT', label: 'STUDENT', icon: '🎓', inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
   { id: 'CANDIDATE', label: 'CANDIDATE', icon: '📢', inputLabel: 'Candidate ID', placeholder: 'BCSXXXX-XXX' },
