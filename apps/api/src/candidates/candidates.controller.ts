@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles, Role } from '../common/decorators/roles.decorator';
+import { prisma } from '@repo/database';
 
 @Controller('candidates')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -71,7 +72,7 @@ export class CandidatesController {
   }
 
   @Patch(':candidateId/materials/:type/:materialId')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE)
   async updateMaterial(
     @Param('candidateId') candidateId: string,
     @Param('type') type: string,
@@ -79,17 +80,31 @@ export class CandidatesController {
     @Body() body: any,
     @Req() req: any,
   ) {
+    if (req.user.role === Role.CANDIDATE) {
+      const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+      if (!candidate) throw new NotFoundException('Candidate not found.');
+      if (candidate.userId !== req.user.sub) {
+        throw new ForbiddenException('You can only modify your own materials.');
+      }
+    }
     return this.candidatesService.updateMaterial(candidateId, type, materialId, body, req.user.id);
   }
 
   @Delete(':candidateId/materials/:type/:materialId')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE)
   async deleteMaterial(
     @Param('candidateId') candidateId: string,
     @Param('type') type: string,
     @Param('materialId') materialId: string,
     @Req() req: any,
   ) {
+    if (req.user.role === Role.CANDIDATE) {
+      const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+      if (!candidate) throw new NotFoundException('Candidate not found.');
+      if (candidate.userId !== req.user.sub) {
+        throw new ForbiddenException('You can only modify your own materials.');
+      }
+    }
     return this.candidatesService.deleteMaterial(candidateId, type, materialId, req.user.id);
   }
 }
