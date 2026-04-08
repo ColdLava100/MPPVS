@@ -9,20 +9,22 @@ async function main() {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash('password123', saltRounds);
 
-    const roles = ['STUDENT', 'CANDIDATE', 'SUPER_ADMIN', 'ADMIN', 'MPP_ADVISOR'];
+    const roles = ['STUDENT', 'CANDIDATE', 'SUPERADMIN', 'ADMIN', 'MPP_ADVISOR'];
 
     for (const role of roles) {
         const icNumber = `01020304050${roles.indexOf(role)}`;
 
+        const pass = ['SUPERADMIN', 'ADMIN', 'MPP_ADVISOR'].includes(role) ? hashedPassword : 'not-used-for-students';
+
         await prisma.user.upsert({
             where: { icNumber },
-            update: {},
+            update: { password: pass },
             create: {
                 studentId: `S123${roles.indexOf(role)}`,
                 icNumber,
                 role: role as any,
                 email: `dummy_${role.toLowerCase()}@system.edu.my`,
-                password: ['SUPER_ADMIN', 'ADMIN', 'MPP_ADVISOR'].includes(role) ? hashedPassword : 'not-used-for-students',
+                password: pass,
                 name: `Dummy ${role}`,
             },
         });

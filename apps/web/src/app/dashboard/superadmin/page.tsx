@@ -1,159 +1,542 @@
-"use client";
+'use client';
 
-import React from 'react';
-import { 
-  Users, 
-  Calendar, 
-  ShieldCheck, 
-  Bell, 
-  FileText, 
-  TrendingUp, 
-  Settings, 
-  PlusCircle 
-} from 'lucide-react';
-import UniversalSidebar from '@/components/ui/sidebar';
-import Navbar from '@/components/ui/header';
+import React, { useState, useEffect } from 'react';
 
-export default function AdminDashboard() {
-  return (
-    <div className="relative min-h-screen font-sans text-white bg-[#1A0508] overflow-x-hidden">
-      {/* 1. Deep Wine Gradient Background Layer */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-tr from-[#1A0508] via-[#2D0A10] to-[#450A11]" />
+export default function SuperAdminDashboard() {
+  const [courses, setCourses] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [elections, setElections] = useState<any[]>([]);
+  const [votingSessions, setVotingSessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchActiveData();
+  }, []);
+
+  const fetchActiveData = async () => {
+    try {
+      const [cRes, uRes, eRes, vRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, { credentials: 'include' }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, { credentials: 'include' }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections`, { credentials: 'include' }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions`, { credentials: 'include' })
+      ]);
+      if (cRes.ok) setCourses(await cRes.json());
+      if (uRes.ok) setUsers(await uRes.json());
+      if (eRes.ok) setElections(await eRes.json());
+      if (vRes.ok) setVotingSessions(await vRes.json());
+    } catch (err) {
+      console.error("Failed to fetch dictionary sets", err);
+    }
+  };
+
+  // 1. Election Form State
+  const [electionTitle, setElectionTitle] = useState('');
+  const [courseSettings, setCourseSettings] = useState('{"DCS": {"chairs": 3, "maxVotes": 3}}');
+  
+  const [modElectionId, setModElectionId] = useState('');
+  const [modElectionTitle, setModElectionTitle] = useState('');
+  const [modCourseSettings, setModCourseSettings] = useState('');
+
+  // 2. Voting Session Form State
+  const [vsTitle, setVsTitle] = useState('');
+  const [vsElectionId, setVsElectionId] = useState('');
+  const [vsCourseId, setVsCourseId] = useState('');
+  const [vsStartTime, setVsStartTime] = useState('');
+  const [vsEndTime, setVsEndTime] = useState('');
+  const [vsStudentIdStartBase, setVsStudentIdStartBase] = useState('');
+  const [vsStudentIdEndBase, setVsStudentIdEndBase] = useState('');
+
+  const [modVsId, setModVsId] = useState('');
+  const [modVsTitle, setModVsTitle] = useState('');
+  const [modVsElectionId, setModVsElectionId] = useState('');
+  const [modVsCourseId, setModVsCourseId] = useState('');
+  const [modVsStartTime, setModVsStartTime] = useState('');
+  const [modVsEndTime, setModVsEndTime] = useState('');
+  const [modVsStudentIdStartBase, setModVsStudentIdStartBase] = useState('');
+  const [modVsStudentIdEndBase, setModVsStudentIdEndBase] = useState('');
+
+  // 3. User Form State (Create)
+  const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState('SUPERADMIN');
+  const [userIcNumber, setUserIcNumber] = useState('');
+  const [userStudentIdPrefix, setUserStudentIdPrefix] = useState('');
+  const [userStudentIdBase, setUserStudentIdBase] = useState('');
+
+  // 4. Course Form State
+  const [courseCode, setCourseCode] = useState('');
+  const [courseName, setCourseName] = useState('');
+
+  // 5. User Form State (Modify)
+  const [modifyUserId, setModifyUserId] = useState('');
+  const [modEmail, setModEmail] = useState('');
+  const [modPassword, setModPassword] = useState('');
+  const [modName, setModName] = useState('');
+  const [modRole, setModRole] = useState('SUPERADMIN');
+  const [modIcNumber, setModIcNumber] = useState('');
+  const [modStudentIdPrefix, setModStudentIdPrefix] = useState('');
+  const [modStudentIdBase, setModStudentIdBase] = useState('');
+
+  // ==============================
+  // ELECTION LOGIC
+  // ==============================
+  const submitElection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let parsedSettings;
+    try { parsedSettings = JSON.parse(courseSettings); } catch(err) { alert("Invalid JSON!"); return; }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ title: electionTitle, courseSettings: parsedSettings })
+      });
+      if (res.ok) {
+        alert(`Election Created! ID: ${(await res.json()).id}`);
+        fetchActiveData();
+      } else {
+        alert(`Failed: ${res.status} - ${await res.text()}`);
+      }
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const deleteElection = async (id: string) => {
+    if(!confirm("Delete election completely? This will cascade and delete all Voting Sessions connected to it!")) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) { fetchActiveData(); if (modElectionId === id) setModElectionId(''); }
+      else alert(`Failed: ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const handleSelectElection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setModElectionId(id);
+    if (!id) return;
+    const el = elections.find(x => x.id === id);
+    if (el) {
+      setModElectionTitle(el.title);
+      setModCourseSettings(JSON.stringify(el.courseSettings, null, 2));
+    }
+  };
+
+  const submitModifyElection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modElectionId) return;
+    let parsedSettings;
+    try { parsedSettings = JSON.parse(modCourseSettings); } catch(err) { alert("Invalid JSON!"); return; }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${modElectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ title: modElectionTitle, courseSettings: parsedSettings })
+      });
+      if (res.ok) { alert(`Election Modified!`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+
+  // ==============================
+  // VOTING SESSION LOGIC
+  // ==============================
+  const extractIdSplit = (fullId: string | null) => {
+    if (!fullId) return { prefix: '', base: '' };
+    const match = fullId.match(/^[A-Za-z]+/);
+    if (match) return { prefix: match[0], base: fullId.substring(match[0].length) };
+    return { prefix: '', base: fullId };
+  };
+
+  const submitVotingSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedCourse = courses.find(c => c.id === vsCourseId);
+    const prefix = selectedCourse ? selectedCourse.code : '';
+    const finalStart = vsStudentIdStartBase ? `${prefix}${vsStudentIdStartBase}` : undefined;
+    const finalEnd = vsStudentIdEndBase ? `${prefix}${vsStudentIdEndBase}` : undefined;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          electionId: vsElectionId, title: vsTitle, courseId: vsCourseId,
+          startTime: vsStartTime ? new Date(vsStartTime).toISOString() : null,
+          endTime: vsEndTime ? new Date(vsEndTime).toISOString() : null,
+          studentIdStart: finalStart, studentIdEnd: finalEnd
+        })
+      });
+      if (res.ok) { alert(`Voting Session Created! ID: ${(await res.json()).id}`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const deleteVotingSession = async (id: string, fromModForm = false) => {
+    if(!confirm("Delete voting session completely?")) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) { fetchActiveData(); if (fromModForm) setModVsId(''); }
+      else alert(`Failed: ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const handleSelectVotingSession = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setModVsId(id);
+    if (!id) return;
+    const vs = votingSessions.find(x => x.id === id);
+    if (vs) {
+      setModVsTitle(vs.title || '');
+      setModVsElectionId(vs.electionId || '');
+      // Try to find the matching course based on the courseCode inside exactly
+      const crs = courses.find(c => c.code === vs.courseCode);
+      setModVsCourseId(crs ? crs.id : '');
       
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+      setModVsStartTime(vs.startTime ? new Date(vs.startTime).toISOString().slice(0, 16) : '');
+      setModVsEndTime(vs.endTime ? new Date(vs.endTime).toISOString().slice(0, 16) : '');
 
-        <div className="flex flex-grow relative">
-          {/* Sidebar: Called with role="superadmin" to match our configuration. 
-            Absolute positioning ensures it floats and doesn't push the center content.
-          */}
-          <div className="absolute left-0 top-0 h-full z-50">
-            <UniversalSidebar role="superadmin" />
+      const startObj = extractIdSplit(vs.studentIdStart);
+      const endObj = extractIdSplit(vs.studentIdEnd);
+
+      setModVsStudentIdStartBase(startObj.base);
+      setModVsStudentIdEndBase(endObj.base);
+    }
+  };
+
+  const submitModifyVotingSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modVsId) return;
+
+    const selectedCourse = courses.find(c => c.id === modVsCourseId);
+    const prefix = selectedCourse ? selectedCourse.code : '';
+    const finalStart = modVsStudentIdStartBase ? `${prefix}${modVsStudentIdStartBase}` : undefined;
+    const finalEnd = modVsStudentIdEndBase ? `${prefix}${modVsStudentIdEndBase}` : undefined;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions/${modVsId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          electionId: modVsElectionId, title: modVsTitle, courseId: modVsCourseId,
+          startTime: modVsStartTime ? new Date(modVsStartTime).toISOString() : null,
+          endTime: modVsEndTime ? new Date(modVsEndTime).toISOString() : null,
+          studentIdStart: finalStart, studentIdEnd: finalEnd
+        })
+      });
+      if (res.ok) { alert(`Voting Session Modified!`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+
+  // ==============================
+  // USER & COURSE LOGIC
+  // ==============================
+  const submitCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalStudentId = (userRole === 'STUDENT' || userRole === 'CANDIDATE') 
+      ? (userStudentIdPrefix && userStudentIdBase ? `${userStudentIdPrefix}${userStudentIdBase}` : undefined)
+      : undefined;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: userEmail, password: userPassword, name: userName,
+          role: userRole, icNumber: userIcNumber || undefined, studentId: finalStudentId,
+        })
+      });
+      if (res.ok) { alert(`User Created!`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const handleSelectUserToModify = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setModifyUserId(id);
+    if (!id) return;
+    const u = users.find(x => x.id === id);
+    if (u) {
+      setModEmail(u.email || ''); setModName(u.name || '');
+      setModRole(u.role || 'SUPERADMIN'); setModIcNumber(u.icNumber || '');
+      setModPassword(''); 
+      const spl = extractIdSplit(u.studentId);
+      setModStudentIdPrefix(spl.prefix); setModStudentIdBase(spl.base);
+    }
+  };
+
+  const submitModifyUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if(!modifyUserId) return;
+    const finalStudentId = (modRole === 'STUDENT' || modRole === 'CANDIDATE') 
+      ? (modStudentIdPrefix && modStudentIdBase ? `${modStudentIdPrefix}${modStudentIdBase}` : undefined) : undefined;
+
+    const payload: any = { email: modEmail, name: modName, role: modRole, icNumber: modIcNumber || undefined, studentId: finalStudentId || null};
+    if (modPassword.trim() !== '') payload.password = modPassword;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${modifyUserId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { alert(`User Modified!`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const deleteUser = async () => {
+    if(!modifyUserId) return;
+    if(!confirm("Delete user completely?")) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${modifyUserId}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) { alert("User deleted"); setModifyUserId(''); fetchActiveData(); }
+      else alert(`Failed: ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  }
+
+  const submitCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ code: courseCode, name: courseName })
+      });
+      if (res.ok) { alert(`Course Created!`); fetchActiveData(); }
+      else alert(`Failed: ${res.status} - ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const deleteCourse = async (id: string) => {
+    if(!confirm("Delete course completely?")) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) fetchActiveData();
+      else alert(`Failed: ${await res.text()}`);
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  // Common input styling
+  const inputStyle = { padding: '0.5rem', border: '1px solid #ccc' };
+  const btnStyle = { padding: '0.5rem', marginTop: '0.5rem', background: '#000', color: '#fff', cursor: 'pointer', border: 'none' };
+  const delBtnStyle = { ...btnStyle, background: '#dc2626' };
+  const formStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '400px', marginBottom: '2rem' };
+
+  return (
+    <div style={{ backgroundColor: '#ffffff', color: '#000000', minHeight: '100vh', padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>God Mode API Tester</h1>
+      
+      <div style={{ marginTop: '2rem' }}>
+        <h2>1. Elections</h2>
+        <ul style={{marginBottom: '1rem'}}>
+          {elections.map(el => (
+            <li key={el.id}>
+              <strong>{el.title}</strong> ({el.id}) 
+              <button type="button" onClick={() => deleteElection(el.id)} style={{color:'red', marginLeft: '1rem', background:'none', border:'none', cursor:'pointer'}}>✖</button>
+            </li>
+          ))}
+        </ul>
+
+        <form onSubmit={submitElection} style={formStyle}>
+          <label>Create New Election</label>
+          <input type="text" value={electionTitle} onChange={e => setElectionTitle(e.target.value)} placeholder="Title" required style={inputStyle} />
+          <textarea rows={5} value={courseSettings} onChange={e => setCourseSettings(e.target.value)} required style={{ ...inputStyle, fontFamily: 'monospace' }} />
+          <button type="submit" style={btnStyle}>Submit POST /elections</button>
+        </form>
+
+        <select value={modElectionId} onChange={handleSelectElection} style={{...inputStyle, width: '400px', marginBottom: '1rem'}}>
+          <option value="">-- Modify Existing Election --</option>
+          {elections.map(el => <option key={el.id} value={el.id}>{el.title}</option>)}
+        </select>
+
+        {modElectionId && (
+          <form onSubmit={submitModifyElection} style={formStyle}>
+            <input type="text" value={modElectionTitle} onChange={e => setModElectionTitle(e.target.value)} placeholder="Title" required style={inputStyle} />
+            <textarea rows={5} value={modCourseSettings} onChange={e => setModCourseSettings(e.target.value)} required style={{ ...inputStyle, fontFamily: 'monospace' }} />
+            <button type="submit" style={btnStyle}>Submit PATCH /elections</button>
+          </form>
+        )}
+      </div>
+
+      <hr style={{ margin: '2rem 0', borderColor: '#ccc' }} />
+
+      <div>
+        <h2>2. Voting Sessions</h2>
+        <ul style={{marginBottom: '1rem'}}>
+          {votingSessions.map(vs => (
+            <li key={vs.id}>
+              <strong>{vs.title}</strong> [{vs.courseCode}] 
+              <button type="button" onClick={() => deleteVotingSession(vs.id)} style={{color:'red', marginLeft: '1rem', background:'none', border:'none', cursor:'pointer'}}>✖</button>
+            </li>
+          ))}
+        </ul>
+
+        <form onSubmit={submitVotingSession} style={formStyle}>
+          <label>Create Voting Session</label>
+          <select value={vsElectionId} onChange={e => setVsElectionId(e.target.value)} required style={inputStyle}>
+            <option value="">-- Select Election --</option>
+            {elections.map(e => <option key={e.id} value={e.id}>{e.title || "Election"} ({e.id})</option>)}
+          </select>
+
+          <select value={vsCourseId} onChange={e => setVsCourseId(e.target.value)} required style={inputStyle}>
+            <option value="">-- Select Course --</option>
+            {courses.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+          </select>
+
+          <input type="text" value={vsTitle} onChange={e => setVsTitle(e.target.value)} placeholder="Session Title (e.g. Session 1 DCS)" required style={inputStyle} />
+          
+          <input type="datetime-local" value={vsStartTime} onChange={e => setVsStartTime(e.target.value)} required style={inputStyle} />
+          <input type="datetime-local" value={vsEndTime} onChange={e => setVsEndTime(e.target.value)} required style={inputStyle} />
+
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <span style={{fontWeight: 'bold', minWidth: '40px'}}>{courses.find(c => c.id === vsCourseId)?.code || '---'}</span>
+            <input type="text" value={vsStudentIdStartBase} onChange={e => setVsStudentIdStartBase(e.target.value)} placeholder="Start Range (e.g. 2311-001)" style={{...inputStyle, flex: 2}} />
           </div>
 
-          {/* Main Content: Center-aligned relative to the full viewport width */}
-          <main className="flex-grow flex justify-center p-8 md:p-16 w-full">
-            <div className="max-w-6xl w-full flex flex-col items-center">
-              
-              {/* Header Section: Centered text and branding buttons */}
-              <div className="flex flex-col items-center mb-16 text-center">
-                <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#C0A060] mb-3">
-                  Management Console
-                </p>
-                <h1 className="text-5xl font-black uppercase tracking-tighter italic leading-none">
-                  Superadmin <span className="text-[#C0A060]">Dashboard</span>
-                </h1>
-                <div className="h-1 w-24 bg-[#C0A060] mt-5 rounded-full" />
-                
-                <div className="flex gap-4 mt-10">
-                  <button className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-                    <FileText size={14} /> Audit Report
-                  </button>
-                  <button className="flex items-center gap-2 bg-[#C0A060] text-[#1A0508] px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-black/40">
-                    <PlusCircle size={14} /> New Announcement
-                  </button>
-                </div>
-              </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <span style={{fontWeight: 'bold', minWidth: '40px'}}>{courses.find(c => c.id === vsCourseId)?.code || '---'}</span>
+            <input type="text" value={vsStudentIdEndBase} onChange={e => setVsStudentIdEndBase(e.target.value)} placeholder="End Range (e.g. 2311-100)" style={{...inputStyle, flex: 2}} />
+          </div>
 
-              {/* 2. Centered Metrics Grid - Displays real-time election stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 w-full">
-                <MetricCard 
-                  title="Total Voters" 
-                  value="2,840" 
-                  icon={<Users size={20} />} 
-                  trend="+12% Participation" 
-                />
-                <MetricCard 
-                  title="Active Candidates" 
-                  value="24" 
-                  icon={<ShieldCheck size={20} />} 
-                  trend="Verified Entries" 
-                />
-                <MetricCard 
-                  title="Current Turnout" 
-                  value="68%" 
-                  icon={<TrendingUp size={20} />} 
-                  trend="Goal: 85%" 
-                />
-                <MetricCard 
-                  title="Time Remaining" 
-                  value="04:22:10" 
-                  icon={<Calendar size={20} />} 
-                  trend="Live Election" 
-                />
-              </div>
+          <button type="submit" style={btnStyle}>Submit POST /voting-sessions</button>
+        </form>
 
-              {/* 3. Balanced Action Hub - Grouped by Use Case logic */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-                <ActionSection title="Candidate Pipeline">
-                  <AdminActionBtn 
-                    title="Manage Qualifications" 
-                    desc="Review & Approve" 
-                    icon={<ShieldCheck size={18} />} 
-                  />
-                  <AdminActionBtn 
-                    title="Interview Sessions" 
-                    desc="Schedule & Results" 
-                    icon={<Calendar size={18} />} 
-                  />
-                </ActionSection>
+        <select value={modVsId} onChange={handleSelectVotingSession} style={{...inputStyle, width: '400px', marginBottom: '1rem'}}>
+          <option value="">-- Modify Existing Voting Session --</option>
+          {votingSessions.map(vs => <option key={vs.id} value={vs.id}>{vs.title}</option>)}
+        </select>
 
-                <ActionSection title="Election Controls">
-                  <AdminActionBtn 
-                    title="Voting Slot Times" 
-                    desc="Time per Course" 
-                    icon={<Settings size={18} />} 
-                  />
-                  <AdminActionBtn 
-                    title="Pop-up Announcements" 
-                    desc="Direct Instructions" 
-                    icon={<Bell size={18} />} 
-                  />
-                </ActionSection>
-
-                <ActionSection title="Data & Logs">
-                  <AdminActionBtn 
-                    title="View Live Rankings" 
-                    desc="Live Performance" 
-                    icon={<TrendingUp size={18} />} 
-                  />
-                  <AdminActionBtn 
-                    title="System Audit Logs" 
-                    desc="Security Events" 
-                    icon={<FileText size={18} />} 
-                  />
-                </ActionSection>
-              </div>
+        {modVsId && (
+          <form onSubmit={submitModifyVotingSession} style={formStyle}>
+            <select value={modVsElectionId} onChange={e => setModVsElectionId(e.target.value)} required style={inputStyle}>
+              <option value="">-- Select Election --</option>
+              {elections.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+            </select>
+            <select value={modVsCourseId} onChange={e => setModVsCourseId(e.target.value)} required style={inputStyle}>
+              <option value="">-- Select Course --</option>
+              {courses.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+            </select>
+            <input type="text" value={modVsTitle} onChange={e => setModVsTitle(e.target.value)} placeholder="Session Title" required style={inputStyle} />
+            <input type="datetime-local" value={modVsStartTime} onChange={e => setModVsStartTime(e.target.value)} required style={inputStyle} />
+            <input type="datetime-local" value={modVsEndTime} onChange={e => setModVsEndTime(e.target.value)} required style={inputStyle} />
+            
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{fontWeight: 'bold', minWidth: '40px'}}>{courses.find(c => c.id === modVsCourseId)?.code || '---'}</span>
+              <input type="text" value={modVsStudentIdStartBase} onChange={e => setModVsStudentIdStartBase(e.target.value)} placeholder="Start Range" style={{...inputStyle, flex: 2}} />
             </div>
-          </main>
-        </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{fontWeight: 'bold', minWidth: '40px'}}>{courses.find(c => c.id === modVsCourseId)?.code || '---'}</span>
+              <input type="text" value={modVsStudentIdEndBase} onChange={e => setModVsStudentIdEndBase(e.target.value)} placeholder="End Range" style={{...inputStyle, flex: 2}} />
+            </div>
+
+            <div style={{display: 'flex', gap: '1rem'}}>
+              <button type="submit" style={{...btnStyle, flex: 1}}>Submit PATCH /voting-sessions</button>
+              <button type="button" onClick={() => deleteVotingSession(modVsId, true)} style={{...delBtnStyle, flex: 1}}>Delete Session</button>
+            </div>
+          </form>
+        )}
       </div>
-    </div>
-  );
-}
 
-// --- Sub-components for Layout Organization ---
+      <hr style={{ margin: '2rem 0', borderColor: '#ccc' }} />
 
-function ActionSection({ title, children }: { title: string, children: React.ReactNode }) {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/30 px-2 text-center lg:text-left">
-        {title}
-      </h2>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-}
+      <div>
+        <h2>3. Course Dictionary</h2>
+        <ul style={{marginBottom: '1rem'}}>
+          {courses.map(c => (
+            <li key={c.id}>
+              <strong>{c.code}</strong> - {c.name} <button type="button" onClick={() => deleteCourse(c.id)} style={{color:'red', marginLeft: '1rem', background:'none', border:'none', cursor:'pointer'}}>✖</button>
+            </li>
+          ))}
+        </ul>
 
-function MetricCard({ title, value, icon, trend }: any) {
-  return (
-    <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 text-center group hover:border-[#C0A060]/50 transition-all flex flex-col items-center">
-      <div className="mb-4 text-[#C0A060] group-hover:scale-110 transition-transform">
-        {icon}
+        <form onSubmit={submitCourse} style={formStyle}>
+          <label>Add New Course</label>
+          <input type="text" value={courseCode} onChange={e => setCourseCode(e.target.value)} placeholder="Code (e.g. BCS)" required style={inputStyle} />
+          <input type="text" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="Name" required style={inputStyle} />
+          <button type="submit" style={btnStyle}>Submit POST /courses</button>
+        </form>
       </div>
-      <h3 className="text-3xl font-black mb-1 tracking-tighter">{value}</h3>
-      <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">{title}</p>
-      <p className="text-[8px] font-black text-[#C0A060] mt-5 uppercase tracking-widest">{trend}</p>
+
+      <hr style={{ margin: '2rem 0', borderColor: '#ccc' }} />
+
+      <div>
+        <h2>4. Users Database</h2>
+        <form onSubmit={submitCreateUser} style={formStyle}>
+          <label>Create System User</label>
+          <input type="text" value={userName} onChange={e => setUserName(e.target.value)} placeholder="Name" required style={inputStyle} />
+          <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email" required style={inputStyle} />
+          <input type="password" value={userPassword} onChange={e => setUserPassword(e.target.value)} placeholder="Password" required style={inputStyle} />
+          
+          <select value={userRole} onChange={e => setUserRole(e.target.value)} required style={inputStyle}>
+            <option value="SUPERADMIN">SUPERADMIN</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+            <option value="STUDENT">STUDENT</option>
+            <option value="CANDIDATE">CANDIDATE</option>
+          </select>
+
+          <input type="text" value={userIcNumber} onChange={e => setUserIcNumber(e.target.value)} placeholder="IC Number (Optional)" style={inputStyle} />
+
+          {(userRole === 'STUDENT' || userRole === 'CANDIDATE') && (
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <select value={userStudentIdPrefix} onChange={e => setUserStudentIdPrefix(e.target.value)} style={{...inputStyle, flex: 1}}>
+                <option value="">-- Course --</option>
+                {courses.map(c => <option key={c.id} value={c.code}>{c.code}</option>)}
+              </select>
+              <span style={{fontWeight: 'bold', minWidth: '40px'}}>{userStudentIdPrefix}</span>
+              <input type="text" value={userStudentIdBase} onChange={e => setUserStudentIdBase(e.target.value)} placeholder="e.g. 2311-014" style={{...inputStyle, flex: 2}} />
+            </div>
+          )}
+          <button type="submit" style={btnStyle}>Submit POST /users</button>
+        </form>
+
+        <select value={modifyUserId} onChange={handleSelectUserToModify} style={{...inputStyle, width: '400px', marginBottom: '1rem'}}>
+          <option value="">-- Modify Existing User --</option>
+          {users.map(u => (
+            <option key={u.id} value={u.id}>{u.name} ({u.email}) - {u.role}</option>
+          ))}
+        </select>
+
+        {modifyUserId && (
+          <form onSubmit={submitModifyUser} style={formStyle}>
+            <input type="text" value={modName} onChange={e => setModName(e.target.value)} placeholder="Name" required style={inputStyle} />
+            <input type="email" value={modEmail} onChange={e => setModEmail(e.target.value)} placeholder="Email" required style={inputStyle} />
+            <input type="password" value={modPassword} onChange={e => setModPassword(e.target.value)} placeholder="Leave blank to preserve password" style={inputStyle} />
+            
+            <select value={modRole} onChange={e => setModRole(e.target.value)} required style={inputStyle}>
+              <option value="SUPERADMIN">SUPERADMIN</option>
+              <option value="ADMIN">ADMIN</option>
+              <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+              <option value="STUDENT">STUDENT</option>
+              <option value="CANDIDATE">CANDIDATE</option>
+            </select>
+
+            <input type="text" value={modIcNumber} onChange={e => setModIcNumber(e.target.value)} placeholder="IC Number" style={inputStyle} />
+
+            {(modRole === 'STUDENT' || modRole === 'CANDIDATE') && (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <select value={modStudentIdPrefix} onChange={e => setModStudentIdPrefix(e.target.value)} style={{...inputStyle, flex: 1}}>
+                  <option value="">-- Course --</option>
+                  {courses.map(c => <option key={c.id} value={c.code}>{c.code}</option>)}
+                </select>
+                <span style={{fontWeight: 'bold', minWidth: '40px'}}>{modStudentIdPrefix}</span>
+                <input type="text" value={modStudentIdBase} onChange={e => setModStudentIdBase(e.target.value)} placeholder="e.g. 2311-014" style={{...inputStyle, flex: 2}} />
+              </div>
+            )}
+
+            <div style={{display: 'flex', gap: '1rem'}}>
+              <button type="submit" style={{...btnStyle, flex: 1}}>Submit PATCH /users/:id</button>
+              <button type="button" onClick={deleteUser} style={{...delBtnStyle, flex: 1}}>Delete User</button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

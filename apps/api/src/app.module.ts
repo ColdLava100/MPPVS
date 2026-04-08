@@ -8,6 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { ElectionsModule } from './elections/elections.module';
 import { MailModule } from './mail/mail.module';
 import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -24,8 +27,11 @@ import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
     ElectionsModule,
     MailModule,
     TwoFactorAuthModule,
+    AuditLogsModule,
+    VotingSessionsModule,
+    CoursesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
