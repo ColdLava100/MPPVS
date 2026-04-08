@@ -9,13 +9,16 @@ export class CandidatesService {
   async getCandidates() {
     return prisma.candidate.findMany({
       include: {
-        user: { select: { id: true, name: true, email: true, studentId: true, courseId: true } },
+        user: { 
+          include: { course: true }
+        },
         election: { select: { id: true, title: true } },
         manifestos: true,
         videos: true,
         slides: true,
         posters: true,
         qualification: true,
+        _count: { select: { votes: true } },
       },
     });
   }

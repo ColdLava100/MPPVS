@@ -6,6 +6,7 @@ import SuperadminTab from './tabs/SuperadminTab';
 import AdminTab from './tabs/AdminTab';
 import AdvisorTab from './tabs/AdvisorTab';
 import CandidateTab from './tabs/CandidateTab';
+import VotingSimulationTab from './tabs/VotingSimulationTab';
 
 interface TabProps {
   users: any[];
@@ -81,6 +82,10 @@ export default function SuperAdminDashboard() {
         <button onClick={() => setActiveRoleTab('ADMIN')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADMIN' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Admin (Election Ops)</button>
         <button onClick={() => setActiveRoleTab('ADVISOR')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADVISOR' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>MPP Advisor</button>
         <button onClick={() => setActiveRoleTab('CANDIDATE')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'CANDIDATE' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Candidate</button>
+        
+        <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
+        
+        <button onClick={() => setActiveRoleTab('SIMULATION')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SIMULATION' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SIMULATION: Voting & Tally</button>
       </aside>
 
       <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
@@ -88,6 +93,7 @@ export default function SuperAdminDashboard() {
         {activeRoleTab === 'ADMIN' && <AdminTab {...commonProps} />}
         {activeRoleTab === 'ADVISOR' && <AdvisorTab {...commonProps} />}
         {activeRoleTab === 'CANDIDATE' && <CandidateTab {...commonProps} />}
+        {activeRoleTab === 'SIMULATION' && <VotingSimulationTab {...commonProps} />}
       </main>
     </div>
   );

@@ -11,9 +11,14 @@ export class VotesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.STUDENT, Role.CANDIDATE)
+  @Roles(Role.STUDENT, Role.CANDIDATE, Role.SUPERADMIN)
   async submitVote(@Req() req: any, @Body() dto: SubmitVoteDto) {
-    const voterId = req.user?.sub || req.user?.id;
+    let voterId = req.user?.sub || req.user?.id;
+    
+    if (req.user?.role === Role.SUPERADMIN && dto.simulatedVoterId) {
+      voterId = dto.simulatedVoterId;
+    }
+    
     return this.votesService.submitVote(voterId, dto.electionId, dto.candidateIds);
   }
 }

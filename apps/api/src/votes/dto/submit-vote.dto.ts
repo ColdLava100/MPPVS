@@ -1,4 +1,4 @@
-import { IsString, IsArray, ArrayMinSize } from 'class-validator';
+import { IsString, IsArray, ArrayMinSize, IsOptional } from 'class-validator';
 
 export class SubmitVoteDto {
   @IsString()
@@ -8,4 +8,8 @@ export class SubmitVoteDto {
   @IsString({ each: true })
   @ArrayMinSize(1)
   candidateIds: string[];
+
+  @IsOptional()
+  @IsString()
+  simulatedVoterId?: string;
 }
