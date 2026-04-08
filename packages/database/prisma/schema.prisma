@@ -127,7 +127,7 @@ model Candidate {
 model Qualification {
   id              String   @id @default(uuid())
   candidateId     String   @unique
-  position        String   // The specific chair they are running for
+  position        String[] // Array of specific chairs they are running for
   cgpa            String   // e.g., "3.85"
   justification   String   @db.Text
   
@@ -137,9 +137,8 @@ model Qualification {
 model Manifesto {
   id               String   @id @default(uuid())
   candidateId      String
-  manifestoTitle   String
-  manifestoDesc    String   @db.Text
-  manifestoLink    String
+  title            String
+  description      String   @db.Text
   
   candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }

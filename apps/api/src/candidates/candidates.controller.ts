@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -32,7 +32,7 @@ export class CandidatesController {
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
   async addMaterial(
     @Param('id') candidateId: string,
-    @Body() body: { type: 'manifesto' | 'video' | 'slide' | 'poster'; title?: string; description?: string; link: string },
+    @Body() body: { type: 'manifesto' | 'video' | 'slide' | 'poster'; title?: string; description?: string; link?: string; manifestos?: { title: string; description: string }[] },
     @Req() req: any,
   ) {
     return this.candidatesService.addMaterial(candidateId, body, req.user.id);
@@ -42,9 +42,54 @@ export class CandidatesController {
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
   async upsertQualification(
     @Param('id') candidateId: string,
-    @Body() body: { position: string; cgpa: string; justification: string },
+    @Body() body: { positions: string[]; cgpa: string; justification: string },
     @Req() req: any,
   ) {
-    return this.candidatesService.upsertQualification(candidateId, body.position, body.cgpa, body.justification, req.user.id);
+    return this.candidatesService.upsertQualification(candidateId, body.positions, body.cgpa, body.justification, req.user.id);
+  }
+
+  @Patch(':id')
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  async updateCandidate(
+    @Param('id') candidateId: string,
+    @Body() body: { information?: string; profilePicture?: string; spotlightBanner?: string; status?: string },
+    @Req() req: any,
+  ) {
+    return this.candidatesService.updateCandidate(candidateId, body, req.user.id);
+  }
+
+  @Delete(':id')
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  async deleteCandidate(@Param('id') candidateId: string, @Req() req: any) {
+    return this.candidatesService.deleteCandidate(candidateId, req.user.id);
+  }
+
+  @Delete(':id/qualification')
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  async deleteQualification(@Param('id') candidateId: string, @Req() req: any) {
+    return this.candidatesService.deleteQualification(candidateId, req.user.id);
+  }
+
+  @Patch(':candidateId/materials/:type/:materialId')
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  async updateMaterial(
+    @Param('candidateId') candidateId: string,
+    @Param('type') type: string,
+    @Param('materialId') materialId: string,
+    @Body() body: any,
+    @Req() req: any,
+  ) {
+    return this.candidatesService.updateMaterial(candidateId, type, materialId, body, req.user.id);
+  }
+
+  @Delete(':candidateId/materials/:type/:materialId')
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  async deleteMaterial(
+    @Param('candidateId') candidateId: string,
+    @Param('type') type: string,
+    @Param('materialId') materialId: string,
+    @Req() req: any,
+  ) {
+    return this.candidatesService.deleteMaterial(candidateId, type, materialId, req.user.id);
   }
 }
