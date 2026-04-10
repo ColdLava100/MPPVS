@@ -7,7 +7,7 @@ export class TwoFactorAuthService {
   public async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
     const otpAuthUrl = authenticator.keyuri(user.email, 'MPPVS System', secret);
-    
+
     return {
       secret,
       otpAuthUrl,
@@ -22,7 +22,10 @@ export class TwoFactorAuthService {
     }
   }
 
-  public isTwoFactorAuthenticationCodeValid(twoFactorCode: string, user: any): boolean {
+  public isTwoFactorAuthenticationCodeValid(
+    twoFactorCode: string,
+    user: any,
+  ): boolean {
     if (!user.twoFactorAuthenticationSecret) {
       return false;
     }

@@ -1,4 +1,14 @@
-import { Controller, Post, Body, UseGuards, BadRequestException, Get, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  BadRequestException,
+  Get,
+  Delete,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -8,6 +18,14 @@ export class CreateCourseDto {
   code!: string;
   studentPrefix!: string;
   name!: string;
+  enrollmentDate?: string;
+}
+
+export class UpdateCourseDto {
+  code?: string;
+  studentPrefix?: string;
+  name?: string;
+  enrollmentDate?: string;
 }
 
 @Controller('courses')
@@ -19,9 +37,18 @@ export class CoursesController {
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async createCourse(@Body() dto: CreateCourseDto) {
     if (!dto.code || !dto.studentPrefix || !dto.name) {
-      throw new BadRequestException('Code, student prefix, and name are required fields.');
+      throw new BadRequestException(
+        'Code, student prefix, and name are required fields.',
+      );
     }
     return this.coursesService.createCourse(dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
+  async updateCourse(@Param('id') id: string, @Body() dto: UpdateCourseDto) {
+    return this.coursesService.updateCourse(id, dto);
   }
 
   @Get()

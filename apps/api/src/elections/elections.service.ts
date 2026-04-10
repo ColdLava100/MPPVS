@@ -27,7 +27,7 @@ export class ElectionsService {
   }
 
   async updateElection(id: string, data: any, userId: string) {
-    let updateData: any = {};
+    const updateData: any = {};
     if (data.title) updateData.title = data.title;
     if (data.courseSettings) updateData.courseSettings = data.courseSettings;
     if (data.status) updateData.status = data.status;

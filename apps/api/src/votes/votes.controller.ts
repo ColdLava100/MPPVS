@@ -7,18 +7,22 @@ import { SubmitVoteDto } from './dto/submit-vote.dto';
 
 @Controller('votes')
 export class VotesController {
-  constructor(private readonly votesService: VotesService) { }
+  constructor(private readonly votesService: VotesService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.STUDENT, Role.CANDIDATE, Role.SUPERADMIN)
   async submitVote(@Req() req: any, @Body() dto: SubmitVoteDto) {
     let voterId = req.user?.sub || req.user?.id;
-    
+
     if (req.user?.role === Role.SUPERADMIN && dto.simulatedVoterId) {
       voterId = dto.simulatedVoterId;
     }
-    
-    return this.votesService.submitVote(voterId, dto.electionId, dto.candidateIds);
+
+    return this.votesService.submitVote(
+      voterId,
+      dto.electionId,
+      dto.candidateIds,
+    );
   }
 }

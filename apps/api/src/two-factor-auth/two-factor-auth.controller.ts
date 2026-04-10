@@ -1,4 +1,11 @@
-import { Controller, Post, Body, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { prisma } from '@repo/database';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -13,18 +20,22 @@ export class TwoFactorAuthController {
     // Assuming request.user exists from JwtAuthGuard
     // Fetch user to ensure we have the most up to date record if needed
     const user = await prisma.user.findUnique({
-        where: { id: request.user.id }
+      where: { id: request.user.id },
     });
 
-    const { secret, otpAuthUrl } = await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user);
+    const { secret, otpAuthUrl } =
+      await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
+        user,
+      );
 
     // Save secret to database
     await prisma.user.update({
-        where: { id: request.user.id },
-        data: { twoFactorAuthenticationSecret: secret } as any,
+      where: { id: request.user.id },
+      data: { twoFactorAuthenticationSecret: secret } as any,
     });
 
-    const qrCodeDataUrl = await this.twoFactorAuthService.generateQrCodeDataURL(otpAuthUrl);
+    const qrCodeDataUrl =
+      await this.twoFactorAuthService.generateQrCodeDataURL(otpAuthUrl);
 
     return { qrCodeDataUrl };
   }
@@ -36,13 +47,11 @@ export class TwoFactorAuthController {
     @Body('code') code: string,
   ) {
     const user = await prisma.user.findUnique({
-        where: { id: request.user.id }
+      where: { id: request.user.id },
     });
 
-    const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
-      code,
-      user,
-    );
+    const isCodeValid =
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(code, user);
 
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
@@ -62,7 +71,7 @@ export class TwoFactorAuthController {
   async turnOffTwoFactorAuthentication(@Req() request: any) {
     await prisma.user.update({
       where: { id: request.user.id },
-      data: { 
+      data: {
         isTwoFactorAuthenticationEnabled: false,
         twoFactorAuthenticationSecret: null,
       } as any,
@@ -75,10 +84,13 @@ export class TwoFactorAuthController {
   @UseGuards(JwtAuthGuard)
   async getStatus(@Req() request: any) {
     const user = await prisma.user.findUnique({
-        where: { id: request.user.id },
-        select: { isTwoFactorAuthenticationEnabled: true },
+      where: { id: request.user.id },
+      select: { isTwoFactorAuthenticationEnabled: true },
     });
 
-    return { isTwoFactorAuthenticationEnabled: user?.isTwoFactorAuthenticationEnabled || false };
+    return {
+      isTwoFactorAuthenticationEnabled:
+        user?.isTwoFactorAuthenticationEnabled || false,
+    };
   }
 }

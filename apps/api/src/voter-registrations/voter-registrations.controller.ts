@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { VoterRegistrationsService } from './voter-registrations.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -19,7 +29,9 @@ interface ImportVotersDto {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.SUPERADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
 export class VoterRegistrationsController {
-  constructor(private readonly voterRegistrationsService: VoterRegistrationsService) {}
+  constructor(
+    private readonly voterRegistrationsService: VoterRegistrationsService,
+  ) {}
 
   @Get()
   async getRegistrations(@Query('electionId') electionId?: string) {
@@ -29,7 +41,11 @@ export class VoterRegistrationsController {
   @Post('import')
   async importVoters(@Body() dto: ImportVotersDto, @Req() req: any) {
     const creatorId = req.user?.id || req.user?.sub;
-    return this.voterRegistrationsService.importVoters(dto.electionId, dto.voters, creatorId);
+    return this.voterRegistrationsService.importVoters(
+      dto.electionId,
+      dto.voters,
+      creatorId,
+    );
   }
 
   @Post(':electionId/archive')
@@ -48,8 +64,14 @@ export class VoterRegistrationsController {
   }
 
   @Get('check/:electionId')
-  async checkRegistration(@Param('electionId') electionId: string, @Req() req: any) {
+  async checkRegistration(
+    @Param('electionId') electionId: string,
+    @Req() req: any,
+  ) {
     const userId = req.user?.id || req.user?.sub;
-    return this.voterRegistrationsService.checkUserRegistration(userId, electionId);
+    return this.voterRegistrationsService.checkUserRegistration(
+      userId,
+      electionId,
+    );
   }
 }

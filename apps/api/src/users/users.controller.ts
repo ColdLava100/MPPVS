@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Req, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Req,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -37,14 +49,20 @@ export class UsersController {
   @Post()
   async createUser(@Body() dto: CreateUserDto, @Req() req: any) {
     if (!dto.email || !dto.name || !dto.role) {
-      throw new BadRequestException('Email, name, and role are required fields.');
+      throw new BadRequestException(
+        'Email, name, and role are required fields.',
+      );
     }
     const adminId = req.user?.id || req.user?.sub;
     return this.usersService.createUser(dto, adminId);
   }
 
   @Patch(':id')
-  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req: any) {
+  async updateUser(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @Req() req: any,
+  ) {
     const adminId = req.user?.id || req.user?.sub;
     return this.usersService.updateUser(id, dto, adminId);
   }

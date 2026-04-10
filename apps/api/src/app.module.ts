@@ -40,4 +40,4 @@ import { VoterRegistrationsModule } from './voter-registrations/voter-registrati
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -3,7 +3,12 @@ import { prisma } from '@repo/database';
 
 @Injectable()
 export class CoursesService {
-  async createCourse(data: { code: string; studentPrefix: string; name: string }) {
+  async createCourse(data: {
+    code: string;
+    studentPrefix: string;
+    name: string;
+    enrollmentDate?: string;
+  }) {
     const existing = await prisma.course.findUnique({
       where: { code: data.code },
     });
@@ -17,6 +22,27 @@ export class CoursesService {
         code: data.code,
         studentPrefix: data.studentPrefix,
         name: data.name,
+        enrollmentDate: data.enrollmentDate,
+      },
+    });
+  }
+
+  async updateCourse(
+    id: string,
+    data: {
+      code?: string;
+      studentPrefix?: string;
+      name?: string;
+      enrollmentDate?: string;
+    },
+  ) {
+    return prisma.course.update({
+      where: { id },
+      data: {
+        code: data.code,
+        studentPrefix: data.studentPrefix,
+        name: data.name,
+        enrollmentDate: data.enrollmentDate,
       },
     });
   }

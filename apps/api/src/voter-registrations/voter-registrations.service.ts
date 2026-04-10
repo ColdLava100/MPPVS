@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { prisma } from '@repo/database';
 import * as bcrypt from 'bcrypt';
 
@@ -25,20 +29,24 @@ export class VoterRegistrationsService {
             studentId: true,
             icNumber: true,
             isArchived: true,
-          }
+          },
         },
         election: {
           select: {
             id: true,
             title: true,
-          }
-        }
+          },
+        },
       },
-      orderBy: { registeredAt: 'desc' }
+      orderBy: { registeredAt: 'desc' },
     });
   }
 
-  async importVoters(electionId: string, voters: VoterImportData[], creatorId: string) {
+  async importVoters(
+    electionId: string,
+    voters: VoterImportData[],
+    creatorId: string,
+  ) {
     const results = { success: 0, failed: 0, skipped: 0 };
     const errors: string[] = [];
     const duplicates: string[] = [];
@@ -52,21 +60,22 @@ export class VoterRegistrationsService {
               { email: voter.email },
               ...(voter.studentId ? [{ studentId: voter.studentId }] : []),
               ...(voter.icNumber ? [{ icNumber: voter.icNumber }] : []),
-            ]
-          }
+            ],
+          },
         });
 
         // 2. Check if user exists - track duplicates
         if (user) {
           // Check if user already registered for this election
-          const existingRegistration = await prisma.voterRegistration.findUnique({
-            where: {
-              electionId_userId: {
-                electionId,
-                userId: user.id
-              }
-            }
-          });
+          const existingRegistration =
+            await prisma.voterRegistration.findUnique({
+              where: {
+                electionId_userId: {
+                  electionId,
+                  userId: user.id,
+                },
+              },
+            });
 
           if (existingRegistration) {
             // Already registered - skip silently
@@ -77,7 +86,9 @@ export class VoterRegistrationsService {
           // User exists but not registered - offer to link
           // For now, auto-link (existing user gets access to this election)
           // Could be enhanced to prompt user for choice
-          duplicates.push(`${voter.name} (linked to existing user: ${user.email})`);
+          duplicates.push(
+            `${voter.name} (linked to existing user: ${user.email})`,
+          );
         } else {
           // Create new user
           let courseId = null;
@@ -85,7 +96,9 @@ export class VoterRegistrationsService {
             const match = voter.studentId.match(/^[A-Za-z]+/);
             if (match) {
               const prefix = match[0];
-              const course = await prisma.course.findUnique({ where: { studentPrefix: prefix } });
+              const course = await prisma.course.findUnique({
+                where: { studentPrefix: prefix },
+              });
               if (course) courseId = course.id;
             }
           }
@@ -100,7 +113,7 @@ export class VoterRegistrationsService {
               password: hashedPassword,
               role: 'STUDENT',
               courseId,
-            }
+            },
           });
         }
 
@@ -108,8 +121,8 @@ export class VoterRegistrationsService {
         await prisma.voterRegistration.create({
           data: {
             electionId,
-            userId: user.id
-          }
+            userId: user.id,
+          },
         });
 
         results.success++;
@@ -121,7 +134,7 @@ export class VoterRegistrationsService {
 
     // If there were duplicates linked, include in response
     if (duplicates.length > 0) {
-      errors.push(...duplicates.map(d => `[Linked] ${d}`));
+      errors.push(...duplicates.map((d) => `[Linked] ${d}`));
     }
 
     return { ...results, errors };
@@ -131,25 +144,25 @@ export class VoterRegistrationsService {
     // Get all registrations for this election
     const registrations = await prisma.voterRegistration.findMany({
       where: { electionId, isArchived: false },
-      select: { userId: true }
+      select: { userId: true },
     });
 
     if (registrations.length === 0) {
       return { message: 'No active voters to archive', count: 0 };
     }
 
-    const userIds = registrations.map(r => r.userId);
+    const userIds = registrations.map((r) => r.userId);
 
     // Update both VoterRegistrations and Users
     await prisma.$transaction([
       prisma.voterRegistration.updateMany({
         where: { electionId, isArchived: false },
-        data: { isArchived: true, archivedAt: new Date() }
+        data: { isArchived: true, archivedAt: new Date() },
       }),
       prisma.user.updateMany({
         where: { id: { in: userIds } },
-        data: { isArchived: true, archivedAt: new Date() }
-      })
+        data: { isArchived: true, archivedAt: new Date() },
+      }),
     ]);
 
     return { message: 'Voters archived successfully', count: userIds.length };
@@ -158,24 +171,24 @@ export class VoterRegistrationsService {
   async unarchiveVoters(electionId: string) {
     const registrations = await prisma.voterRegistration.findMany({
       where: { electionId, isArchived: true },
-      select: { userId: true }
+      select: { userId: true },
     });
 
     if (registrations.length === 0) {
       return { message: 'No archived voters to unarchive', count: 0 };
     }
 
-    const userIds = registrations.map(r => r.userId);
+    const userIds = registrations.map((r) => r.userId);
 
     await prisma.$transaction([
       prisma.voterRegistration.updateMany({
         where: { electionId, isArchived: true },
-        data: { isArchived: false, archivedAt: null }
+        data: { isArchived: false, archivedAt: null },
       }),
       prisma.user.updateMany({
         where: { id: { in: userIds }, isArchived: true },
-        data: { isArchived: false, archivedAt: null }
-      })
+        data: { isArchived: false, archivedAt: null },
+      }),
     ]);
 
     return { message: 'Voters unarchived successfully', count: userIds.length };
@@ -183,7 +196,7 @@ export class VoterRegistrationsService {
 
   async deleteRegistration(registrationId: string) {
     return prisma.voterRegistration.delete({
-      where: { id: registrationId }
+      where: { id: registrationId },
     });
   }
 
@@ -192,8 +205,8 @@ export class VoterRegistrationsService {
       where: {
         userId,
         electionId,
-        isArchived: false
-      }
+        isArchived: false,
+      },
     });
     return !!registration;
   }

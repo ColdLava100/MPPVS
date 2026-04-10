@@ -199,8 +199,9 @@ model Vote {
 model Course {
   id          String   @id @default(uuid())
   code        String   @unique // e.g., "BCS", "DCS"
-  studentPrefix String   @unique @default("null") // NEW: e.g., "BCS" (The ID prefix)
+  studentPrefix String   @unique @default("null") // e.g., "BCS" (The ID prefix)
   name        String   // e.g., "Bachelor in Computer Science"
+  enrollmentDate String?  // e.g., "2311" (assigned by college when student registers)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { prisma } from '@repo/database';
 import * as bcrypt from 'bcrypt';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -10,14 +15,26 @@ export class UsersService {
 
   async getUsers(role?: string) {
     const where = role ? { role: role as Role } : {};
-    return prisma.user.findMany({ 
+    return prisma.user.findMany({
       where,
-      select: { id: true, email: true, name: true, role: true, studentId: true, icNumber: true, courseId: true, createdAt: true }
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        studentId: true,
+        icNumber: true,
+        courseId: true,
+        createdAt: true,
+      },
     });
   }
 
   async createUser(data: any, adminId: string) {
-    if (!adminId) throw new InternalServerErrorException('Admin ID missing from request payload');
+    if (!adminId)
+      throw new InternalServerErrorException(
+        'Admin ID missing from request payload',
+      );
     const existing = await prisma.user.findFirst({
       where: {
         OR: [
@@ -29,14 +46,20 @@ export class UsersService {
     });
 
     if (existing) {
-      throw new ConflictException('User with this email, Student ID, or IC Number already exists.');
+      throw new ConflictException(
+        'User with this email, Student ID, or IC Number already exists.',
+      );
     }
 
     let courseId = null;
-    const coursePrefix = data.coursePrefix || (data.studentId ? data.studentId.match(/^[A-Za-z]+/)?.[0] : null);
-    
+    const coursePrefix =
+      data.coursePrefix ||
+      (data.studentId ? data.studentId.match(/^[A-Za-z]+/)?.[0] : null);
+
     if (coursePrefix) {
-      const course = await prisma.course.findUnique({ where: { studentPrefix: coursePrefix } });
+      const course = await prisma.course.findUnique({
+        where: { studentPrefix: coursePrefix },
+      });
       if (course) {
         courseId = course.id;
       }
@@ -67,13 +90,17 @@ export class UsersService {
   }
 
   async updateUser(userId: string, data: any, adminId: string) {
-    if (!adminId) throw new InternalServerErrorException('Admin ID missing from request payload');
-    let updateData: any = {};
+    if (!adminId)
+      throw new InternalServerErrorException(
+        'Admin ID missing from request payload',
+      );
+    const updateData: any = {};
     if (data.name) updateData.name = data.name;
     if (data.email) updateData.email = data.email;
     if (data.role) updateData.role = data.role as Role;
-    if (data.icNumber !== undefined) updateData.icNumber = data.icNumber || null;
-    
+    if (data.icNumber !== undefined)
+      updateData.icNumber = data.icNumber || null;
+
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
@@ -84,9 +111,13 @@ export class UsersService {
         const match = data.studentId.match(/^[A-Za-z]+/);
         if (match) {
           const extractedPrefix = match[0];
-          const course = await prisma.course.findUnique({ where: { studentPrefix: extractedPrefix } });
+          const course = await prisma.course.findUnique({
+            where: { studentPrefix: extractedPrefix },
+          });
           if (!course) {
-            throw new BadRequestException('Invalid course prefix. Course does not exist.');
+            throw new BadRequestException(
+              'Invalid course prefix. Course does not exist.',
+            );
           }
           updateData.courseId = course.id;
         } else {
@@ -113,7 +144,7 @@ export class UsersService {
 
   async deleteUser(userId: string, superAdminId: string) {
     const user = await prisma.user.delete({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     await this.auditLogsService.logAction(superAdminId, 'DELETED_USER', {

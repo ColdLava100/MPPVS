@@ -1,19 +1,28 @@
-import { Injectable, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { prisma } from '@repo/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class VotesService {
-  constructor(private readonly auditLogsService: AuditLogsService) { }
+  constructor(private readonly auditLogsService: AuditLogsService) {}
 
-  async submitVote(voterId: string, electionId: string, candidateIds: string[]) {
+  async submitVote(
+    voterId: string,
+    electionId: string,
+    candidateIds: string[],
+  ) {
     // Rule 0: Check if user is registered for this election
     const registration = await prisma.voterRegistration.findFirst({
       where: {
         userId: voterId,
         electionId,
-        isArchived: false
-      }
+        isArchived: false,
+      },
     });
 
     if (!registration) {
@@ -26,11 +35,15 @@ export class VotesService {
     });
 
     if (existingVote) {
-      throw new ConflictException('You have already cast a ballot for this election.');
+      throw new ConflictException(
+        'You have already cast a ballot for this election.',
+      );
     }
 
     if (candidateIds.length === 0) {
-      throw new BadRequestException('You must vote for at least one candidate.');
+      throw new BadRequestException(
+        'You must vote for at least one candidate.',
+      );
     }
 
     const election = await prisma.election.findUnique({
@@ -43,9 +56,10 @@ export class VotesService {
 
     let courseSettingsBlock: Record<string, any> = {};
     try {
-      courseSettingsBlock = typeof election.courseSettings === 'string'
-        ? JSON.parse(election.courseSettings)
-        : election.courseSettings;
+      courseSettingsBlock =
+        typeof election.courseSettings === 'string'
+          ? JSON.parse(election.courseSettings)
+          : election.courseSettings;
     } catch {
       throw new BadRequestException('Election configuration is malformed.');
     }
@@ -63,7 +77,9 @@ export class VotesService {
     });
 
     if (candidates.length !== candidateIds.length) {
-      throw new BadRequestException('One or more selected candidates are invalid.');
+      throw new BadRequestException(
+        'One or more selected candidates are invalid.',
+      );
     }
 
     const prefixTally: Record<string, number> = {};
@@ -71,7 +87,9 @@ export class VotesService {
     for (const c of candidates) {
       const prefix = c.user?.course?.studentPrefix;
       if (!prefix) {
-        throw new BadRequestException('One or more selected candidates have invalid or missing course data.');
+        throw new BadRequestException(
+          'One or more selected candidates have invalid or missing course data.',
+        );
       }
       prefixTally[prefix] = (prefixTally[prefix] || 0) + 1;
     }
@@ -79,16 +97,20 @@ export class VotesService {
     for (const [prefix, count] of Object.entries(prefixTally)) {
       const allowedChairs = parseInt(courseSettingsBlock[prefix], 10);
       if (isNaN(allowedChairs)) {
-        throw new BadRequestException(`Course configuration missing or invalid for category ${prefix}.`);
+        throw new BadRequestException(
+          `Course configuration missing or invalid for category ${prefix}.`,
+        );
       }
 
       if (count > allowedChairs) {
-        throw new BadRequestException(`You selected too many candidates for the ${prefix} category. Maximum allowed is ${allowedChairs}.`);
+        throw new BadRequestException(
+          `You selected too many candidates for the ${prefix} category. Maximum allowed is ${allowedChairs}.`,
+        );
       }
     }
 
     // Execution: Create votes mapping
-    const voteData = candidateIds.map(candidateId => ({
+    const voteData = candidateIds.map((candidateId) => ({
       voterId,
       electionId,
       candidateId,
@@ -98,7 +120,10 @@ export class VotesService {
       data: voteData,
     });
 
-    await this.auditLogsService.logAction(voterId, 'VOTE_CAST', { electionId, candidateCount: candidateIds.length });
+    await this.auditLogsService.logAction(voterId, 'VOTE_CAST', {
+      electionId,
+      candidateCount: candidateIds.length,
+    });
 
     return { success: true, message: 'Ballot cast successfully.' };
   }

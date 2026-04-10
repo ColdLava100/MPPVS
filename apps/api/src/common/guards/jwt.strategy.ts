@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // passport automatically verifies the signature. 
+    // passport automatically verifies the signature.
     // This payload is decoded JWT.
     // We attach it to the request object as `request.user`
     if (!payload) {
