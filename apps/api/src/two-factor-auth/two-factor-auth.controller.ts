@@ -1,13 +1,14 @@
-import { Controller, Post, Body, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { prisma } from '@repo/database';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('2fa')
 export class TwoFactorAuthController {
   constructor(private readonly twoFactorAuthService: TwoFactorAuthService) {}
 
   @Post('generate')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async generate(@Req() request: any) {
     // Assuming request.user exists from JwtAuthGuard
     // Fetch user to ensure we have the most up to date record if needed
@@ -29,17 +30,17 @@ export class TwoFactorAuthController {
   }
 
   @Post('turn-on')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async turnOnTwoFactorAuthentication(
     @Req() request: any,
-    @Body('twoFactorCode') twoFactorCode: string,
+    @Body('code') code: string,
   ) {
     const user = await prisma.user.findUnique({
         where: { id: request.user.id }
     });
 
     const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
-      twoFactorCode,
+      code,
       user,
     );
 
@@ -54,5 +55,30 @@ export class TwoFactorAuthController {
     });
 
     return { success: true };
+  }
+
+  @Post('turn-off')
+  @UseGuards(JwtAuthGuard)
+  async turnOffTwoFactorAuthentication(@Req() request: any) {
+    await prisma.user.update({
+      where: { id: request.user.id },
+      data: { 
+        isTwoFactorAuthenticationEnabled: false,
+        twoFactorAuthenticationSecret: null,
+      } as any,
+    });
+
+    return { success: true };
+  }
+
+  @Post('status')
+  @UseGuards(JwtAuthGuard)
+  async getStatus(@Req() request: any) {
+    const user = await prisma.user.findUnique({
+        where: { id: request.user.id },
+        select: { isTwoFactorAuthenticationEnabled: true },
+    });
+
+    return { isTwoFactorAuthenticationEnabled: user?.isTwoFactorAuthenticationEnabled || false };
   }
 }

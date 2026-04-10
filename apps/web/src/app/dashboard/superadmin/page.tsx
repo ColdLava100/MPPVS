@@ -19,10 +19,17 @@ interface TabProps {
   btnStyle: React.CSSProperties;
   delBtnStyle: React.CSSProperties;
   formStyle: React.CSSProperties;
+  currentUser: any;
 }
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
+  
+  // Auth check state
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Current user state
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   // Global data state
   const [courses, setCourses] = useState<any[]>([]);
@@ -39,8 +46,26 @@ export default function SuperAdminDashboard() {
   const formStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '400px', marginBottom: '2rem' };
 
   useEffect(() => {
-    fetchActiveData();
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { 
+          credentials: 'include' 
+        });
+        if (authRes.status === 401 || authRes.status === 403) {
+          router.push('/login');
+          return;
+        }
+        const userData = await authRes.json();
+        setCurrentUser(userData);
+      } catch {
+        router.push('/login');
+        return;
+      }
+      setIsLoading(false);
+      fetchActiveData();
+    };
+    checkAuth();
+  }, [router]);
 
   const fetchActiveData = async () => {
     try {
@@ -51,6 +76,11 @@ export default function SuperAdminDashboard() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions`, { credentials: 'include' }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates`, { credentials: 'include' })
       ]);
+      // Check for auth errors on any response
+      if (uRes.status === 401 || uRes.status === 403) {
+        router.push('/login');
+        return;
+      }
       if (cRes.ok) setCourses(await cRes.json());
       if (uRes.ok) setUsers(await uRes.json());
       if (eRes.ok) setElections(await eRes.json());
@@ -60,6 +90,14 @@ export default function SuperAdminDashboard() {
       console.error("Failed to fetch dictionary sets", err);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   const commonProps: TabProps = {
     users,
@@ -71,7 +109,8 @@ export default function SuperAdminDashboard() {
     inputStyle,
     btnStyle,
     delBtnStyle,
-    formStyle
+    formStyle,
+    currentUser
   };
 
   return (
@@ -86,6 +125,10 @@ export default function SuperAdminDashboard() {
         <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
         
         <button onClick={() => setActiveRoleTab('SIMULATION')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SIMULATION' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SIMULATION: Voting & Tally</button>
+        
+        <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
+        
+        <button onClick={async () => { await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }); router.push('/login'); }} style={{ padding: '0.75rem', textAlign: 'left', background: '#dc2626', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px', marginTop: 'auto' }}>Logout</button>
       </aside>
 
       <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>

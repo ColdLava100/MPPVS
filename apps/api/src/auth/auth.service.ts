@@ -44,6 +44,11 @@ export class AuthService {
             throw new UnauthorizedException('Invalid staff credentials');
         }
 
+        // Check if 2FA is enabled - require 2FA verification before issuing JWT
+        if (user.isTwoFactorAuthenticationEnabled) {
+            return { requires2FA: true, email: user.email };
+        }
+
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             accessToken: this.jwtService.sign(payload),

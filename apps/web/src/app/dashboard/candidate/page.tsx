@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Activity, 
   ChevronRight, 
@@ -14,11 +14,42 @@ import {
   Clock, 
   RefreshCcw 
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import UniversalSidebar from '@/components/ui/sidebar';
 import StudentHeader from '@/components/ui/header2';
 import Footer from '@/components/ui/footer';
 
 export default function CandidateDashboard() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/2fa/status`, { 
+          credentials: 'include' 
+        });
+        if (res.status === 401 || res.status === 403) {
+          router.push('/login');
+          return;
+        }
+      } catch {
+        router.push('/login');
+        return;
+      }
+      setIsLoading(false);
+    };
+    checkAuth();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
   
   return (

@@ -13,6 +13,7 @@ interface TabProps {
   btnStyle: React.CSSProperties;
   delBtnStyle: React.CSSProperties;
   formStyle: React.CSSProperties;
+  currentUser: any;
 }
 
 export default function SuperadminTab({
@@ -22,7 +23,8 @@ export default function SuperadminTab({
   inputStyle,
   btnStyle,
   delBtnStyle,
-  formStyle
+  formStyle,
+  currentUser
 }: TabProps) {
   // User Form State (Create)
   const [userEmail, setUserEmail] = useState('');
@@ -52,6 +54,69 @@ export default function SuperadminTab({
 
   // Impersonate Form State
   const [impersonateUserId, setImpersonateUserId] = useState('');
+
+  // 2FA State
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [twoFactorMessage, setTwoFactorMessage] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+
+  useEffect(() => {
+    if (currentUser?.isTwoFactorAuthenticationEnabled) {
+      setTwoFactorEnabled(true);
+    }
+  }, [currentUser]);
+
+  const generateQrCode = async () => {
+    setTwoFactorLoading(true);
+    setTwoFactorMessage('');
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/2fa/generate`, { method: 'POST', credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setQrCodeUrl(data.qrCodeDataUrl);
+      } else {
+        setTwoFactorMessage('Failed to generate QR code');
+      }
+    } catch (err) { setTwoFactorMessage('Error generating QR code'); }
+    setTwoFactorLoading(false);
+  };
+
+  const enableTwoFactor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTwoFactorLoading(true);
+    setTwoFactorMessage('');
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/2fa/turn-on`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code: verificationCode })
+      });
+      if (res.ok) {
+        setTwoFactorEnabled(true);
+        setQrCodeUrl(null);
+        setVerificationCode('');
+        setTwoFactorMessage('2FA enabled successfully!');
+      } else {
+        setTwoFactorMessage('Invalid verification code');
+      }
+    } catch (err) { setTwoFactorMessage('Error enabling 2FA'); }
+    setTwoFactorLoading(false);
+  };
+
+  const disableTwoFactor = async () => {
+    setTwoFactorLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/2fa/turn-off`, { method: 'POST', credentials: 'include' });
+      if (res.ok) {
+        setTwoFactorEnabled(false);
+        setTwoFactorMessage('2FA disabled successfully');
+      } else { setTwoFactorMessage('Failed to disable 2FA'); }
+    } catch (err) { setTwoFactorMessage('Error disabling 2FA'); }
+    setTwoFactorLoading(false);
+  };
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.name?.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
@@ -269,6 +334,62 @@ export default function SuperadminTab({
           <input type="text" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="Name" required style={inputStyle} />
           <button type="submit" style={btnStyle}>Submit POST /courses</button>
         </form>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <h2>5. Two-Factor Authentication</h2>
+        <div style={formStyle}>
+          {twoFactorEnabled && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <span style={{ 
+                background: '#22c55e', 
+                color: '#fff', 
+                padding: '0.25rem 0.5rem', 
+                borderRadius: '4px',
+                fontSize: '0.8rem',
+                fontWeight: 'bold'
+              }}>
+                2FA is Currently Active
+              </span>
+            </div>
+          )}
+          <p>Status: <strong>{twoFactorEnabled ? 'Enabled' : 'Disabled'}</strong></p>
+          {!twoFactorEnabled && (
+            <>
+              <button onClick={generateQrCode} disabled={twoFactorLoading} style={{ ...btnStyle, background: '#059669' }}>
+                {twoFactorLoading ? 'Generating...' : 'Generate QR Code'}
+              </button>
+              {qrCodeUrl && (
+                <>
+                  <img src={qrCodeUrl} alt="2FA QR Code" style={{ width: '200px', height: '200px' }} />
+                  <p style={{ fontSize: '0.8rem' }}>Scan with your authenticator app, then enter code below:</p>
+                  <form onSubmit={enableTwoFactor}>
+                    <input 
+                      type="text" 
+                      value={verificationCode} 
+                      onChange={e => setVerificationCode(e.target.value)} 
+                      placeholder="6-digit code" 
+                      maxLength={6}
+                      style={{ ...inputStyle, width: '200px', textAlign: 'center', letterSpacing: '0.3em' }}
+                      required 
+                    />
+                    <button type="submit" disabled={twoFactorLoading} style={{ ...btnStyle, background: '#059669' }}>
+                      Enable 2FA
+                    </button>
+                  </form>
+                </>
+              )}
+            </>
+          )}
+          {twoFactorEnabled && (
+            <button onClick={disableTwoFactor} disabled={twoFactorLoading} style={{ ...btnStyle, background: '#dc2626' }}>
+              {twoFactorLoading ? 'Disabling...' : 'Disable 2FA'}
+            </button>
+          )}
+          {twoFactorMessage && (
+            <p style={{ color: twoFactorMessage.includes('success') ? 'green' : 'red', fontWeight: 'bold' }}>{twoFactorMessage}</p>
+          )}
+        </div>
       </div>
 
       <div style={{ marginTop: '2rem' }}>
