@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Req, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, Req, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -6,11 +6,12 @@ import { Roles, Role } from '../common/decorators/roles.decorator';
 
 export class CreateUserDto {
   email!: string;
-  password!: string;
+  password?: string;
   name!: string;
   role!: Role;
   icNumber?: string;
   studentId?: string;
+  coursePrefix?: string;
 }
 
 export class UpdateUserDto {
@@ -24,19 +25,19 @@ export class UpdateUserDto {
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SUPERADMIN)
+@Roles(Role.SUPERADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers() {
-    return this.usersService.getUsers();
+  async getUsers(@Query('role') role?: string) {
+    return this.usersService.getUsers(role);
   }
 
   @Post()
   async createUser(@Body() dto: CreateUserDto, @Req() req: any) {
-    if (!dto.email || !dto.password || !dto.name || !dto.role) {
-      throw new BadRequestException('Email, password, name, and role are required fields.');
+    if (!dto.email || !dto.name || !dto.role) {
+      throw new BadRequestException('Email, name, and role are required fields.');
     }
     const adminId = req.user?.id || req.user?.sub;
     return this.usersService.createUser(dto, adminId);

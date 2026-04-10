@@ -8,8 +8,12 @@ import { Role } from '../common/decorators/roles.decorator';
 export class UsersService {
   constructor(private readonly auditLogsService: AuditLogsService) {}
 
-  async getUsers() {
-    return prisma.user.findMany({ select: { id: true, email: true, name: true, role: true, studentId: true, icNumber: true, courseId: true, createdAt: true }});
+  async getUsers(role?: string) {
+    const where = role ? { role: role as Role } : {};
+    return prisma.user.findMany({ 
+      where,
+      select: { id: true, email: true, name: true, role: true, studentId: true, icNumber: true, courseId: true, createdAt: true }
+    });
   }
 
   async createUser(data: any, adminId: string) {
@@ -29,19 +33,17 @@ export class UsersService {
     }
 
     let courseId = null;
-    if (data.studentId) {
-      const match = data.studentId.match(/^[A-Za-z]+/);
-      if (match) {
-        const extractedPrefix = match[0];
-        const course = await prisma.course.findUnique({ where: { studentPrefix: extractedPrefix } });
-        if (!course) {
-          throw new BadRequestException('Invalid course prefix. Course does not exist.');
-        }
+    const coursePrefix = data.coursePrefix || (data.studentId ? data.studentId.match(/^[A-Za-z]+/)?.[0] : null);
+    
+    if (coursePrefix) {
+      const course = await prisma.course.findUnique({ where: { studentPrefix: coursePrefix } });
+      if (course) {
         courseId = course.id;
       }
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const password = data.password || 'password';
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {

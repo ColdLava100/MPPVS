@@ -35,12 +35,19 @@ model User {
   twoFactorAuthenticationSecret    String?
   isTwoFactorAuthenticationEnabled Boolean  @default(false)
 
+  // Archive status
+  isArchived                        Boolean  @default(false)
+  archivedAt                        DateTime?
+
   // THE FIX: The missing two-way relationships!
   auditLogs                        AuditLog[]
   candidateProfile                 Candidate? // A user can only be ONE candidate
   votes                            Vote[]
   courseId    String?  // Optional, populated by our Regex extractor
   course      Course?  @relation(fields: [courseId], references: [id])
+  
+  // Voter registrations (per-election)
+  voterRegistrations               VoterRegistration[]
 }
 
 // Master configuration for the voting event
@@ -59,6 +66,7 @@ model Election {
   sessions        VotingSession[]
   candidates      Candidate[]
   votes           Vote[]
+  voterRegistrations VoterRegistration[]
 }
 
 // Handles the dynamic time slots and student ID batching
@@ -197,4 +205,19 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   users       User[]
+}
+
+// Per-election voter registrations
+model VoterRegistration {
+  id            String   @id @default(uuid())
+  electionId    String
+  userId        String
+  registeredAt  DateTime @default(now())
+  isArchived    Boolean  @default(false)
+  archivedAt    DateTime?
+
+  election      Election @relation(fields: [electionId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@unique([electionId, userId])
 }

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { prisma } from '@repo/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
@@ -7,6 +7,19 @@ export class VotesService {
   constructor(private readonly auditLogsService: AuditLogsService) { }
 
   async submitVote(voterId: string, electionId: string, candidateIds: string[]) {
+    // Rule 0: Check if user is registered for this election
+    const registration = await prisma.voterRegistration.findFirst({
+      where: {
+        userId: voterId,
+        electionId,
+        isArchived: false
+      }
+    });
+
+    if (!registration) {
+      throw new ForbiddenException('You are not registered for this election.');
+    }
+
     // Rule 1: No double voting
     const existingVote = await prisma.vote.findFirst({
       where: { voterId, electionId },

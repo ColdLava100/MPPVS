@@ -13,6 +13,7 @@ import { VotingSessionsModule } from './voting-sessions/voting-sessions.module';
 import { CoursesModule } from './courses/courses.module';
 import { CandidatesModule } from './candidates/candidates.module';
 import { VotesModule } from './votes/votes.module';
+import { VoterRegistrationsModule } from './voter-registrations/voter-registrations.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { VotesModule } from './votes/votes.module';
     CoursesModule,
     CandidatesModule,
     VotesModule,
+    VoterRegistrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

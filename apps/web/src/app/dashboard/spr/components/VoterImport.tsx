@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Download, Users, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface VoterImportProps {
@@ -20,8 +20,33 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
   const [isDragging, setIsDragging] = useState(false);
   const [parsedVoters, setParsedVoters] = useState<ParsedVoter[]>([]);
   const [isImporting, setIsImporting] = useState(false);
-  const [importResult, setImportResult] = useState<{ success: number; failed: number } | null>(null);
+  const [importResult, setImportResult] = useState<{ success: number; failed: number; skipped?: number } | null>(null);
+  const [importedVoters, setImportedVoters] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch imported voters when electionId changes
+  useEffect(() => {
+    if (electionId) {
+      fetchImportedVoters();
+    } else {
+      setImportedVoters([]);
+    }
+  }, [electionId]);
+
+  const fetchImportedVoters = async () => {
+    if (!electionId) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations?electionId=${electionId}`, { 
+        credentials: 'include' 
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setImportedVoters(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch imported voters', err);
+    }
+  };
 
   const sampleCsvData = [
     ['name', 'email', 'studentId', 'icNumber', 'course'],
@@ -59,12 +84,15 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+    alert(`Files selected: ${files?.length || 0}`);
     if (files && files.length > 0) {
+      alert(`File name: ${files[0].name}`);
       processFile(files[0]);
     }
   };
 
   const processFile = (file: File) => {
+    alert(`processFile called with: ${file.name}`);
     if (!file.name.endsWith('.csv')) {
       alert('Please upload a CSV file');
       return;
@@ -73,36 +101,68 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
+      alert(`File content length: ${text.length} chars`);
+      
       const lines = text.split('\n').filter(line => line.trim());
+      alert(`Lines found: ${lines.length}`);
       
       if (lines.length < 2) {
         alert('CSV file is empty or has no data rows');
         return;
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      // More robust header parsing - normalize headers
+      const rawHeaders = lines[0].split(',').map(h => h.trim());
+      const headers = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      alert(`Raw headers: ${rawHeaders.join(', ')}`);
+      alert(`Normalized headers: ${headers.join(', ')}`);
+      
       const voters: ParsedVoter[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        const voter: any = {};
+        // Better handling of whitespace and empty values
+        const rawValues = lines[i].split(',').map(v => v.trim());
+        const values = rawValues;
         
+        // Map values to headers dynamically
+        const voter: any = {};
         headers.forEach((header, index) => {
           voter[header] = values[index] || '';
         });
 
-        if (voter.name && voter.studentId) {
+        // Also store original keys for debugging
+        rawHeaders.forEach((header, index) => {
+          const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '');
+          voter[normalizedHeader] = values[index] || '';
+        });
+
+        // More tolerant check - accept if either name OR studentId exists
+        const hasName = !!(voter.name || voter.name);
+        const hasStudentId = !!(voter.studentid || voter.studentId || voter.studentid);
+        
+        console.log(`Row ${i}: name="${voter.name}", studentId="${voter.studentId || voter.studentid}"`);
+        
+        if (hasName && hasStudentId) {
+          const email = voter.email || voter.email || (voter.studentid || voter.studentId ? `${(voter.studentid || voter.studentId).toLowerCase()}@student.edu.my` : '');
+          const icnum = voter.icnumber || voter.icnumber || voter.icnumber || '';
+          const courseVal = voter.course || voter.course || '';
+          
           voters.push({
-            name: voter.name,
-            email: voter.email || `${voter.studentId.toLowerCase()}@student.edu.my`,
-            studentId: voter.studentId,
-            icNumber: voter.icnumber || voter.icnumber || '',
-            course: voter.course || voter.program || '',
+            name: voter.name || voter.name,
+            email: email,
+            studentId: voter.studentid || voter.studentId || '',
+            icNumber: icnum,
+            course: courseVal,
           });
         }
       }
 
+      alert(`Parsing complete: ${voters.length} voters found`);
+      if (voters.length === 0) {
+        alert(`No valid voters found. Check that CSV has 'name' and 'studentId' columns.`);
+      }
       setParsedVoters(voters);
+      alert(`State updated, voters count: ${voters.length}`);
       setImportResult(null);
     };
     reader.readAsText(file);
@@ -122,37 +182,53 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
     setIsImporting(true);
     let success = 0;
     let failed = 0;
+    let skipped = 0;
+    const failedDetails: { name: string; error: string }[] = [];
 
-    for (const voter of parsedVoters) {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            name: voter.name,
-            email: voter.email,
-            studentId: voter.studentId,
-            icNumber: voter.icNumber,
-            role: 'STUDENT',
-          })
-        });
+    // Bulk import all voters at once to the new endpoint
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          electionId,
+          voters: parsedVoters
+        })
+      });
 
-        if (res.ok) {
-          success++;
-        } else {
-          failed++;
+      console.log('Import Response:', res.status, res.statusText);
+      
+      if (res.ok) {
+        const result = await res.json();
+        success = result.success || 0;
+        failed = result.failed || 0;
+        skipped = result.skipped || 0;
+        
+        if (result.errors && result.errors.length > 0) {
+          result.errors.forEach((err: string) => {
+            failedDetails.push({ name: 'Error', error: err });
+          });
         }
-      } catch {
-        failed++;
+        
+        alert(`Import complete: ${success} succeeded, ${failed} failed, ${skipped} skipped.`);
+        setImportResult({ success, failed });
+        
+        if (success > 0) {
+          onRefresh();
+          fetchImportedVoters();
+        }
+      } else {
+        const errorText = await res.text();
+        console.log('Error:', errorText);
+        alert(`Import failed: ${errorText}`);
       }
+    } catch (err: any) {
+      console.log('Exception:', err.message);
+      alert(`Error: ${err.message}`);
     }
 
-    setImportResult({ success, failed });
     setIsImporting(false);
-    if (success > 0) {
-      onRefresh();
-    }
   };
 
   const clearData = () => {
@@ -296,6 +372,73 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
                 <p className="text-[10px] text-slate-500">Failed voters may already exist in the system.</p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Imported Voters Preview */}
+      {importedVoters.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Users size={18} className="text-[#4c0519]" />
+              <h4 className="text-lg font-bold uppercase tracking-tighter text-[#4c0519]">
+                Imported Voters ({importedVoters.length})
+              </h4>
+            </div>
+            <button 
+              onClick={async () => {
+                if (!electionId || !confirm('Archive all voters for this election?')) return;
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/${electionId}/archive`, {
+                  method: 'POST',
+                  credentials: 'include'
+                });
+                if (res.ok) {
+                  alert('Voters archived successfully!');
+                  fetchImportedVoters();
+                  onRefresh();
+                } else {
+                  alert('Failed to archive voters');
+                }
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-red-700"
+            >
+              Archive All
+            </button>
+          </div>
+          
+          <div className="bg-white border border-slate-200 rounded-sm overflow-hidden max-h-80 overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 sticky top-0">
+                <tr>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Name</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Student ID</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">IC Number</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Email</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {importedVoters.map((reg) => {
+                  const user = reg.user || {};
+                  return (
+                    <tr key={reg.id} className="border-t border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-2 text-black font-medium">{user.name || '-'}</td>
+                      <td className="px-4 py-2 text-black font-mono text-xs">{user.studentId || '-'}</td>
+                      <td className="px-4 py-2 text-black font-mono text-xs">{user.icNumber || '-'}</td>
+                      <td className="px-4 py-2 text-black text-xs">{user.email || '-'}</td>
+                      <td className="px-4 py-2">
+                        {reg.isArchived ? (
+                          <span className="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">Archived</span>
+                        ) : (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-black uppercase">Active</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
