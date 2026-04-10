@@ -40,17 +40,20 @@ const LEADERS_DATA = [
 export default function StudentDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/2fa/status`, { 
+        const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { 
           credentials: 'include' 
         });
-        if (res.status === 401 || res.status === 403) {
+        if (authRes.status === 401 || authRes.status === 403) {
           router.push('/login');
           return;
         }
+        const userData = await authRes.json();
+        setCurrentUser(userData);
       } catch {
         router.push('/login');
         return;
@@ -93,12 +96,14 @@ export default function StudentDashboard() {
       <UniversalSidebar role="student" />
 
       <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        <button
-          onClick={handleStopImpersonation}
-          className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
-        >
-          Stop Impersonating (Return to Superadmin)
-        </button>
+        {currentUser?.isImpersonating && (
+          <button
+            onClick={handleStopImpersonation}
+            className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
+          >
+            Stop Impersonating (Return to Superadmin)
+          </button>
+        )}
 
         <StudentHeader onVoteClick={handleVoteNowClick} />
 

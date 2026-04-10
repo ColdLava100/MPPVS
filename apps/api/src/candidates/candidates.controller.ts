@@ -30,12 +30,25 @@ export class CandidatesController {
   }
 
   @Post(':id/materials')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE, Role.STUDENT)
   async addMaterial(
     @Param('id') candidateId: string,
     @Body() body: { type: 'manifesto' | 'video' | 'slide' | 'poster'; title?: string; description?: string; link?: string; manifestos?: { title: string; description: string }[] },
     @Req() req: any,
   ) {
+    const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    // Robust ID extraction - check multiple common keys
+    const currentUserId = req.user.id || req.user.sub;
+
+    // Allow Admins to bypass. For normal users, their JWT ID MUST match the candidate's 'userId'
+    if (req.user.role !== Role.SUPERADMIN && req.user.role !== Role.ADMIN) {
+      if (candidate.userId !== currentUserId) {
+        console.error(`403 Error: Extracted JWT ID (${currentUserId}) != Candidate userId (${candidate.userId}). Full req.user object:`, req.user);
+        throw new ForbiddenException('Ownership failed: You can only modify your own campaign materials.');
+      }
+    }
     return this.candidatesService.addMaterial(candidateId, body, req.user.id);
   }
 
@@ -72,7 +85,7 @@ export class CandidatesController {
   }
 
   @Patch(':candidateId/materials/:type/:materialId')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE, Role.STUDENT)
   async updateMaterial(
     @Param('candidateId') candidateId: string,
     @Param('type') type: string,
@@ -80,29 +93,41 @@ export class CandidatesController {
     @Body() body: any,
     @Req() req: any,
   ) {
-    if (req.user.role === Role.CANDIDATE) {
-      const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
-      if (!candidate) throw new NotFoundException('Candidate not found.');
-      if (candidate.userId !== req.user.sub) {
-        throw new ForbiddenException('You can only modify your own materials.');
+    const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    // Robust ID extraction - check multiple common keys
+    const currentUserId = req.user.id || req.user.sub;
+
+    // Allow Admins to bypass. For normal users, their JWT ID MUST match the candidate's 'userId'
+    if (req.user.role !== Role.SUPERADMIN && req.user.role !== Role.ADMIN) {
+      if (candidate.userId !== currentUserId) {
+        console.error(`403 Error: Extracted JWT ID (${currentUserId}) != Candidate userId (${candidate.userId}). Full req.user object:`, req.user);
+        throw new ForbiddenException('Ownership failed: You can only modify your own campaign materials.');
       }
     }
     return this.candidatesService.updateMaterial(candidateId, type, materialId, body, req.user.id);
   }
 
   @Delete(':candidateId/materials/:type/:materialId')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE, Role.STUDENT)
   async deleteMaterial(
     @Param('candidateId') candidateId: string,
     @Param('type') type: string,
     @Param('materialId') materialId: string,
     @Req() req: any,
   ) {
-    if (req.user.role === Role.CANDIDATE) {
-      const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
-      if (!candidate) throw new NotFoundException('Candidate not found.');
-      if (candidate.userId !== req.user.sub) {
-        throw new ForbiddenException('You can only modify your own materials.');
+    const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    // Robust ID extraction - check multiple common keys
+    const currentUserId = req.user.id || req.user.sub;
+
+    // Allow Admins to bypass. For normal users, their JWT ID MUST match the candidate's 'userId'
+    if (req.user.role !== Role.SUPERADMIN && req.user.role !== Role.ADMIN) {
+      if (candidate.userId !== currentUserId) {
+        console.error(`403 Error: Extracted JWT ID (${currentUserId}) != Candidate userId (${candidate.userId}). Full req.user object:`, req.user);
+        throw new ForbiddenException('Ownership failed: You can only modify your own campaign materials.');
       }
     }
     return this.candidatesService.deleteMaterial(candidateId, type, materialId, req.user.id);

@@ -240,6 +240,8 @@ export default function SuperadminTab({
             <option value="SUPERADMIN">SUPERADMIN</option>
             <option value="ADMIN">ADMIN</option>
             <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+            <option value="SPR_ADVISOR">SPR_ADVISOR</option>
+            <option value="SPR_VOLUNTEER">SPR_VOLUNTEER</option>
             <option value="STUDENT">STUDENT</option>
             <option value="CANDIDATE">CANDIDATE</option>
           </select>
@@ -271,6 +273,8 @@ export default function SuperadminTab({
             <option value="SUPERADMIN">SUPERADMIN</option>
             <option value="ADMIN">ADMIN</option>
             <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+            <option value="SPR_ADVISOR">SPR_ADVISOR</option>
+            <option value="SPR_VOLUNTEER">SPR_VOLUNTEER</option>
             <option value="STUDENT">STUDENT</option>
             <option value="CANDIDATE">CANDIDATE</option>
           </select>
@@ -293,6 +297,8 @@ export default function SuperadminTab({
               <option value="SUPERADMIN">SUPERADMIN</option>
               <option value="ADMIN">ADMIN</option>
               <option value="MPP_ADVISOR">MPP_ADVISOR</option>
+              <option value="SPR_ADVISOR">SPR_ADVISOR</option>
+              <option value="SPR_VOLUNTEER">SPR_VOLUNTEER</option>
               <option value="STUDENT">STUDENT</option>
               <option value="CANDIDATE">CANDIDATE</option>
             </select>

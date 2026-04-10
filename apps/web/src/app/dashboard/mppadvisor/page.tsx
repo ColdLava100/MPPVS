@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Activity } from 'lucide-react';
 import UniversalSidebar from '@/components/ui/sidebar';
 import StudentHeader from '@/components/ui/header2';
-import Footer from '@/components/ui/footer';
-import { AdminMetricsGrid, ElectionManager, VotingSessionManager, CandidateApproval } from './components';
+import { AdvisorMetricsGrid, CandidateReviewGrid, ElectionMonitor } from './components';
+import CandidateDetailModal from './components/CandidateDetailModal';
 
 const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
-export default function AdminDashboard() {
+export default function AdvisorDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -20,6 +20,12 @@ export default function AdminDashboard() {
   const [votingSessions, setVotingSessions] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'candidates' | 'elections'>('overview');
+
+  // Modal state
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -77,6 +83,10 @@ export default function AdminDashboard() {
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
+  const handleViewDetails = (candidate: any) => {
+    setSelectedCandidate(candidate);
+  };
+
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -87,7 +97,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="admin" />
+      <UniversalSidebar role="mpp_advisor" />
 
       <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
         {currentUser?.isImpersonating && (
@@ -112,54 +122,70 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                  <Activity size={14} className="text-red-600 animate-pulse" /> Admin Operations
+                  <Activity size={14} className="text-red-600 animate-pulse" /> Advisor Dashboard
                 </p>
                 <h1 className="text-6xl font-bold uppercase tracking-tighter leading-none text-white">
-                  Welcome, <span className="italic">{currentUser?.name || 'Admin'}</span>
+                  Welcome, <span className="italic">{currentUser?.name || 'Advisor'}</span>
                 </h1>
               </div>
             </div>
 
-            {/* Metrics Grid */}
-            <AdminMetricsGrid 
-              elections={elections}
-              votingSessions={votingSessions}
-              candidates={candidates}
-            />
+            {/* Tab Navigation */}
+            <div className="flex gap-2 border-b border-white/10 pb-4">
+              {[
+                { id: 'overview', label: 'Overview' },
+                { id: 'candidates', label: 'Candidates' },
+                { id: 'elections', label: 'Elections' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeTab === tab.id 
+                      ? 'bg-[#4c0519] text-white' 
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-            {/* Election Management */}
-            <section>
-              <ElectionManager 
-                elections={elections}
-                courses={courses}
-                onRefresh={fetchActiveData}
-              />
-            </section>
+            {/* Tab Content */}
+            {activeTab === 'overview' && (
+              <div className="space-y-8">
+                <AdvisorMetricsGrid 
+                  elections={elections}
+                  votingSessions={votingSessions}
+                  candidates={candidates}
+                />
+              </div>
+            )}
 
-            {/* Voting Session Management */}
-            <section>
-              <VotingSessionManager 
-                votingSessions={votingSessions}
-                elections={elections}
-                courses={courses}
-                onRefresh={fetchActiveData}
-              />
-            </section>
-
-            {/* Candidate Approval */}
-            <section>
-              <CandidateApproval 
+            {activeTab === 'candidates' && (
+              <CandidateReviewGrid 
                 candidates={candidates}
-                onRefresh={fetchActiveData}
+                onViewDetails={handleViewDetails}
               />
-            </section>
-          </div>
+            )}
 
-          <div className="relative z-10 w-full mt-auto">
-            <Footer />
+            {activeTab === 'elections' && (
+              <ElectionMonitor 
+                elections={elections}
+                votingSessions={votingSessions}
+              />
+            )}
           </div>
         </main>
       </div>
+
+      {/* Candidate Detail Modal */}
+      {selectedCandidate && (
+        <CandidateDetailModal 
+          candidate={selectedCandidate}
+          onClose={() => setSelectedCandidate(null)}
+        />
+      )}
     </div>
   );
 }

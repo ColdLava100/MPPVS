@@ -3,18 +3,28 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, HelpCircle, Phone } from 'lucide-react';
+import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck } from 'lucide-react';
+
+const CATEGORIES = [
+  { id: 'Staff', roles: ['SUPERADMIN', 'ADMIN'] },
+  { id: 'Advisor', roles: ['MPP_ADVISOR', 'SPR_ADVISOR'] },
+  { id: 'SPR', roles: ['SPR_VOLUNTEER'] },
+  { id: 'Student', roles: ['CANDIDATE', 'STUDENT'] },
+];
 
 const ROLES = [
-  { id: 'ADMIN', label: 'ADMIN', icon: '👤', inputLabel: 'Email Address', placeholder: 'admin@university.edu' },
-  { id: 'SUPERADMIN', label: 'SUPERADMIN', icon: '🛡️', inputLabel: 'System Email', placeholder: 'root@university.edu' },
-  { id: 'MPP_ADVISOR', label: 'MPP ADVISOR', icon: '🏛️', inputLabel: 'Official Email', placeholder: 'advisor@mpp.edu' },
-  { id: 'STUDENT', label: 'STUDENT', icon: '🎓', inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
-  { id: 'CANDIDATE', label: 'CANDIDATE', icon: '📢', inputLabel: 'Candidate ID', placeholder: 'BCSXXXX-XXX' },
+  { id: 'SUPERADMIN', label: 'SUPERADMIN', icon: Shield, inputLabel: 'System Email', placeholder: 'root@university.edu' },
+  { id: 'ADMIN', label: 'ADMIN', icon: UserCog, inputLabel: 'Email Address', placeholder: 'admin@university.edu' },
+  { id: 'MPP_ADVISOR', label: 'MPP ADVISOR', icon: Building2, inputLabel: 'Official Email', placeholder: 'advisor@mpp.edu' },
+  { id: 'SPR_ADVISOR', label: 'SPR ADVISOR', icon: ClipboardCheck, inputLabel: 'Official Email', placeholder: 'advisor@spr.edu' },
+  { id: 'SPR_VOLUNTEER', label: 'SPR VOLUNTEER', icon: Users, inputLabel: 'Volunteer ID', placeholder: 'SPRXXX' },
+  { id: 'STUDENT', label: 'STUDENT', icon: GraduationCap, inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
+  { id: 'CANDIDATE', label: 'CANDIDATE', icon: Mic, inputLabel: 'Candidate ID', placeholder: 'BCSXXXX-XXX' },
 ];
 
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState('STUDENT');
+  const [activeCategory, setActiveCategory] = useState('Student');
   const [studentId, setStudentId] = useState('');
   const [icNumber, setIcNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -36,12 +46,12 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
-    const endpoint = isStudentOrCandidate 
+    const isStudentRole = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
+    const endpoint = isStudentRole 
       ? `${process.env.NEXT_PUBLIC_API_URL}/auth/student/login` 
       : `${process.env.NEXT_PUBLIC_API_URL}/auth/staff/login`;
     
-    const payload = isStudentOrCandidate 
+    const payload = isStudentRole 
       ? { studentId, icNumber } 
       : { email, password };
 
@@ -57,7 +67,7 @@ export default function LoginPage() {
         const data = await response.json();
         
         // Check if 2FA is required
-        if (data.requires2FA && !isStudentOrCandidate) {
+        if (data.requires2FA && !isStudentRole) {
           setNeeds2FA(true);
           setPendingEmail(data.email);
           setStep(2);
@@ -66,7 +76,10 @@ export default function LoginPage() {
         }
         
         // Normalizing role to match folder names (e.g., MPP_ADVISOR -> mppadvisor)
-        const folderName = selectedRole.toLowerCase().replace('_', '');
+        // Special case: SPR_ADVISOR and SPR_VOLUNTEER both go to /dashboard/spr
+        const folderName = (selectedRole === 'SPR_ADVISOR' || selectedRole === 'SPR_VOLUNTEER')
+          ? 'spr'
+          : selectedRole.toLowerCase().replace('_', '');
         router.push(`/dashboard/${folderName}`);
       } else {
         const data = await response.json().catch(() => ({}));
@@ -85,6 +98,8 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
+    const isStudentRole = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/2fa`, {
         method: 'POST',
@@ -94,7 +109,10 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        const folderName = selectedRole.toLowerCase().replace('_', '');
+        // Special case: SPR_ADVISOR and SPR_VOLUNTEER both go to /dashboard/spr
+        const folderName = (selectedRole === 'SPR_ADVISOR' || selectedRole === 'SPR_VOLUNTEER')
+          ? 'spr'
+          : selectedRole.toLowerCase().replace('_', '');
         router.push(`/dashboard/${folderName}`);
       } else {
         const data = await response.json().catch(() => ({}));
@@ -106,7 +124,7 @@ export default function LoginPage() {
     setIsLoading(false);
   };
 
-  const isStudentOrCandidate = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
+  const isStudentRole = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
 
   const mainBgUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
   const heroPanelUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/20/images/lt-2-4.jpg";
@@ -210,8 +228,31 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-6">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Access Role</label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {ROLES.map((role) => (
+                  
+                  {/* Category Tabs */}
+                  <div className="flex gap-6 border-b border-white/10 mb-4">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveCategory(cat.id);
+                          setSelectedRole(cat.roles[0]);
+                        }}
+                        className={`pb-3 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                          activeCategory === cat.id 
+                            ? 'text-yellow-500 border-b-2 border-yellow-500' 
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {cat.id}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Role Cards - Filtered by Category */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {ROLES.filter(r => CATEGORIES.find(c => c.id === activeCategory)?.roles.includes(r.id)).map((role) => (
                       <button
                         key={role.id}
                         type="button"
@@ -222,15 +263,15 @@ export default function LoginPage() {
                           : 'border-transparent bg-slate-50 opacity-40 hover:opacity-100 grayscale'
                         }`}
                       >
-                        <span className="text-xl mb-1">{role.icon}</span>
-                        <span className="text-[9px] font-black tracking-tighter text-center">{role.label}</span>
+                        <role.icon size={20} className="mb-1 text-slate-700" />
+                        <span className="text-[9px] font-black tracking-tighter text-center text-slate-900">{role.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-5">
-                  {isStudentOrCandidate ? (
+                  {isStudentRole ? (
                     <>
                       <div className="space-y-1.5">
                         <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID Identification</label>

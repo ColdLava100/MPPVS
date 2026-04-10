@@ -183,14 +183,32 @@ This document defines the established design language for the MPP Voting Portal 
 </span>
 ```
 
-### Input Field
+### Input Field (CRITICAL - Always use these exact classes)
 ```tsx
 <input 
   type="text" 
-  className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold"
+  className="w-full bg-white border-b border-slate-300 px-0 py-2 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
   required 
 />
 ```
+
+**Select Dropdown (CRITICAL - Add class to options)**
+```tsx
+<select 
+  className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
+>
+  <option value="" className="text-black">Select...</option>
+  {items.map(item => (
+    <option key={item.id} value={item.id} className="text-black">{item.name}</option>
+  ))}
+</select>
+```
+
+**Key Rules:**
+- ALWAYS use `bg-white` (NOT bg-slate-50 which is too light and may show white text on white)
+- ALWAYS add `text-black` explicitly
+- For select options, ALWAYS add `className="text-black"` to each `<option>` element
+- This ensures readable black text on all form inputs regardless of parent container darkness
 
 ### Loading State
 ```tsx

@@ -6,7 +6,7 @@ import { Roles, Role } from '../common/decorators/roles.decorator';
 
 @Controller('voting-sessions')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SUPERADMIN)
+@Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
 export class VotingSessionsController {
   constructor(private readonly votingSessionsService: VotingSessionsService) {}
 

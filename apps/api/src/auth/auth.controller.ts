@@ -156,6 +156,10 @@ export class AuthController {
                 isTwoFactorAuthenticationEnabled: true 
             },
         });
-        return user;
+
+        // Check if user is impersonating by looking for originalToken cookie
+        const isImpersonating = !!request.cookies?.originalToken;
+
+        return { ...user, isImpersonating };
     }
 }

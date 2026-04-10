@@ -13,6 +13,8 @@ enum Role {
   MPP_ADVISOR
   STUDENT
   CANDIDATE
+  SPR_ADVISOR
+  SPR_VOLUNTEER
 }
 
 model User {

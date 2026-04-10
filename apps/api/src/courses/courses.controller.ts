@@ -16,7 +16,7 @@ export class CoursesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPERADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async createCourse(@Body() dto: CreateCourseDto) {
     if (!dto.code || !dto.studentPrefix || !dto.name) {
       throw new BadRequestException('Code, student prefix, and name are required fields.');
@@ -26,14 +26,14 @@ export class CoursesController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPERADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async getCourses() {
     return this.coursesService.getCourses();
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPERADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async deleteCourse(@Param('id') id: string) {
     return this.coursesService.deleteCourse(id);
   }

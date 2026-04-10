@@ -10,25 +10,25 @@ export class ElectionsController {
   constructor(private readonly electionsService: ElectionsService) {}
 
   @Get()
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.STUDENT, Role.CANDIDATE)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.STUDENT, Role.CANDIDATE, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async getElections() {
     return this.electionsService.getElections();
   }
 
   @Post()
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async createElection(@Body() body: any, @Req() req: any) {
     return this.electionsService.create(body.title, body.courseSettings, req.user.id);
   }
 
   @Patch(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async updateElection(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     return this.electionsService.updateElection(id, body, req.user.id);
   }
 
   @Delete(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async deleteElection(@Param('id') id: string, @Req() req: any) {
     return this.electionsService.deleteElection(id, req.user.id);
   }

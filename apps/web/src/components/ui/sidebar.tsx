@@ -11,11 +11,19 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  LucideIcon
 } from 'lucide-react';
 
 interface SidebarProps {
-  role: 'student' | 'candidate' | 'admin' | 'superadmin';
+  role: 'student' | 'candidate' | 'admin' | 'superadmin' | 'mpp_advisor' | 'spr';
+}
+
+interface MenuItem {
+  label: string;
+  icon: LucideIcon;
+  path: string;
+  subItems?: { label: string; path: string }[];
 }
 
 export default function UniversalSidebar({ role }: SidebarProps) {
@@ -29,7 +37,7 @@ export default function UniversalSidebar({ role }: SidebarProps) {
     setOpenSubMenu(openSubMenu === label ? null : label);
   };
 
-  const menuConfigs = {
+  const menuConfigs: Record<string, MenuItem[]> = {
     // 1. STUDENT SIDEBAR CONFIGURATION
     student: [
       { label: 'HOME', icon: Home, path: '/dashboard/student' },
@@ -67,7 +75,18 @@ export default function UniversalSidebar({ role }: SidebarProps) {
       { label: 'LIVE RESULTS', icon: Radio, path: '/dashboard/student/results' },
     ],
     admin: [], 
-    superadmin: []
+    superadmin: [],
+    mpp_advisor: [
+      { label: 'HOME', icon: Home, path: '/dashboard/advisor' },
+      { label: 'CANDIDATES', icon: Users, path: '/dashboard/advisor' },
+      { label: 'ELECTIONS', icon: Vote, path: '/dashboard/advisor' },
+    ],
+    spr: [
+      { label: 'HOME', icon: Home, path: '/dashboard/spr' },
+      { label: 'COURSES', icon: Users, path: '/dashboard/spr' },
+      { label: 'ELECTIONS', icon: Vote, path: '/dashboard/spr' },
+      { label: 'SESSIONS', icon: Radio, path: '/dashboard/spr' },
+    ]
   };
 
   const menuItems = menuConfigs[role] || [];

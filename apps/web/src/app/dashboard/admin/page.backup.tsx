@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdvisorDashboard() {
+export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export default function AdvisorDashboard() {
 
   return (
     <div style={{ backgroundColor: '#fff', color: '#000', minHeight: '100vh', padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Welcome to the Advisor Dashboard</h1>
+      <h1>Welcome to the Admin Dashboard</h1>
     </div>
   );
 }
