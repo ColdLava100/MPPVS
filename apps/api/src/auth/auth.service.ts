@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly auditLogsService: AuditLogsService,
-  ) {}
+  ) { }
 
   async studentLogin(studentId: string, icNumber: string) {
     const user = await prisma.user.findUnique({
@@ -105,7 +105,7 @@ export class AuthService {
         hasAssignedSession = false;
       } else {
         hasAssignedSession = true;
-        
+
         const activeSession = assignedSessions.find(s => {
           const start = new Date(s.startTime);
           const end = new Date(s.endTime);
@@ -119,7 +119,7 @@ export class AuthService {
         } else {
           canVote = false;
           isWithinSessionTime = false;
-          
+
           const sortedAssigned = assignedSessions.sort(
             (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
           );
@@ -167,16 +167,32 @@ export class AuthService {
     }
 
     let timeUntilStart = null;
+    let sessionInfo = null;
     if (session && !isWithinSessionTime && canVote === false) {
       const startTime = new Date(session.startTime);
       const diff = startTime.getTime() - now.getTime();
       if (diff > 0) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        timeUntilStart = hours > 0 
+        timeUntilStart = hours > 0
           ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
           : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+
+        sessionInfo = {
+          date: startTime.toLocaleDateString('en-MY'),
+          startTime: startTime.toLocaleTimeString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' }) + ' MYT',
+          timeUntilStart: timeUntilStart,
+          nextSessionStart: session.startTime,
+        };
       }
+    }
+
+    if (!canVote) {
+      throw new ForbiddenException({
+        error: 'SESSION_NOT_ACTIVE',
+        message: reason || 'Your session is not active yet.',
+        sessionInfo: sessionInfo,
+      });
     }
 
     const payload = { sub: user.id, email: user.email, role: user.role };
@@ -300,7 +316,7 @@ export class AuthService {
         hasAssignedSession = false;
       } else {
         hasAssignedSession = true;
-        
+
         const activeSession = assignedSessions.find(s => {
           const start = new Date(s.startTime);
           const end = new Date(s.endTime);
@@ -314,7 +330,7 @@ export class AuthService {
         } else {
           canVote = false;
           isWithinSessionTime = false;
-          
+
           const sortedAssigned = assignedSessions.sort(
             (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
           );
@@ -368,7 +384,7 @@ export class AuthService {
       if (diff > 0) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        timeUntilStart = hours > 0 
+        timeUntilStart = hours > 0
           ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
           : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
       }

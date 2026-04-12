@@ -162,8 +162,13 @@ export class ElectionsService {
   }
 
   async getElectionCandidates(electionId: string) {
+    console.log('[DEBUG] getElectionCandidates called with electionId:', electionId);
+    
     const candidates = await prisma.candidate.findMany({
-      where: { electionId },
+      where: { 
+        electionId,
+        status: 'APPROVED',
+      },
       include: {
         user: {
           include: {
@@ -171,6 +176,21 @@ export class ElectionsService {
           },
         },
       },
+    });
+
+    console.log('[DEBUG] Found', candidates.length, 'APPROVED candidates for electionId:', electionId);
+    
+    // Debug: Log each candidate details
+    candidates.forEach((c, i) => {
+      console.log(`[DEBUG] Candidate ${i+1}:`, {
+        id: c.id,
+        status: c.status,
+        userId: c.userId,
+        userName: c.user?.name,
+        userStudentId: c.user?.studentId,
+        courseCode: c.user?.course?.code,
+        coursePrefix: c.user?.course?.studentPrefix,
+      });
     });
 
     const votes = await prisma.vote.findMany({
@@ -186,6 +206,16 @@ export class ElectionsService {
         courseCode: candidate.user?.course?.code || 'N/A',
         courseName: candidate.user?.course?.name || 'N/A',
         voteCount,
+        user: {
+          name: candidate.user?.name,
+          studentId: candidate.user?.studentId,
+          email: candidate.user?.email,
+          course: {
+            code: candidate.user?.course?.code,
+            name: candidate.user?.course?.name,
+            studentPrefix: candidate.user?.course?.studentPrefix || null,
+          },
+        },
       };
     });
   }

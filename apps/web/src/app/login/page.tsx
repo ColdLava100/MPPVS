@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck } from 'lucide-react';
+import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'Staff', roles: ['SUPERADMIN', 'ADMIN'] },
@@ -32,12 +32,20 @@ export default function LoginPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
+  // Session error state for structured session info
+  const [sessionError, setSessionError] = useState<{
+    date: string;
+    startTime: string;
+    timeUntilStart: string;
+    nextSessionStart: string;
+  } | null>(null);
+
   // 2FA state
   const [needs2FA, setNeeds2FA] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [pendingEmail, setPendingEmail] = useState('');
-  
+
   const router = useRouter();
 
   // Updated Login Logic to actually hit authentication endpoints
@@ -45,14 +53,15 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSessionError(null);
 
     const isStudentRole = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
-    const endpoint = isStudentRole 
-      ? `${process.env.NEXT_PUBLIC_API_URL}/auth/student/login` 
+    const endpoint = isStudentRole
+      ? `${process.env.NEXT_PUBLIC_API_URL}/auth/student/login`
       : `${process.env.NEXT_PUBLIC_API_URL}/auth/staff/login`;
-    
-    const payload = isStudentRole 
-      ? { studentId, icNumber } 
+
+    const payload = isStudentRole
+      ? { studentId, icNumber }
       : { email, password };
 
     try {
@@ -65,7 +74,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Check if 2FA is required
         if (data.requires2FA && !isStudentRole) {
           setNeeds2FA(true);
@@ -74,7 +83,7 @@ export default function LoginPage() {
           setIsLoading(false);
           return;
         }
-        
+
         // Normalizing role to match folder names (e.g., MPP_ADVISOR -> mppadvisor)
         // Special case: SPR_ADVISOR and SPR_VOLUNTEER both go to /dashboard/spr
         const folderName = (selectedRole === 'SPR_ADVISOR' || selectedRole === 'SPR_VOLUNTEER')
@@ -83,6 +92,14 @@ export default function LoginPage() {
         router.push(`/dashboard/${folderName}`);
       } else {
         const data = await response.json().catch(() => ({}));
+
+        // Check for structured session error
+        if (data.error === 'SESSION_NOT_ACTIVE' && data.sessionInfo) {
+          setSessionError(data.sessionInfo);
+          setIsLoading(false);
+          return;
+        }
+
         // For student login, the backend returns detailed error messages
         const errorMessage = data.message || data.error || data.reason || 'Invalid credentials. Please try again.';
         setError(errorMessage);
@@ -133,13 +150,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
-      
+
       {/* BACKGROUND LAYER */}
-      <div 
+      <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
+        style={{
           backgroundImage: `url(${mainBgUrl})`,
-          filter: 'blur(8px) brightness(0.45)' 
+          filter: 'blur(8px) brightness(0.45)'
         }}
       />
 
@@ -163,12 +180,12 @@ export default function LoginPage() {
       {/* FLOATING MAIN CARD */}
       <main className="relative z-10 flex-grow flex items-center justify-center p-6">
         <div className="w-full max-w-4xl bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.55)] flex overflow-hidden min-h-[550px] rounded-sm">
-          
+
           {/* LEFT HERO PANEL */}
           <div className="hidden md:flex w-5/12 relative bg-[#2D0A0A]">
-            <img 
-              src={heroPanelUrl} 
-              alt="Governance" 
+            <img
+              src={heroPanelUrl}
+              alt="Governance"
               className="absolute inset-0 w-full h-full object-cover opacity-35 grayscale"
             />
             <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white bg-gradient-to-t from-[#4c0519]/80 via-transparent to-transparent">
@@ -197,14 +214,14 @@ export default function LoginPage() {
               <form onSubmit={handle2FAVerification} className="space-y-6">
                 <div className="space-y-1.5">
                   <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">Two-Factor Code</label>
-                  <input 
-                    type="text" 
-                    value={twoFactorCode} 
-                    onChange={(e) => setTwoFactorCode(e.target.value)} 
+                  <input
+                    type="text"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
                     placeholder="000000"
                     maxLength={6}
                     className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold tracking-[0.3em] text-center"
-                    required 
+                    required
                   />
                 </div>
                 <p className="text-[9px] text-slate-400 text-center">
@@ -218,8 +235,8 @@ export default function LoginPage() {
                 <button type="submit" disabled={isLoading} className="w-full bg-[#4c0519] text-white py-4 flex items-center justify-center gap-3 hover:bg-black transition-all uppercase text-[9px] font-black tracking-[0.3em] shadow-xl active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isLoading ? 'Verifying...' : 'Verify'}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => { setNeeds2FA(false); setTwoFactorCode(''); setError(null); }}
                   className="w-full text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 text-center"
                 >
@@ -230,7 +247,7 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-6">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Access Role</label>
-                  
+
                   {/* Category Tabs */}
                   <div className="flex gap-6 border-b border-white/10 mb-4">
                     {CATEGORIES.map((cat) => (
@@ -241,11 +258,10 @@ export default function LoginPage() {
                           setActiveCategory(cat.id);
                           setSelectedRole(cat.roles[0]);
                         }}
-                        className={`pb-3 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                          activeCategory === cat.id 
-                            ? 'text-yellow-500 border-b-2 border-yellow-500' 
+                        className={`pb-3 text-[10px] font-black uppercase tracking-widest transition-colors ${activeCategory === cat.id
+                            ? 'text-yellow-500 border-b-2 border-yellow-500'
                             : 'text-slate-400 hover:text-white'
-                        }`}
+                          }`}
                       >
                         {cat.id}
                       </button>
@@ -259,11 +275,10 @@ export default function LoginPage() {
                         key={role.id}
                         type="button"
                         onClick={() => setSelectedRole(role.id)}
-                        className={`flex flex-col items-center justify-center py-4 border transition-all rounded-sm ${
-                          selectedRole === role.id 
-                          ? 'border-slate-900 bg-white shadow-lg z-10 scale-105 ring-1 ring-slate-900/5' 
-                          : 'border-transparent bg-slate-50 opacity-40 hover:opacity-100 grayscale'
-                        }`}
+                        className={`flex flex-col items-center justify-center py-4 border transition-all rounded-sm ${selectedRole === role.id
+                            ? 'border-slate-900 bg-white shadow-lg z-10 scale-105 ring-1 ring-slate-900/5'
+                            : 'border-transparent bg-slate-50 opacity-40 hover:opacity-100 grayscale'
+                          }`}
                       >
                         <role.icon size={20} className="mb-1 text-slate-700" />
                         <span className="text-[9px] font-black tracking-tighter text-center text-slate-900">{role.label}</span>
@@ -277,24 +292,24 @@ export default function LoginPage() {
                     <>
                       <div className="space-y-1.5">
                         <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID Identification</label>
-                        <input 
-                          type="text" 
-                          value={studentId} 
-                          onChange={(e) => setStudentId(e.target.value)} 
+                        <input
+                          type="text"
+                          value={studentId}
+                          onChange={(e) => setStudentId(e.target.value)}
                           placeholder="BCSXXXX-XXX"
                           className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors uppercase tracking-widest font-bold"
-                          required 
+                          required
                         />
                       </div>
                       <div className="space-y-1.5">
                         <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">National IC Number</label>
-                        <input 
-                          type="text" 
-                          value={icNumber} 
-                          onChange={(e) => setIcNumber(e.target.value)} 
+                        <input
+                          type="text"
+                          value={icNumber}
+                          onChange={(e) => setIcNumber(e.target.value)}
                           placeholder="000000-00-0000"
                           className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors tracking-[0.2em] font-bold"
-                          required 
+                          required
                         />
                       </div>
                     </>
@@ -302,24 +317,24 @@ export default function LoginPage() {
                     <>
                       <div className="space-y-1.5">
                         <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">Institutional Email</label>
-                        <input 
-                          type="email" 
-                          value={email} 
-                          onChange={(e) => setEmail(e.target.value)} 
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           placeholder="username@university.edu"
                           className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold"
-                          required 
+                          required
                         />
                       </div>
                       <div className="space-y-1.5">
                         <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">System Password</label>
-                        <input 
-                          type="password" 
-                          value={password} 
-                          onChange={(e) => setPassword(e.target.value)} 
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••••••"
                           className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold"
-                          required 
+                          required
                         />
                       </div>
                     </>
@@ -329,6 +344,37 @@ export default function LoginPage() {
                 {error && (
                   <div className="text-red-500 text-[10px] font-bold uppercase tracking-widest text-center mt-4">
                     {error}
+                  </div>
+                )}
+
+                {sessionError && (
+                  <div className="bg-[#4c0519] border border-yellow-500/30 rounded-sm p-4 mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="text-yellow-500 w-5 h-5" />
+                      <span className="text-yellow-500 text-[10px] font-black uppercase tracking-widest">
+                        Voting Session: Not Active
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-white/80 text-[10px]">
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center gap-2 font-bold">
+                          <Calendar size={12} /> Date
+                        </span>
+                        <span className="text-yellow-400 font-bold">{sessionError.date}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center gap-2 font-bold">
+                          <Clock size={12} /> Start Time
+                        </span>
+                        <span className="text-yellow-400 font-bold">{sessionError.startTime}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-white/10 pt-2 mt-2">
+                        <span className="flex items-center gap-2 font-bold">
+                          <Timer size={12} /> Duration Until
+                        </span>
+                        <span className="text-yellow-400 font-bold">{sessionError.timeUntilStart}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -365,11 +411,11 @@ export default function LoginPage() {
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">
               <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <HelpCircle className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" /> 
+                <HelpCircle className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" />
                 FAQ
               </button>
               <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <Phone className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" /> 
+                <Phone className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" />
                 Contact Support
               </button>
             </div>

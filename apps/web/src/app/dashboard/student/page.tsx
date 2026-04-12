@@ -64,16 +64,26 @@ export default function StudentPage() {
         setElection(statusData.election);
         setSession(statusData.session);
 
+        // Debug: Log election info
+        console.log('[DEBUG] Student statusData.election:', statusData.election);
+
         // Fetch candidates if there's an active election
         if (statusData.election) {
+          console.log('[DEBUG] Fetching candidates for electionId:', statusData.election.id);
           const candidatesRes = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/elections/${statusData.election.id}/candidates`,
             { credentials: 'include' }
           );
+          console.log('[DEBUG] Candidates response status:', candidatesRes.status);
           if (candidatesRes.ok) {
             const candidatesData = await candidatesRes.json();
+            console.log('[DEBUG] Candidates fetched:', candidatesData);
             setCandidates(candidatesData);
+          } else {
+            console.error('Failed to fetch candidates:', candidatesRes.status, await candidatesRes.text());
           }
+        } else {
+          console.log('[DEBUG] No election in statusData');
         }
       } catch (err) {
         console.error('Auth check failed:', err);

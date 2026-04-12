@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Eye, FileText, Video, Presentation, Image } from 'lucide-react';
+import { Users, Eye, FileText, Video, Presentation, Image, CheckCircle, XCircle } from 'lucide-react';
 
 interface CandidateReviewGridProps {
   candidates: any[];
   onViewDetails: (candidate: any) => void;
+  onRefresh?: () => void;
 }
 
-export default function CandidateReviewGrid({ candidates, onViewDetails }: CandidateReviewGridProps) {
+export default function CandidateReviewGrid({ candidates, onViewDetails, onRefresh }: CandidateReviewGridProps) {
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const filteredCandidates = filter === 'ALL' 
     ? candidates 
@@ -34,6 +36,31 @@ export default function CandidateReviewGrid({ candidates, onViewDetails }: Candi
     const slideCount = candidate.slides?.length || 0;
     const posterCount = candidate.posters?.length || 0;
     return { manifestoCount, videoCount, slideCount, posterCount };
+  };
+
+  const handleUpdateStatus = async (candidateId: string, newStatus: string) => {
+    if (!confirm(`Are you sure you want to ${newStatus.toLowerCase()} this candidate?`)) return;
+    
+    setUpdatingId(candidateId);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (res.ok) {
+        alert(`Candidate ${newStatus.toLowerCase()} successfully!`);
+        if (onRefresh) onRefresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`Failed: ${data.message || res.status}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+    setUpdatingId(null);
   };
 
   return (
@@ -102,6 +129,25 @@ export default function CandidateReviewGrid({ candidates, onViewDetails }: Candi
                 </div>
 
                 {getStatusBadge(candidate.status)}
+
+                {candidate.status === 'PENDING' && (
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleUpdateStatus(candidate.id, 'APPROVED')}
+                      disabled={updatingId === candidate.id}
+                      className="bg-green-500/20 text-green-400 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-green-500/30 transition flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <CheckCircle size={12} /> Approve
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(candidate.id, 'REJECTED')}
+                      disabled={updatingId === candidate.id}
+                      className="bg-red-600/20 text-red-400 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-red-600/30 transition flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <XCircle size={12} /> Reject
+                    </button>
+                  </div>
+                )}
 
                 <button 
                   onClick={() => onViewDetails(candidate)}

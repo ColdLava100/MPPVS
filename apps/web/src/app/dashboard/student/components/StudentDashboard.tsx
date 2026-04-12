@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Clock, CheckCircle, XCircle, Users, Vote } from 'lucide-react';
+import { LogOut, Clock, CheckCircle, XCircle, Users, Vote, User, ChevronRight, Check } from 'lucide-react';
 
 interface StudentDashboardProps {
   election: any;
@@ -197,13 +197,14 @@ export default function StudentDashboard({
           <button
             onClick={handleReviewSubmit}
             disabled={!isBallotComplete}
-            className={`px-8 py-4 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] transition-all ${
+            className={`px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center gap-4 group ${
               isBallotComplete
-                ? 'bg-[#c5a021] text-black hover:bg-yellow-400'
+                ? 'bg-[#c5a021] text-black hover:bg-yellow-400 active:scale-95'
                 : 'bg-slate-600 text-slate-400 cursor-not-allowed'
             }`}
           >
             Review & Submit Vote
+            <ChevronRight size={18} className={`transition-transform ${isBallotComplete ? 'group-hover:translate-x-1' : ''}`} />
           </button>
         </div>
       )}
@@ -215,79 +216,92 @@ export default function StudentDashboard({
             Candidates
           </h3>
 
-          {coursePrefixes.map(prefix => {
-            const courseCandidates = candidates.filter(
-              c => c.user?.course?.studentPrefix === prefix
-            );
-            if (courseCandidates.length === 0) return null;
+          {/* Show ALL candidates regardless of courseSettings */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h4 className="text-sm font-bold text-[#c5a021] uppercase tracking-wider">
+                Select Your Candidates
+              </h4>
+              <span className="text-xs text-slate-400">
+                {selectedCount} / {totalRequired} selected
+              </span>
+            </div>
 
-            const seats = parseInt(courseSettings[prefix]);
-            return (
-              <div key={prefix} className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-bold text-[#c5a021] uppercase tracking-wider">
-                    {prefix} Candidates
-                  </h4>
-                  <span className="text-xs text-slate-400">
-                    {seats} seat{seats !== 1 ? 's' : ''} available
-                  </span>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {candidates.map((candidate: any) => {
+                const isSelected = selectedCandidates.includes(candidate.id);
+                return (
+                  <div
+                    key={candidate.id}
+                    onClick={() => onToggleCandidate(candidate.id)}
+                    className={`relative overflow-hidden p-6 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      isSelected
+                        ? 'border-green-500 bg-green-900/20 shadow-[0_0_20px_rgba(34,197,94,0.15)]'
+                        : 'border-white/10 bg-white/5 hover:border-[#c5a021]/50 hover:bg-white/10'
+                    }`}
+                  >
+                    {/* Selection Status Badge */}
+                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                      isSelected
+                        ? 'bg-green-500 text-black'
+                        : 'bg-white/10 text-slate-400'
+                    }`}>
+                      {isSelected ? 'SELECTED' : 'CLICK TO SELECT'}
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {courseCandidates.map((candidate: any) => {
-                    const isSelected = selectedCandidates.includes(candidate.id);
-                    return (
+                    {/* Candidate Info */}
+                    <div className="flex items-start gap-4 mt-2">
+                      {/* Circular Checkbox */}
                       <div
-                        key={candidate.id}
-                        onClick={() => onToggleCandidate(candidate.id)}
-                        className={`p-4 border rounded-sm cursor-pointer transition-all ${
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'border-green-500 bg-green-500/10'
-                            : 'border-slate-200 bg-white/50 hover:border-[#4c0519]'
+                            ? 'border-green-500 bg-green-500'
+                            : 'border-white/20 bg-white/5'
                         }`}
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                isSelected
-                                  ? 'border-green-500 bg-green-500'
-                                  : 'border-slate-300'
-                              }`}
-                            >
-                              {isSelected && <CheckCircle size={14} className="text-white" />}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-black">
-                                {candidate.user?.name || 'Unknown'}
-                              </p>
-                              <p className="text-[10px] text-slate-500">
-                                {candidate.user?.studentId || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewProfile(candidate);
-                            }}
-                            className="text-[10px] text-[#4c0519] font-black uppercase hover:underline"
-                          >
-                            View
-                          </button>
-                        </div>
-                        {candidate.information && (
-                          <p className="text-[10px] text-slate-500 mt-2 line-clamp-2">
-                            {candidate.information}
-                          </p>
-                        )}
+                        {isSelected && <Check size={16} className="text-black font-bold" />}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+                      
+                      <div className="flex-1">
+                        <h5 className="text-lg font-bold text-white group-hover:text-[#c5a021] transition-colors">
+                          {candidate.user?.name || 'Unknown'}
+                        </h5>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {candidate.user?.course?.studentPrefix || candidate.courseCode || 'N/A'} • {candidate.user?.studentId || candidate.studentId || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Information Preview */}
+                    {candidate.information && (
+                      <p className="text-xs text-slate-400 mt-4 line-clamp-2">
+                        {candidate.information}
+                      </p>
+                    )}
+
+                    {/* View Profile Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewProfile(candidate);
+                      }}
+                      className="mt-4 w-full bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition flex items-center justify-center gap-2"
+                    >
+                      <User size={14} />
+                      View Profile
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {candidates.length === 0 && (
+            <div className="text-center py-12 bg-slate-800/50 rounded-sm">
+              <p className="text-slate-400">No candidates available yet.</p>
+              <p className="text-[10px] text-slate-500 mt-2">Please check back later.</p>
+            </div>
+          )}
         </div>
       )}
 

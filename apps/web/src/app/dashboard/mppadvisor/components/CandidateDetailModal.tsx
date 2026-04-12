@@ -1,14 +1,17 @@
 'use client';
 
-import React from 'react';
-import { X, FileText, Video, Presentation, Image, User, Award, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, FileText, Video, Presentation, Image, User, Award, ExternalLink, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 interface CandidateDetailModalProps {
   candidate: any;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
-export default function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps) {
+export default function CandidateDetailModal({ candidate, onClose, onRefresh }: CandidateDetailModalProps) {
+  const [updating, setUpdating] = useState(false);
+
   if (!candidate) return null;
 
   const getStatusBadge = (status: string) => {
@@ -22,6 +25,32 @@ export default function CandidateDetailModal({ candidate, onClose }: CandidateDe
       default:
         return <span className="bg-slate-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
     }
+  };
+
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!confirm(`Are you sure you want to ${newStatus.toLowerCase()} this candidate?`)) return;
+    
+    setUpdating(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidate.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (res.ok) {
+        alert(`Candidate ${newStatus.toLowerCase()} successfully!`);
+        if (onRefresh) onRefresh();
+        onClose();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`Failed: ${data.message || res.status}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+    setUpdating(false);
   };
 
   return (
@@ -43,6 +72,26 @@ export default function CandidateDetailModal({ candidate, onClose }: CandidateDe
           </div>
           <div className="flex items-center gap-4">
             {getStatusBadge(candidate.status)}
+            {candidate.status === 'PENDING' && (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleUpdateStatus('APPROVED')}
+                  disabled={updating}
+                  className="bg-green-500 text-black px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-green-400 transition flex items-center gap-2 disabled:opacity-50"
+                >
+                  {updating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                  Approve
+                </button>
+                <button 
+                  onClick={() => handleUpdateStatus('REJECTED')}
+                  disabled={updating}
+                  className="bg-red-600 text-white px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-red-500 transition flex items-center gap-2 disabled:opacity-50"
+                >
+                  {updating ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                  Reject
+                </button>
+              </div>
+            )}
             <button 
               onClick={onClose}
               className="p-2 hover:bg-white/20 rounded transition"

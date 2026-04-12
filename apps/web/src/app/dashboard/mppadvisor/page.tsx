@@ -166,6 +166,7 @@ export default function AdvisorDashboard() {
               <CandidateReviewGrid 
                 candidates={candidates}
                 onViewDetails={handleViewDetails}
+                onRefresh={fetchActiveData}
               />
             )}
 
@@ -184,6 +185,7 @@ export default function AdvisorDashboard() {
         <CandidateDetailModal 
           candidate={selectedCandidate}
           onClose={() => setSelectedCandidate(null)}
+          onRefresh={fetchActiveData}
         />
       )}
     </div>

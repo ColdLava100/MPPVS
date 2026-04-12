@@ -78,8 +78,10 @@ export class ElectionsController {
     Role.MPP_ADVISOR,
     Role.SPR_ADVISOR,
     Role.SPR_VOLUNTEER,
+    Role.STUDENT,
   )
   async getElectionCandidates(@Param('id') id: string) {
+    console.log('[DEBUG] /elections/:id/candidates called with id:', id);
     return this.electionsService.getElectionCandidates(id);
   }
 
