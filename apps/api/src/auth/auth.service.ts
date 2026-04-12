@@ -213,6 +213,7 @@ export class AuthService {
         status: election.status,
         startDate: election.startDate,
         endDate: election.endDate,
+        courseSettings: election.courseSettings,
       },
       session: session ? {
         id: session.id,
@@ -399,6 +400,7 @@ export class AuthService {
         status: election.status,
         startDate: election.startDate,
         endDate: election.endDate,
+        courseSettings: election.courseSettings,
       } : null,
       session: session ? {
         id: session.id,

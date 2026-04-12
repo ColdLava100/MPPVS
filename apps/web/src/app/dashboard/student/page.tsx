@@ -99,31 +99,59 @@ export default function StudentPage() {
     const courseSettings = election?.courseSettings || {};
     const coursePrefixes = Object.keys(courseSettings);
 
-    // Check if already selected
+    // DEBUG: Log candidate info
+    const candidate = candidates.find(c => c.id === candidateId);
+    console.log('[DEBUG] handleToggleCandidate called:', {
+      candidateId,
+      candidate: candidate,
+      electionCourseSettings: courseSettings
+    });
+
+    if (!candidate) {
+      console.error('[DEBUG] Candidate not found:', candidateId);
+      return;
+    }
+
+    // Securely extract course prefix
+    const prefix = candidate.user?.course?.studentPrefix || candidate.courseCode;
+    console.log('[DEBUG] Extracted prefix:', prefix);
+
+    if (!prefix) {
+      console.warn('[DEBUG] No course prefix found for candidate');
+      return;
+    }
+
+    // Check if already selected - allow deselection
     if (selectedCandidates.includes(candidateId)) {
+      console.log('[DEBUG] Deselecting candidate:', candidateId);
       setSelectedCandidates(prev => prev.filter(id => id !== candidateId));
       return;
     }
 
-    // Find candidate's course prefix
-    const candidate = candidates.find(c => c.id === candidateId);
-    const prefix = candidate?.courseCode;
+    // Determine max chairs safely
+    const maxChairs = courseSettings[prefix] ? parseInt(courseSettings[prefix], 10) : 0;
+    console.log('[DEBUG] maxChairs for', prefix, ':', maxChairs);
 
-    if (!prefix) return;
-
-    // Check if reached limit for this course
-    const selectedInCourse = selectedCandidates.filter(id => {
-      const c = candidates.find(c => c.id === id);
-      return c?.courseCode === prefix;
-    }).length;
-
-    const limit = parseInt(courseSettings[prefix] || '0');
-
-    if (selectedInCourse >= limit) {
-      alert(`You can only select ${limit} candidate(s) for ${prefix}.`);
+    // FIXED: Check if course has chairs allocated
+    if (maxChairs === 0) {
+      alert(`Voting Configuration Error: The course '${prefix}' has not been allocated any chairs for this election. Please contact the SPR.`);
       return;
     }
 
+    // Count currently selected from this course
+    const selectedInCourse = selectedCandidates.filter(id => {
+      const c = candidates.find(c => c.id === id);
+      const cPrefix = c?.user?.course?.studentPrefix || c?.courseCode;
+      return cPrefix === prefix;
+    }).length;
+
+    // Check if reached limit
+    if (selectedInCourse >= maxChairs) {
+      alert(`You can only select ${maxChairs} candidate(s) for ${prefix}.`);
+      return;
+    }
+
+    console.log('[DEBUG] Selecting candidate:', candidateId, 'Course:', prefix);
     setSelectedCandidates(prev => [...prev, candidateId]);
   };
 
