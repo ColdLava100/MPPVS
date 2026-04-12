@@ -176,6 +176,12 @@ export class AuthController {
     return { success: true };
   }
 
+  @Get('student/status')
+  @UseGuards(JwtAuthGuard)
+  async getStudentStatus(@Req() request: any) {
+    return this.authService.getStudentStatus(request.user.id);
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getCurrentUser(@Req() request: any) {

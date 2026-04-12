@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, CheckCircle } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import UniversalSidebar from '@/components/ui/sidebar';
 import StudentHeader from '@/components/ui/header2';
 import Footer from '@/components/ui/footer';
+import ElectionOverview from './components/ElectionOverview';
 import ElectionSetup from './components/ElectionSetup';
 import CourseConfig from './components/CourseConfig';
 import VoterImport from './components/VoterImport';
 import SessionManager from './components/SessionManager';
+import ElectionSetupButton from './components/ElectionSetupButton';
 
 const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
@@ -20,11 +22,14 @@ const STEPS = [
   { id: 4, label: 'Voting Sessions' },
 ];
 
+type ViewMode = 'overview' | 'workflow';
+
 export default function SprDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
+  const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [currentStep, setCurrentStep] = useState(1);
   const [activeElectionId, setActiveElectionId] = useState<string | null>(null);
   const [activeElection, setActiveElection] = useState<any>(null);
@@ -92,6 +97,28 @@ export default function SprDashboard() {
     setActiveElection(election);
   };
 
+  const handleCreateNew = () => {
+    setActiveElectionId(null);
+    setActiveElection(null);
+    setCurrentStep(1);
+    setViewMode('workflow');
+  };
+
+  const handleEditExisting = (election: any) => {
+    setActiveElectionId(election.id);
+    setActiveElection(election);
+    setCurrentStep(1);
+    setViewMode('workflow');
+  };
+
+  const handleBackToOverview = () => {
+    setViewMode('overview');
+    setActiveElectionId(null);
+    setActiveElection(null);
+    setCurrentStep(1);
+    fetchActiveData();
+  };
+
   const handleNextStep = () => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
@@ -104,6 +131,31 @@ export default function SprDashboard() {
     }
   };
 
+  const handleComplete = async () => {
+    if (!activeElectionId) {
+      alert('No election selected');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${activeElectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'DRAFT' })
+      });
+
+      if (res.ok) {
+        alert('Election completed and saved as Draft!');
+        handleBackToOverview();
+      } else {
+        alert(`Failed: ${res.status}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
   const canProceed = (step: number): boolean => {
     switch (step) {
       case 1:
@@ -111,7 +163,7 @@ export default function SprDashboard() {
       case 2:
         return !!activeElectionId;
       case 3:
-        return true; // Can proceed even without import
+        return true;
       case 4:
         return true;
       default:
@@ -160,100 +212,135 @@ export default function SprDashboard() {
                   Welcome, <span className="italic">{currentUser?.name || 'SPR'}</span>
                 </h1>
               </div>
+              
+              {viewMode === 'overview' && (
+                <ElectionSetupButton 
+                  elections={elections}
+                  onCreateNew={handleCreateNew}
+                  onEditExisting={handleEditExisting}
+                />
+              )}
             </div>
 
-            {/* Stepper UI */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-6">
-              <div className="flex items-center justify-between">
-                {STEPS.map((step, index) => (
-                  <React.Fragment key={step.id}>
-                    <div className="flex flex-col items-center">
-                      <div 
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-[12px] font-black uppercase tracking-widest transition-all ${
-                          currentStep > step.id 
-                            ? 'bg-green-500 text-black' 
-                            : currentStep === step.id 
-                              ? 'bg-yellow-500 text-black' 
-                              : 'bg-white/10 text-slate-400'
-                        }`}
-                      >
-                        {currentStep > step.id ? <CheckCircle size={20} /> : step.id}
-                      </div>
-                      <span className={`mt-3 text-[10px] font-black uppercase tracking-widest ${
-                        currentStep >= step.id ? 'text-white' : 'text-slate-400'
-                      }`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {index < STEPS.length - 1 && (
-                      <div className={`flex-1 h-1 mx-4 transition-all ${
-                        currentStep > step.id ? 'bg-green-500' : 'bg-white/10'
-                      }`} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
-            {/* Active Step Content */}
-            <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
-              {currentStep === 1 && (
-                <ElectionSetup 
+            {viewMode === 'overview' ? (
+              /* Main Overview View */
+              <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                <ElectionOverview 
                   elections={elections}
                   courses={courses}
-                  activeElectionId={activeElectionId}
-                  onRefresh={fetchActiveData}
-                  onSelectElection={handleElectionSelect}
-                />
-              )}
-
-              {currentStep === 2 && activeElectionId && (
-                <CourseConfig 
-                  election={activeElection}
-                  courses={courses}
+                  onEditElection={handleEditExisting}
                   onRefresh={fetchActiveData}
                 />
-              )}
+              </div>
+            ) : (
+              /* Workflow View */
+              <>
+                {/* Stepper UI */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-6">
+                  <div className="flex items-center justify-between">
+                    {STEPS.map((step, index) => (
+                      <React.Fragment key={step.id}>
+                        <div className="flex flex-col items-center">
+                          <div 
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-[12px] font-black uppercase tracking-widest transition-all ${
+                              currentStep > step.id 
+                                ? 'bg-green-500 text-black' 
+                                : currentStep === step.id 
+                                  ? 'bg-yellow-500 text-black' 
+                                  : 'bg-white/10 text-slate-400'
+                            }`}
+                          >
+                            {currentStep > step.id ? '✓' : step.id}
+                          </div>
+                          <span className={`mt-3 text-[10px] font-black uppercase tracking-widest ${
+                            currentStep >= step.id ? 'text-white' : 'text-slate-400'
+                          }`}>
+                            {step.label}
+                          </span>
+                        </div>
+                        {index < STEPS.length - 1 && (
+                          <div className={`flex-1 h-1 mx-4 transition-all ${
+                            currentStep > step.id ? 'bg-green-500' : 'bg-white/10'
+                          }`} />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
 
-              {currentStep === 3 && (
-                <VoterImport 
-                  electionId={activeElectionId}
-                  onRefresh={fetchActiveData}
-                />
-              )}
+                {/* Active Step Content */}
+                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                  {currentStep === 1 && (
+                    <ElectionSetup 
+                      elections={elections}
+                      courses={courses}
+                      activeElectionId={activeElectionId}
+                      activeElection={activeElection}
+                      onRefresh={fetchActiveData}
+                      onSelectElection={handleElectionSelect}
+                      onBack={handleBackToOverview}
+                      isEditMode={!!activeElectionId}
+                    />
+                  )}
 
-              {currentStep === 4 && (
-                <SessionManager 
-                  election={activeElection}
-                  courses={courses}
-                  votingSessions={votingSessions}
-                  onRefresh={fetchActiveData}
-                />
-              )}
-            </div>
+                  {currentStep === 2 && activeElectionId && (
+                    <CourseConfig 
+                      election={activeElection}
+                      courses={courses}
+                      onRefresh={fetchActiveData}
+                    />
+                  )}
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between">
-              <button 
-                onClick={handlePrevStep}
-                disabled={currentStep === 1}
-                className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                  currentStep === 1 ? 'opacity-30 cursor-not-allowed' : ''
-                }`}
-              >
-                ← Back
-              </button>
+                  {currentStep === 3 && (
+                    <VoterImport 
+                      electionId={activeElectionId}
+                      onRefresh={fetchActiveData}
+                    />
+                  )}
 
-              <button 
-                onClick={handleNextStep}
-                disabled={currentStep === 4 || !canProceed(currentStep)}
-                className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${
-                  (currentStep === 4 || !canProceed(currentStep)) ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {currentStep === 4 ? 'Complete' : 'Next Step'} →
-              </button>
-            </div>
+                  {currentStep === 4 && (
+                    <SessionManager 
+                      election={activeElection}
+                      courses={courses}
+                      votingSessions={votingSessions}
+                      onRefresh={fetchActiveData}
+                    />
+                  )}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between">
+                  <button 
+                    onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep}
+                    className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}
+                  >
+                    ← {currentStep === 1 ? 'Back to Overview' : 'Back'}
+                  </button>
+
+                  {currentStep < 4 ? (
+                    <button 
+                      onClick={handleNextStep}
+                      disabled={!canProceed(currentStep)}
+                      className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${
+                        !canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Next Step →
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleComplete}
+                      disabled={!activeElectionId}
+                      className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${
+                        !activeElectionId ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Complete
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="relative z-10 w-full mt-auto">

@@ -1,60 +1,82 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Activity } from 'lucide-react';
-
-import StudentHeader from '@/components/ui/header2';
-import Footer from '@/components/ui/footer';
 import UniversalSidebar from '@/components/ui/sidebar';
-import { MetricBox, StatBar, VisionariesGrid } from './components';
+import StudentHeader from '@/components/ui/header2';
+import StudentDashboard from './components/StudentDashboard';
+import CandidateProfileModal from './components/CandidateProfileModal';
 
-const STATS_DATA = [
-  { label: 'Total Population', value: '1,024' },
-  { label: 'Votes Cast', value: '842', color: 'text-red-500' },
-  { label: 'Closed In', value: '02 : 14 : 55', color: 'text-red-500' },
-  { label: 'Next Update', value: '00 : 15', color: 'text-blue-400' },
-];
+const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
-const LEADERS_DATA = [
-  {
-    name: 'Ahmad Daniel',
-    dept: 'DCS',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974',
-    quote: 'Proposing a digital-first governance model to streamline student feedback and faculty collaboration.',
-  },
-  {
-    name: 'Sarah Alisya',
-    dept: 'DBS',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974',
-    quote: 'Focused on sustainable student commerce initiatives and developing industry-standard leadership workshops.',
-  },
-  {
-    name: 'Farhan Razak',
-    dept: 'DIA',
-    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974',
-    quote: 'Advocating for financial transparency in student funds and a multi-year audit program.',
-  },
-];
-
-export default function StudentDashboard() {
+export default function StudentPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [election, setElection] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
+  const [canVote, setCanVote] = useState(false);
+  const [reason, setReason] = useState<string | null>(null);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [votedAt, setVotedAt] = useState<string | null>(null);
+  const [selectedCandidateProfile, setSelectedCandidateProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { 
+        const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/student/status`, { 
           credentials: 'include' 
         });
+        
         if (authRes.status === 401 || authRes.status === 403) {
+          const logoutRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+          });
           router.push('/login');
           return;
         }
-        const userData = await authRes.json();
-        setCurrentUser(userData);
-      } catch {
+
+        const statusData = await authRes.json();
+        
+        // Check if already voted (from status response)
+        if (statusData.hasVoted) {
+          setHasVoted(true);
+          setVotedAt(statusData.votedAt);
+          setCurrentUser({ name: 'Student' });
+          setIsLoading(false);
+          return;
+        }
+
+        // Get user data from /auth/me
+        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+          credentials: 'include',
+        });
+        if (meRes.ok) {
+          const userData = await meRes.json();
+          setCurrentUser(userData);
+        }
+
+        setCanVote(statusData.canVote);
+        setReason(statusData.reason);
+        setElection(statusData.election);
+        setSession(statusData.session);
+
+        // Fetch candidates if there's an active election
+        if (statusData.election) {
+          const candidatesRes = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/elections/${statusData.election.id}/candidates`,
+            { credentials: 'include' }
+          );
+          if (candidatesRes.ok) {
+            const candidatesData = await candidatesRes.json();
+            setCandidates(candidatesData);
+          }
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
         router.push('/login');
         return;
       }
@@ -63,113 +85,174 @@ export default function StudentDashboard() {
     checkAuth();
   }, [router]);
 
+  const handleToggleCandidate = (candidateId: string) => {
+    const courseSettings = election?.courseSettings || {};
+    const coursePrefixes = Object.keys(courseSettings);
+
+    // Check if already selected
+    if (selectedCandidates.includes(candidateId)) {
+      setSelectedCandidates(prev => prev.filter(id => id !== candidateId));
+      return;
+    }
+
+    // Find candidate's course prefix
+    const candidate = candidates.find(c => c.id === candidateId);
+    const prefix = candidate?.courseCode;
+
+    if (!prefix) return;
+
+    // Check if reached limit for this course
+    const selectedInCourse = selectedCandidates.filter(id => {
+      const c = candidates.find(c => c.id === id);
+      return c?.courseCode === prefix;
+    }).length;
+
+    const limit = parseInt(courseSettings[prefix] || '0');
+
+    if (selectedInCourse >= limit) {
+      alert(`You can only select ${limit} candidate(s) for ${prefix}.`);
+      return;
+    }
+
+    setSelectedCandidates(prev => [...prev, candidateId]);
+  };
+
+  const handleViewProfile = (candidate: any) => {
+    setSelectedCandidateProfile(candidate);
+  };
+
+  const handleSubmitVote = async () => {
+    if (!election) return;
+    if (selectedCandidates.length === 0) {
+      alert('Please select at least one candidate.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/votes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          electionId: election.id,
+          candidateIds: selectedCandidates,
+        }),
+      });
+
+      if (res.ok) {
+        setHasVoted(true);
+        setVotedAt(new Date().toISOString());
+      } else {
+        const err = await res.text();
+        alert(`Failed to submit vote: ${err}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <p>Loading...</p>
+      <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
+        <UniversalSidebar role="student" />
+        <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
+          <StudentHeader />
+          <main className="flex-grow flex items-center justify-center">
+            <p className="text-slate-400">Loading...</p>
+          </main>
+        </div>
       </div>
     );
   }
 
-  const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
-
-  const handleVoteNowClick = () => {
-    router.push('/dashboard/student/ballot');
-  };
-
-  const handleStopImpersonation = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/stop-impersonation`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        router.push('/dashboard/superadmin');
-      } else {
-        alert('Failed to return to superadmin.');
-      }
-    } catch (err: any) { alert(`Error: ${err.message}`); }
-  };
+  // Check if user has voted - show success popup
+  if (hasVoted) {
+    return (
+      <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
+        <UniversalSidebar role="student" />
+        <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
+          <StudentHeader />
+          <main className="flex-grow flex items-center justify-center relative">
+            <div 
+              className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
+            />
+            <div className="relative z-10">
+              <div className="bg-white p-12 rounded-sm max-w-md w-full mx-4 text-center">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-black uppercase tracking-tighter mb-4">
+                  Vote Submitted
+                </h2>
+                <p className="text-slate-600 mb-2">
+                  Your vote has been cast successfully.
+                </p>
+                {votedAt && (
+                  <p className="text-sm text-slate-500 mb-8">
+                    Voted on: {new Date(votedAt).toLocaleString()}
+                  </p>
+                )}
+                <button
+                  onClick={async () => {
+                    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    router.push('/login');
+                  }}
+                  className="bg-[#4c0519] text-white px-8 py-4 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-[#6b1324] transition-all w-full"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
       <UniversalSidebar role="student" />
 
       <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        {currentUser?.isImpersonating && (
-          <button
-            onClick={handleStopImpersonation}
-            className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
-          >
-            Stop Impersonating (Return to Superadmin)
-          </button>
-        )}
-
-        <StudentHeader onVoteClick={handleVoteNowClick} />
+        <StudentHeader />
 
         <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div
+          <div 
             className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{
-              backgroundImage: `url(${bgImageUrl})`,
-              filter: 'blur(10px) brightness(0.2)'
-            }}
+            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
           />
 
           <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
-            <div className="flex justify-between items-end mb-12">
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                  <Activity size={14} className="text-red-600 animate-pulse" />
-                  MPP 2026 Live Metrics
-                </p>
-                <h1 className="text-6xl font-bold uppercase tracking-tighter text-white italic leading-none">
-                  Campus-Wide <br /> Election Pulse
-                </h1>
-              </div>
-              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl px-6 py-3 rounded-full border border-white/10 shadow-2xl">
-                <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_12px_rgba(220,38,38,0.9)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Live Updates</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-12">
-              <MetricBox code="DBS" votes="412" seats="3/5" color="border-b-blue-600" icon={<span>💼</span>} />
-              <MetricBox code="DCS" votes="284" seats="4/5" color="border-b-red-700" icon={<span>💻</span>} />
-              <MetricBox code="DIA" votes="198" seats="2/5" color="border-b-orange-600" icon={<span>🧮</span>} />
-              <MetricBox code="DLH" votes="106" seats="1/5" color="border-b-green-700" icon={<span>🌿</span>} />
-              <MetricBox code="CFAB" votes="324" seats="5/5" color="border-b-yellow-600" icon={<span>💰</span>} />
-            </div>
-
-            <StatBar stats={STATS_DATA} />
-
-            <section className="relative rounded-sm p-24 text-white mb-32 overflow-hidden bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/95 to-black shadow-2xl border border-white/5 backdrop-blur-md">
-              <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-                <div className="w-full h-full border-[80px] border-white/10 rounded-full -mr-40 mt-10" />
-              </div>
-              <div className="relative z-10 max-w-2xl">
-                <p className="text-[11px] font-black uppercase tracking-[0.6em] text-yellow-500 mb-10">Student Representative Council 2026</p>
-                <h2 className="text-8xl font-bold mb-10 leading-[0.8] tracking-tighter italic uppercase">LEAD THE <br /> FUTURE</h2>
-                <p className="text-lg opacity-60 leading-relaxed mb-14 font-light max-w-lg">
-                  Your vote is the cornerstone of academic excellence. Choose the visionaries who will shape the next era of our institutional governance.
-                </p>
-                <button
-                  onClick={handleVoteNowClick}
-                  className="bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl active:scale-95 flex items-center gap-4 group"
-                >
-                  Cast Your Ballot <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </section>
-
-            <VisionariesGrid leaders={LEADERS_DATA} />
-          </div>
-
-          <div className="relative z-10 w-full mt-auto">
-            <Footer />
+            <StudentDashboard
+              election={election}
+              session={session}
+              canVote={canVote}
+              reason={reason}
+              user={currentUser}
+              candidates={candidates}
+              selectedCandidates={selectedCandidates}
+              onToggleCandidate={handleToggleCandidate}
+              onViewProfile={handleViewProfile}
+              onSubmitVote={handleSubmitVote}
+              hasVoted={hasVoted}
+              votedAt={votedAt}
+            />
           </div>
         </main>
       </div>
+
+      {selectedCandidateProfile && (
+        <CandidateProfileModal
+          candidate={selectedCandidateProfile}
+          onClose={() => setSelectedCandidateProfile(null)}
+        />
+      )}
     </div>
   );
 }

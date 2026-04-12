@@ -83,7 +83,9 @@ export default function LoginPage() {
         router.push(`/dashboard/${folderName}`);
       } else {
         const data = await response.json().catch(() => ({}));
-        setError(data.message || 'Invalid credentials. Please try again.');
+        // For student login, the backend returns detailed error messages
+        const errorMessage = data.message || data.error || data.reason || 'Invalid credentials. Please try again.';
+        setError(errorMessage);
         setIsLoading(false);
       }
     } catch (err: any) {

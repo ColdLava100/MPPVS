@@ -23,6 +23,7 @@ import { VoterRegistrationsModule } from './voter-registrations/voter-registrati
         PORT: Joi.number().default(3001),
         DATABASE_URL: Joi.string().required(),
         FRONTEND_URL: Joi.string().uri().required(),
+        TZ: Joi.string().default('Asia/Kuala_Lumpur'),
       }),
     }),
     UsersModule,

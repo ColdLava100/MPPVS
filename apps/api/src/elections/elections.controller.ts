@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -33,13 +34,77 @@ export class ElectionsController {
     return this.electionsService.getElections();
   }
 
+  @Get(':id')
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async getElectionById(@Param('id') id: string) {
+    return this.electionsService.getElectionById(id);
+  }
+
+  @Get(':id/voters')
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async getElectionVoters(
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('course') course?: string,
+  ) {
+    return this.electionsService.getElectionVoters(id, {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 50,
+      search,
+      status: (status as any) || 'all',
+      course,
+    });
+  }
+
+  @Get(':id/candidates')
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async getElectionCandidates(@Param('id') id: string) {
+    return this.electionsService.getElectionCandidates(id);
+  }
+
+  @Get(':id/sessions')
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async getElectionSessions(@Param('id') id: string) {
+    return this.electionsService.getElectionSessions(id);
+  }
+
   @Post()
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async createElection(@Body() body: any, @Req() req: any) {
+    console.log('[DEBUG] Controller received body.startDate:', body.startDate, 'body.endDate:', body.endDate);
     return this.electionsService.create(
       body.title,
       body.courseSettings,
       req.user.id,
+      body.startDate,
+      body.endDate,
     );
   }
 
@@ -50,6 +115,7 @@ export class ElectionsController {
     @Body() body: any,
     @Req() req: any,
   ) {
+    console.log('[DEBUG] Controller update received body.startDate:', body.startDate, 'body.endDate:', body.endDate);
     return this.electionsService.updateElection(id, body, req.user.id);
   }
 

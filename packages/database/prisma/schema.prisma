@@ -55,6 +55,8 @@ model Election {
   id              String   @id @default(uuid())
   title           String   // e.g., "MPP Election 2026"
   status          String   @default("DRAFT") // DRAFT, ACTIVE, COMPLETED
+  startDate       DateTime? // When election starts
+  endDate         DateTime? // When election ends
   
   // DYNAMIC ATTRIBUTES: Defines chairs and votes per course
   // Example: { "DCS": { "chairs": 3, "maxVotes": 3 }, "DIA": { "chairs": 2, "maxVotes": 2 } }

@@ -29,6 +29,43 @@ export class VotesService {
       throw new ForbiddenException('You are not registered for this election.');
     }
 
+    // Rule 0.5: Check voting session time window
+    const sessions = await prisma.votingSession.findMany({
+      where: { electionId },
+    });
+
+    if (sessions.length > 0) {
+      const now = new Date();
+      const activeSession = sessions.find(s => {
+        const start = new Date(s.startTime);
+        const end = new Date(s.endTime);
+        return now >= start && now <= end;
+      });
+
+      if (!activeSession) {
+        const sortedSessions = sessions.sort(
+          (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+        const nextSession = sortedSessions.find(s => new Date(s.startTime) > now);
+        
+        if (nextSession) {
+          throw new ForbiddenException(
+            `Your voting session is not active yet. It starts on ${new Date(nextSession.startTime).toLocaleString()}.`
+          );
+        }
+        
+        throw new ForbiddenException('Your voting session has ended.');
+      }
+
+      // Check student ID range if specified
+      const user = await prisma.user.findUnique({ where: { id: voterId } });
+      if (user?.studentId && activeSession.studentIdStart && activeSession.studentIdEnd) {
+        if (user.studentId < activeSession.studentIdStart || user.studentId > activeSession.studentIdEnd) {
+          throw new ForbiddenException('Your student ID is not within the allowed range for this session.');
+        }
+      }
+    }
+
     // Rule 1: No double voting
     const existingVote = await prisma.vote.findFirst({
       where: { voterId, electionId },
