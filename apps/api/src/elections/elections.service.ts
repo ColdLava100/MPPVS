@@ -332,4 +332,86 @@ export class ElectionsService {
 
     return { success: true };
   }
+
+  async getPublicMetrics() {
+    const activeElection = await prisma.election.findFirst({
+      where: { status: 'ACTIVE' },
+    });
+
+    if (!activeElection) {
+      return {
+        activeElection: null,
+        metrics: { totalVoters: 0, totalVotes: 0 },
+        courseMetrics: [],
+        topCandidates: [],
+      };
+    }
+
+    const electionId = activeElection.id;
+    const courseSettings = activeElection.courseSettings as Record<string, number>;
+
+    const registrations = await prisma.voterRegistration.findMany({
+      where: { electionId, isArchived: false },
+    });
+    const totalVoters = registrations.length;
+
+    const votes = await prisma.vote.findMany({
+      where: { electionId },
+    });
+    const totalVotes = votes.length;
+
+    const voteCountsByCandidate = votes.reduce((acc, vote) => {
+      acc[vote.candidateId] = (acc[vote.candidateId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const candidates = await prisma.candidate.findMany({
+      where: { electionId, status: 'APPROVED' },
+      include: {
+        user: { include: { course: true } },
+      },
+    });
+
+    const courseMetrics = Object.entries(courseSettings).map(([course, seats]) => {
+      const courseCandidates = candidates.filter(
+        c => c.user?.course?.studentPrefix === course
+      );
+      const votesForCourse = courseCandidates.reduce(
+        (sum, c) => sum + (voteCountsByCandidate[c.id] || 0),
+        0
+      );
+      return {
+        course,
+        votes: votesForCourse,
+        seats,
+      };
+    });
+
+    const sortedCandidates = candidates
+      .map(c => ({
+        id: c.id,
+        name: c.user?.name || 'Unknown',
+        coursePrefix: c.user?.course?.studentPrefix || c.user?.course?.code || 'N/A',
+        info: c.information || '',
+        imageUrl: c.profilePicture || null,
+        voteCount: voteCountsByCandidate[c.id] || 0,
+      }))
+      .sort((a, b) => b.voteCount - a.voteCount)
+      .slice(0, 3);
+
+    return {
+      activeElection: {
+        id: activeElection.id,
+        title: activeElection.title,
+        endDate: activeElection.endDate,
+        courseSettings,
+      },
+      metrics: {
+        totalVoters,
+        totalVotes,
+      },
+      courseMetrics,
+      topCandidates: sortedCandidates,
+    };
+  }
 }

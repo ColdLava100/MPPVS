@@ -16,11 +16,17 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles, Role } from '../common/decorators/roles.decorator';
 
 @Controller('elections')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ElectionsController {
   constructor(private readonly electionsService: ElectionsService) {}
 
+  @Get('public/metrics')
+  @UseGuards()
+  async getPublicMetrics() {
+    return this.electionsService.getPublicMetrics();
+  }
+
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     Role.SUPERADMIN,
     Role.ADMIN,
@@ -35,6 +41,7 @@ export class ElectionsController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     Role.SUPERADMIN,
     Role.ADMIN,
@@ -47,6 +54,7 @@ export class ElectionsController {
   }
 
   @Get(':id/voters')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     Role.SUPERADMIN,
     Role.ADMIN,
