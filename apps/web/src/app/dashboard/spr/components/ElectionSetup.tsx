@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Vote, Save, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Vote, Save, Trash2 } from 'lucide-react';
 
 interface ElectionSetupProps {
   elections: any[];
@@ -146,18 +146,8 @@ export default function ElectionSetup({
     setCourseConfig(initial);
   };
 
-  return (
+return (
     <div>
-      {isEditMode && (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          <span className="text-[10px] font-black uppercase tracking-widest">Back to Overview</span>
-        </button>
-      )}
-
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
           <Vote size={20} className="text-white" />
@@ -266,32 +256,19 @@ export default function ElectionSetup({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <button type="submit" className="bg-[#c5a021] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2">
-              <Save size={16} /> {isEditMode ? 'Save Changes' : 'Create Election'}
-            </button>
-            {!isEditMode && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="bg-white/10 text-slate-400 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
+        {/* Standardized Action Footer */}
+        <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-end gap-4">
+          <button type="button" onClick={resetForm} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+            Reset
+          </button>
           {isEditMode && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
-            >
+            <button type="button" onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all">
               <Trash2 size={16} /> Delete Election
             </button>
           )}
+          <button type="submit" className="bg-[#c5a021] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2">
+            <Save size={16} /> {isEditMode ? 'Save Changes' : 'Create Election'}
+          </button>
         </div>
       </form>
     </div>

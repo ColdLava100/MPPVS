@@ -239,7 +239,7 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
     }
   };
 
-  if (!electionId) {
+if (!electionId) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-6">
@@ -251,9 +251,10 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload CSV to import voters</p>
           </div>
         </div>
-        <div className="text-center py-12 bg-slate-50 border border-dashed border-slate-300 rounded-sm">
-          <AlertCircle size={48} className="text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">Please complete Step 1 and Step 2 first to select an election.</p>
+        <div className="p-12 border-2 border-dashed border-slate-200 rounded-sm text-center">
+          <AlertCircle size={48} className="mx-auto text-slate-300 mb-4" />
+          <p className="text-slate-500 font-bold">No Election Selected</p>
+          <p className="text-xs text-slate-400 mt-2">Please select an election from the overview to begin importing voters.</p>
         </div>
       </div>
     );
@@ -273,7 +274,7 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
         </div>
         <button 
           onClick={downloadTemplate}
-          className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2"
+          className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2 text-slate-500 hover:text-white"
         >
           <Download size={14} /> Download Template
         </button>
@@ -310,14 +311,11 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
             <p className="text-sm font-bold text-black">
               Preview: {parsedVoters.length} voters found
             </p>
-            <button onClick={clearData} className="text-red-500 text-[10px] font-black uppercase">
-              Clear
-            </button>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-sm overflow-hidden max-h-64 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 sticky top-0">
                 <tr>
                   <th className="px-4 py-2 text-left text-[10px] font-black text-slate-500 uppercase">Name</th>
                   <th className="px-4 py-2 text-left text-[10px] font-black text-slate-500 uppercase">Student ID</th>
@@ -343,13 +341,9 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
             )}
           </div>
 
-          <div className="mt-4 flex justify-end">
-            <button 
-              onClick={handleImport}
-              disabled={isImporting}
-              className="bg-[#c5a021] text-black px-8 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
-            >
-              {isImporting ? 'Importing...' : `Import ${parsedVoters.length} Voters`}
+          <div className="mt-4 flex items-center justify-between">
+            <button onClick={clearData} className="text-red-500 text-[10px] font-black uppercase tracking-widest hover:text-red-600 transition-colors">
+              Clear Preview
             </button>
           </div>
         </div>
@@ -379,34 +373,13 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
       {/* Imported Voters Preview */}
       {importedVoters.length > 0 && (
         <div className="mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users size={18} className="text-[#4c0519]" />
-              <h4 className="text-lg font-bold uppercase tracking-tighter text-[#4c0519]">
-                Imported Voters ({importedVoters.length})
-              </h4>
-            </div>
-            <button 
-              onClick={async () => {
-                if (!electionId || !confirm('Archive all voters for this election?')) return;
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/${electionId}/archive`, {
-                  method: 'POST',
-                  credentials: 'include'
-                });
-                if (res.ok) {
-                  alert('Voters archived successfully!');
-                  fetchImportedVoters();
-                  onRefresh();
-                } else {
-                  alert('Failed to archive voters');
-                }
-              }}
-              className="bg-red-600 text-white px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-red-700"
-            >
-              Archive All
-            </button>
+          <div className="flex items-center gap-2 mb-4">
+            <Users size={18} className="text-[#4c0519]" />
+            <h4 className="text-lg font-bold uppercase tracking-tighter text-[#4c0519]">
+              Imported Voters ({importedVoters.length})
+            </h4>
           </div>
-          
+
           <div className="bg-white border border-slate-200 rounded-sm overflow-hidden max-h-80 overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 sticky top-0">
@@ -426,7 +399,7 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
                       <td className="px-4 py-2 text-black font-medium">{user.name || '-'}</td>
                       <td className="px-4 py-2 text-black font-mono text-xs">{user.studentId || '-'}</td>
                       <td className="px-4 py-2 text-black font-mono text-xs">{user.icNumber || '-'}</td>
-                      <td className="px-4 py-2 text-black text-xs">{user.email || '-'}</td>
+                      <td className="px-4 py-2 text-xs text-slate-600">{user.email || '-'}</td>
                       <td className="px-4 py-2">
                         {reg.isArchived ? (
                           <span className="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">Archived</span>
@@ -442,6 +415,40 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
           </div>
         </div>
       )}
+
+      {/* Standardized Action Footer */}
+      <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-end gap-4">
+        {importedVoters.length > 0 && (
+          <button
+            onClick={async () => {
+              if (!electionId || !confirm('Archive all voters for this election?')) return;
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/${electionId}/archive`, {
+                method: 'POST',
+                credentials: 'include'
+              });
+              if (res.ok) {
+                alert('Voters archived successfully!');
+                fetchImportedVoters();
+                onRefresh();
+              } else {
+                alert('Failed to archive voters');
+              }
+            }}
+            className="bg-red-600 text-white px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
+          >
+            Archive All
+          </button>
+        )}
+        {parsedVoters.length > 0 && (
+          <button
+            onClick={handleImport}
+            disabled={isImporting}
+            className="bg-[#c5a021] text-black px-8 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
+          >
+            {isImporting ? 'Importing...' : `Import ${parsedVoters.length} Voters`}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

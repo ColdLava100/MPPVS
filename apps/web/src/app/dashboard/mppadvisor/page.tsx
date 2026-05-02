@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Activity } from 'lucide-react';
-import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 import { AdvisorMetricsGrid, CandidateReviewGrid, ElectionMonitor } from './components';
 import CandidateDetailModal from './components/CandidateDetailModal';
 
@@ -96,28 +95,25 @@ export default function AdvisorDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="mpp_advisor" />
+    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      {currentUser?.isImpersonating && (
+        <button
+          onClick={handleStopImpersonation}
+          className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
+        >
+          Stop Impersonating (Return to Superadmin)
+        </button>
+      )}
 
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        {currentUser?.isImpersonating && (
-          <button
-            onClick={handleStopImpersonation}
-            className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
-          >
-            Stop Impersonating (Return to Superadmin)
-          </button>
-        )}
+      <UniversalHeader role="mpp_advisor" userName={currentUser?.name} />
 
-        <StudentHeader />
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
+        />
 
-        <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-          />
-
-          <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
+        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
             {/* Hero Section */}
             <div className="flex justify-between items-end">
               <div>
@@ -177,17 +173,19 @@ export default function AdvisorDashboard() {
               />
             )}
           </div>
-        </main>
-      </div>
 
-      {/* Candidate Detail Modal */}
-      {selectedCandidate && (
-        <CandidateDetailModal 
-          candidate={selectedCandidate}
-          onClose={() => setSelectedCandidate(null)}
-          onRefresh={fetchActiveData}
-        />
-      )}
-    </div>
-  );
+          <div className="relative z-10 w-full mt-auto">
+            <div className="h-24" />
+          </div>
+        </main>
+
+        {selectedCandidate && (
+          <CandidateDetailModal 
+            candidate={selectedCandidate}
+            onClose={() => setSelectedCandidate(null)}
+            onRefresh={fetchActiveData}
+          />
+        )}
+      </div>
+    );
 }

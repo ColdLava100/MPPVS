@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity } from 'lucide-react';
-import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import { Activity, Settings, BookOpen, Users, Clock, Vote } from 'lucide-react';
+import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
 import ElectionOverview from './components/ElectionOverview';
 import ElectionSetup from './components/ElectionSetup';
@@ -179,29 +178,26 @@ export default function SprDashboard() {
     );
   }
 
-  return (
-    <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="spr" />
+return (
+    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      {currentUser?.isImpersonating && (
+        <button
+          onClick={handleStopImpersonation}
+          className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
+        >
+          Stop Impersonating (Return to Superadmin)
+        </button>
+      )}
 
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        {currentUser?.isImpersonating && (
-          <button
-            onClick={handleStopImpersonation}
-            className="bg-red-600 hover:bg-red-700 text-white w-full py-2 text-xs font-bold uppercase tracking-[0.2em] z-50 transition-colors"
-          >
-            Stop Impersonating (Return to Superadmin)
-          </button>
-        )}
+      <UniversalHeader role="spr" userName={currentUser?.name} />
 
-        <StudentHeader />
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
+        />
 
-        <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-          />
-
-          <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
+        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
             {/* Hero Section */}
             <div className="flex justify-between items-end">
               <div>
@@ -234,112 +230,92 @@ export default function SprDashboard() {
               </div>
             ) : (
               /* Workflow View */
-              <>
-                {/* Stepper UI */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-6">
-                  <div className="flex items-center justify-between">
-                    {STEPS.map((step, index) => (
-                      <React.Fragment key={step.id}>
-                        <div className="flex flex-col items-center">
-                          <div 
-                            className={`w-12 h-12 rounded-full flex items-center justify-center text-[12px] font-black uppercase tracking-widest transition-all ${
-                              currentStep > step.id 
-                                ? 'bg-green-500 text-black' 
-                                : currentStep === step.id 
-                                  ? 'bg-yellow-500 text-black' 
-                                  : 'bg-white/10 text-slate-400'
-                            }`}
-                          >
-                            {currentStep > step.id ? '✓' : step.id}
+              <div className="flex flex-col gap-6">
+                
+                {/* CREATE MODE: Numbered Stepper Pipeline */}
+                {!activeElectionId && (
+                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-6">
+                    <div className="flex items-center justify-between">
+                      {STEPS.map((step, index) => (
+                        <React.Fragment key={step.id}>
+                          <div className="flex flex-col items-center">
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center text-[12px] font-black uppercase tracking-widest transition-all ${
+                                step.id === currentStep || step.id < currentStep
+                                  ? 'bg-[#c5a021] text-black'
+                                  : 'bg-white/5 text-slate-500 border border-white/5'
+                              }`}
+                            >
+                              {step.id}
+                            </div>
+                            <span className={`mt-3 text-[10px] font-black uppercase tracking-widest ${
+                              step.id === currentStep || step.id < currentStep ? 'text-white' : 'text-slate-500'
+                            }`}>
+                              {step.label}
+                            </span>
                           </div>
-                          <span className={`mt-3 text-[10px] font-black uppercase tracking-widest ${
-                            currentStep >= step.id ? 'text-white' : 'text-slate-400'
-                          }`}>
-                            {step.label}
-                          </span>
-                        </div>
-                        {index < STEPS.length - 1 && (
-                          <div className={`flex-1 h-1 mx-4 transition-all ${
-                            currentStep > step.id ? 'bg-green-500' : 'bg-white/10'
-                          }`} />
-                        )}
-                      </React.Fragment>
-                    ))}
+                          {index < STEPS.length - 1 && (
+                            <div className={`flex-1 h-1 mx-4 transition-all ${step.id < currentStep ? 'bg-[#c5a021]' : 'bg-white/5'}`} />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Active Step Content */}
-                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+{/* Main Content Card (Unified for Edit and Create modes) */}
+                <div className="p-8 bg-white/95 backdrop-blur-5xl border border-white/20 shadow-2xl rounded-sm">
+                  
+                  {/* Back to Overview - Global for Edit Mode (hoisted above Tab Bar) */}
+                  {activeElectionId && (
+                    <button onClick={handleBackToOverview} className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors text-[10px] font-black uppercase tracking-widest">
+                      ← Back to Overview
+                    </button>
+                  )}
+
+                  {/* Integrated Tab Bar - ONLY IN EDIT MODE */}
+                  {activeElectionId && (
+                    <div className="flex items-center justify-start gap-2 pb-4 mb-6 border-b border-slate-200">
+                      <button onClick={() => setCurrentStep(1)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 1 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Settings size={14} />Settings</button>
+                      <button onClick={() => setCurrentStep(2)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 2 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><BookOpen size={14} />Courses</button>
+                      <button onClick={() => setCurrentStep(3)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 3 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Users size={14} />Voters</button>
+                      <button onClick={() => setCurrentStep(4)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 4 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Clock size={14} />Sessions</button>
+                    </div>
+                  )}
+
+                  {/* Step content */}
                   {currentStep === 1 && (
-                    <ElectionSetup 
-                      elections={elections}
-                      courses={courses}
-                      activeElectionId={activeElectionId}
-                      activeElection={activeElection}
-                      onRefresh={fetchActiveData}
-                      onSelectElection={handleElectionSelect}
-                      onBack={handleBackToOverview}
-                      isEditMode={!!activeElectionId}
-                    />
+                    <ElectionSetup elections={elections} courses={courses} activeElectionId={activeElectionId} activeElection={activeElection} onRefresh={fetchActiveData} onSelectElection={handleElectionSelect} onBack={handleBackToOverview} isEditMode={!!activeElectionId} />
                   )}
-
                   {currentStep === 2 && activeElectionId && (
-                    <CourseConfig 
-                      election={activeElection}
-                      courses={courses}
-                      onRefresh={fetchActiveData}
-                    />
+                    <CourseConfig election={activeElection} courses={courses} onRefresh={fetchActiveData} />
                   )}
-
                   {currentStep === 3 && (
-                    <VoterImport 
-                      electionId={activeElectionId}
-                      onRefresh={fetchActiveData}
-                    />
+                    <VoterImport electionId={activeElectionId} onRefresh={fetchActiveData} />
                   )}
-
                   {currentStep === 4 && (
-                    <SessionManager 
-                      election={activeElection}
-                      courses={courses}
-                      votingSessions={votingSessions}
-                      onRefresh={fetchActiveData}
-                    />
+                    <SessionManager election={activeElection} courses={courses} votingSessions={votingSessions} onRefresh={fetchActiveData} />
                   )}
                 </div>
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between">
-                  <button 
-                    onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep}
-                    className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}
-                  >
-                    ← {currentStep === 1 ? 'Back to Overview' : 'Back'}
-                  </button>
-
-                  {currentStep < 4 ? (
-                    <button 
-                      onClick={handleNextStep}
-                      disabled={!canProceed(currentStep)}
-                      className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${
-                        !canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      Next Step →
+                {/* Navigation Buttons - ONLY IN CREATE MODE */}
+                {!activeElectionId && (
+                  <div className="flex justify-between">
+                    <button onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep} className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}>
+                      ← {currentStep === 1 ? 'Back to Overview' : 'Back'}
                     </button>
-                  ) : (
-                    <button 
-                      onClick={handleComplete}
-                      disabled={!activeElectionId}
-                      className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${
-                        !activeElectionId ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      Complete
-                    </button>
-                  )}
-                </div>
-              </>
+                    {currentStep < 4 ? (
+                      <button onClick={handleNextStep} disabled={!canProceed(currentStep)} className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${!canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        Next Step →
+                      </button>
+                    ) : (
+                      <button onClick={handleComplete} disabled={!activeElectionId} className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${!activeElectionId ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        Complete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -348,6 +324,5 @@ export default function SprDashboard() {
           </div>
         </main>
       </div>
-    </div>
-  );
+    );
 }

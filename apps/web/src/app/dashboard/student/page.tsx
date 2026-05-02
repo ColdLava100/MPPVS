@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 import StudentDashboard from './components/StudentDashboard';
 import CandidateProfileModal from './components/CandidateProfileModal';
 
@@ -191,14 +190,11 @@ export default function StudentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-        <UniversalSidebar role="student" />
-        <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-          <StudentHeader />
-          <main className="flex-grow flex items-center justify-center">
-            <p className="text-slate-400">Loading...</p>
-          </main>
-        </div>
+      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+        <UniversalHeader role="student" />
+        <main className="flex-grow flex items-center justify-center pt-[120px]">
+          <p className="text-slate-400">Loading...</p>
+        </main>
       </div>
     );
   }
@@ -206,11 +202,9 @@ export default function StudentPage() {
   // Check if user has voted - show success popup
   if (hasVoted) {
     return (
-      <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-        <UniversalSidebar role="student" />
-        <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-          <StudentHeader />
-          <main className="flex-grow flex items-center justify-center relative">
+      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+        <UniversalHeader role="student" />
+        <main className="flex-grow flex items-center justify-center relative pt-[120px]">
             <div 
               className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
               style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
@@ -249,24 +243,20 @@ export default function StudentPage() {
             </div>
           </main>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="student" />
+    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <UniversalHeader role="student" userName={currentUser?.name} />
 
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        <StudentHeader />
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
+        />
 
-        <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
-          />
-
-          <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
+        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
             <StudentDashboard
               election={election}
               session={session}
@@ -283,14 +273,13 @@ export default function StudentPage() {
             />
           </div>
         </main>
-      </div>
 
-      {selectedCandidateProfile && (
-        <CandidateProfileModal
-          candidate={selectedCandidateProfile}
-          onClose={() => setSelectedCandidateProfile(null)}
-        />
-      )}
-    </div>
-  );
+        {selectedCandidateProfile && (
+          <CandidateProfileModal
+            candidate={selectedCandidateProfile}
+            onClose={() => setSelectedCandidateProfile(null)}
+          />
+        )}
+      </div>
+    );
 }

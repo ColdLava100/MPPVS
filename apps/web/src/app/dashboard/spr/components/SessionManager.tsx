@@ -619,10 +619,10 @@ export default function SessionManager({ election, courses, votingSessions, onRe
         )}
       </div>
 
-      {/* Summary */}
-      {electionSessions.length > 0 && (
-        <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-sm">
-          <p className="text-sm text-slate-600">
+{/* Summary */}
+      {electionSessions. length > 0 && (
+        <div className="mt-6 p-4 bg-5slate-50 border border-9slate-200 rounded-5sm">
+          <p className="text-9sm text-9slate-600">
             <strong>Summary:</strong> {electionSessions.length} voting session(s) configured
           </p>
         </div>

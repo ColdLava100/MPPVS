@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
-import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 
 const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
@@ -82,19 +81,16 @@ export default function ConfirmPage() {
   }, {} as Record<string, any[]>);
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="student" />
+    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <UniversalHeader role="student" />
 
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        <StudentHeader />
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
+        />
 
-        <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
-          />
-
-          <div className="relative z-10 p-12 max-w-3xl mx-auto w-full">
+        <div className="relative z-10 p-12 max-w-3xl mx-auto w-full">
             <button 
               onClick={handleGoBack}
               className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors"
@@ -156,6 +152,5 @@ export default function ConfirmPage() {
           </div>
         </main>
       </div>
-    </div>
-  );
+    );
 }

@@ -9,6 +9,8 @@ import {
   Query,
   Req,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ElectionsService } from './elections.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -106,9 +108,21 @@ export class ElectionsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async createElection(@Body() body: any, @Req() req: any) {
-    console.log('[DEBUG] Controller received body.startDate:', body.startDate, 'body.endDate:', body.endDate);
+    if (!req.user?.id) {
+      throw new HttpException(
+        'Unauthorized: User not authenticated',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    console.log(
+      '[DEBUG] Controller received body.startDate:',
+      body.startDate,
+      'body.endDate:',
+      body.endDate,
+    );
     return this.electionsService.create(
       body.title,
       body.courseSettings,
@@ -119,19 +133,38 @@ export class ElectionsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async updateElection(
     @Param('id') id: string,
     @Body() body: any,
     @Req() req: any,
   ) {
-    console.log('[DEBUG] Controller update received body.startDate:', body.startDate, 'body.endDate:', body.endDate);
+    if (!req.user?.id) {
+      throw new HttpException(
+        'Unauthorized: User not authenticated',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    console.log(
+      '[DEBUG] Controller update received body.startDate:',
+      body.startDate,
+      'body.endDate:',
+      body.endDate,
+    );
     return this.electionsService.updateElection(id, body, req.user.id);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
   async deleteElection(@Param('id') id: string, @Req() req: any) {
+    if (!req.user?.id) {
+      throw new HttpException(
+        'Unauthorized: User not authenticated',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
     return this.electionsService.deleteElection(id, req.user.id);
   }
 }

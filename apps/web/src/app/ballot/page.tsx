@@ -14,9 +14,8 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
-import UniversalSidebar from '@/components/ui/sidebar';
 
 interface Candidate {
   id: number;
@@ -112,7 +111,7 @@ export default function BallotPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-black relative font-sans text-white overflow-x-hidden">
+    <div className="min-h-screen bg-black relative font-sans text-white overflow-x-hidden">
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ 
@@ -121,12 +120,9 @@ export default function BallotPage() {
         }}
       />
 
-      <UniversalSidebar role={userRole} />
+      <UniversalHeader role="student" />
 
-      <div className="flex-grow flex flex-col relative z-10 ml-24">
-        <StudentHeader />
-
-        <main className="flex-grow p-12 max-w-7xl mx-auto w-full">
+      <main className="flex-grow p-12 max-w-7xl mx-auto w-full pt-[120px]">
           {/* HEADER SECTION */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
             <div className="w-full md:w-1/4 flex items-center gap-4">
@@ -211,10 +207,9 @@ export default function BallotPage() {
         <div className="mt-auto relative z-20 border-t border-white/5 bg-black/60 backdrop-blur-lg">
           <Footer />
         </div>
-      </div>
 
-      {/* FLOATING BALLOT BAR */}
-      {selectedCandidateIds.length > 0 && !isCourseVoted && (
+        {/* FLOATING BALLOT BAR */}
+        {selectedCandidateIds.length > 0 && !isCourseVoted && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-lg px-6 animate-in slide-in-from-bottom-8 duration-500">
           <div className="bg-[#1a1a1a] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-2xl flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -230,7 +225,7 @@ export default function BallotPage() {
               onClick={() => setShowConfirmModal(true)}
               className="bg-white text-black px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#c5a021] transition-all"
             >
-              Confirm Vote
+Confirm Vote
             </button>
           </div>
         </div>
@@ -257,15 +252,17 @@ export default function BallotPage() {
               </>
             ) : (
               <div className="py-10 flex flex-col items-center">
-                 <CheckCircle2 size={64} className="text-green-500 mb-6 animate-bounce" />
-                 <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-2">Vote Recorded</h2>
-                 <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Updating your portal...</p>
+                <CheckCircle2 size={64} className="text-green-500 mb-6 animate-bounce" />
+                <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-2">Vote Recorded</h2>
+                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Updating your portal...</p>
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+
+      <div className="fixed bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-black to-transparent z-20" />
+</div>
   );
 }
 

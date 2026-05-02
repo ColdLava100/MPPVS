@@ -70,28 +70,18 @@ export default function CourseConfig({ election, courses, onRefresh }: CourseCon
     );
   }
 
-  return (
+return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
-            <BookOpen size={20} className="text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold uppercase tracking-tighter text-[#4c0519]">Course Configuration</h3>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Configure seats for: {election.title}
-            </p>
-          </div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
+          <BookOpen size={20} className="text-white" />
         </div>
-        <button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="bg-[#c5a021] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
-        >
-          {saved ? <CheckCircle size={16} /> : <Save size={16} />}
-          {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
-        </button>
+        <div>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter text-[#4c0519]">Course Configuration</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Configure seats for: {election.title}
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -157,6 +147,18 @@ export default function CourseConfig({ election, courses, onRefresh }: CourseCon
           <strong>Summary:</strong> {Object.values(courseSettings).filter(c => c.enabled).length} courses selected with{' '}
           {Object.entries(courseSettings).filter(([_, c]) => c.enabled).reduce((acc, [_, c]) => acc + c.chairs, 0)} total seats
         </p>
+      </div>
+
+      {/* Standardized Action Footer */}
+      <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-end gap-4">
+        <button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="bg-[#c5a021] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
+        >
+          {saved ? <CheckCircle size={16} /> : <Save size={16} />}
+          {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
+        </button>
       </div>
     </div>
   );

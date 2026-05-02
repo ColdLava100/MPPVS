@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Users, Calendar, Edit3 } from 'lucide-react';
-import UniversalSidebar from '@/components/ui/sidebar';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 import VoterList from '../../components/VoterList';
 import CandidatesList from '../../components/CandidatesList';
 import SessionList from '../../components/SessionList';
@@ -101,44 +100,38 @@ export default function ElectionDetailPage() {
 
   if (!election) {
     return (
-      <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-        <UniversalSidebar role="spr" />
-        <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-          <StudentHeader />
-          <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-            <div 
-              className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-              style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-            />
-            <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
-              <p className="text-slate-400">Election not found.</p>
-              <button 
-                onClick={() => router.push('/dashboard/spr')}
-                className="mt-4 text-[#c5a021] hover:underline"
-              >
-                Back to Dashboard
-              </button>
-            </div>
-          </main>
-        </div>
+      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+        <UniversalHeader role="spr" />
+        <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
+          <div 
+            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
+          />
+          <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
+            <p className="text-slate-400">Election not found.</p>
+            <button 
+              onClick={() => router.push('/dashboard/spr')}
+              className="mt-4 text-[#c5a021] hover:underline"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative font-sans text-white">
-      <UniversalSidebar role="spr" />
+    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <UniversalHeader role="spr" />
 
-      <div className="flex-grow flex flex-col relative overflow-hidden ml-24">
-        <StudentHeader />
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
+        />
 
-        <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-          />
-
-          <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex flex-col gap-8">
+        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex flex-col gap-8">
             {/* Header */}
             <div className="flex items-center justify-between">
               <button 
@@ -253,6 +246,5 @@ export default function ElectionDetailPage() {
           </div>
         </main>
       </div>
-    </div>
-  );
+    );
 }
