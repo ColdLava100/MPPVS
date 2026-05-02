@@ -57,7 +57,7 @@ export default function CandidatesList({ electionId }: CandidatesListProps) {
         <UserX size={48} className="text-slate-300 mx-auto mb-4" />
         <p className="text-slate-500 text-lg font-bold">No candidates registered yet</p>
         <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-2">
-          Candidates can be added from the SPR Dashboard
+          Candidates can be added from the EC Dashboard
         </p>
       </div>
     );

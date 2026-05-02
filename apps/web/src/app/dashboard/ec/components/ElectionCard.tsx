@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Calendar, Users } from 'lucide-react';
+import { Pencil, Calendar, Users, ChevronRight } from 'lucide-react';
 
 interface ElectionCardProps {
   election: any;
@@ -44,13 +44,13 @@ export default function ElectionCard({ election, onViewDetails, onEdit }: Electi
   const endDate = election.endDate ? new Date(election.endDate).toLocaleDateString() : 'Not set';
 
   const handleViewDetails = () => {
-    router.push(`/dashboard/spr/election/${election.id}`);
+    router.push(`/dashboard/ec/election/${election.id}`);
   };
 
   return (
     <div 
       onClick={handleViewDetails}
-      className={`p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] ${getStatusColor(election.status)} shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm cursor-pointer`}
+      className={`p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] ${getStatusColor(election.status)} shadow-2xl group cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 rounded-sm`}
     >
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -89,10 +89,9 @@ export default function ElectionCard({ election, onViewDetails, onEdit }: Electi
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-slate-100">
-        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
-          Click to view details
-        </p>
+      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-slate-500 group-hover:text-[#c5a021] transition-colors">
+        <span className="text-[10px] font-black uppercase tracking-widest">View Election Details</span>
+        <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
       </div>
     </div>
   );

@@ -7,17 +7,17 @@ import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, User
 
 const CATEGORIES = [
   { id: 'Staff', roles: ['SUPERADMIN', 'ADMIN'] },
-  { id: 'Advisor', roles: ['MPP_ADVISOR', 'SPR_ADVISOR'] },
-  { id: 'SPR', roles: ['SPR_VOLUNTEER'] },
+  { id: 'Advisor', roles: ['SRC_ADVISOR', 'EC_ADVISOR'] },
+  { id: 'EC', roles: ['EC_VOLUNTEER'] },
   { id: 'Student', roles: ['CANDIDATE', 'STUDENT'] },
 ];
 
 const ROLES = [
   { id: 'SUPERADMIN', label: 'SUPERADMIN', icon: Shield, inputLabel: 'System Email', placeholder: 'root@university.edu' },
   { id: 'ADMIN', label: 'ADMIN', icon: UserCog, inputLabel: 'Email Address', placeholder: 'admin@university.edu' },
-  { id: 'MPP_ADVISOR', label: 'MPP ADVISOR', icon: Building2, inputLabel: 'Official Email', placeholder: 'advisor@mpp.edu' },
-  { id: 'SPR_ADVISOR', label: 'SPR ADVISOR', icon: ClipboardCheck, inputLabel: 'Official Email', placeholder: 'advisor@spr.edu' },
-  { id: 'SPR_VOLUNTEER', label: 'SPR VOLUNTEER', icon: Users, inputLabel: 'Volunteer ID', placeholder: 'SPRXXX' },
+  { id: 'SRC_ADVISOR', label: 'SRC ADVISOR', icon: Building2, inputLabel: 'Official Email', placeholder: 'advisor@src.edu' },
+  { id: 'EC_ADVISOR', label: 'EC ADVISOR', icon: ClipboardCheck, inputLabel: 'Official Email', placeholder: 'advisor@ec.edu' },
+  { id: 'EC_VOLUNTEER', label: 'EC VOLUNTEER', icon: Users, inputLabel: 'Volunteer ID', placeholder: 'ECXXX' },
   { id: 'STUDENT', label: 'STUDENT', icon: GraduationCap, inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
   { id: 'CANDIDATE', label: 'CANDIDATE', icon: Mic, inputLabel: 'Candidate ID', placeholder: 'BCSXXXX-XXX' },
 ];
@@ -84,10 +84,10 @@ export default function LoginPage() {
           return;
         }
 
-        // Normalizing role to match folder names (e.g., MPP_ADVISOR -> mppadvisor)
-        // Special case: SPR_ADVISOR and SPR_VOLUNTEER both go to /dashboard/spr
-        const folderName = (selectedRole === 'SPR_ADVISOR' || selectedRole === 'SPR_VOLUNTEER')
-          ? 'spr'
+        // Normalizing role to match folder names (e.g., SRC_ADVISOR -> srcadvisor)
+        // Special case: EC_ADVISOR and EC_VOLUNTEER both go to /dashboard/ec
+        const folderName = (selectedRole === 'EC_ADVISOR' || selectedRole === 'EC_VOLUNTEER')
+          ? 'ec'
           : selectedRole.toLowerCase().replace('_', '');
         router.push(`/dashboard/${folderName}`);
       } else {
@@ -128,9 +128,9 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        // Special case: SPR_ADVISOR and SPR_VOLUNTEER both go to /dashboard/spr
-        const folderName = (selectedRole === 'SPR_ADVISOR' || selectedRole === 'SPR_VOLUNTEER')
-          ? 'spr'
+        // Special case: EC_ADVISOR and EC_VOLUNTEER both go to /dashboard/ec
+        const folderName = (selectedRole === 'EC_ADVISOR' || selectedRole === 'EC_VOLUNTEER')
+          ? 'ec'
           : selectedRole.toLowerCase().replace('_', '');
         router.push(`/dashboard/${folderName}`);
       } else {
@@ -171,9 +171,9 @@ export default function LoginPage() {
           </button>
         </Link>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <h1 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">
-            MPP <span className="opacity-50 font-light">Voting Portal</span>
-          </h1>
+<h1 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">
+              SRC <span className="opacity-50 font-light">Voting Portal</span>
+            </h1>
         </div>
       </header>
 
@@ -196,7 +196,7 @@ export default function LoginPage() {
                 Voices United<br />Future Ignited
               </h2>
               <p className="text-[10px] opacity-60 font-medium leading-relaxed max-w-[240px]">
-                Secure authentication is required to participate in mpp election.
+                Secure authentication is required to participate in src election.
               </p>
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function LoginPage() {
                 <Shield className="text-white w-5 h-5" strokeWidth={2.5} />
               </div>
               <div>
-                <h2 className="text-[13px] font-bold tracking-tight uppercase leading-none">MPP Voting System</h2>
+                <h2 className="text-[13px] font-bold tracking-tight uppercase leading-none">SRC Voting System</h2>
                 <p className="text-[9px] text-slate-400 font-medium tracking-[0.15em] mt-1 uppercase opacity-80">
                   © 2026 DevOps KitaBuild Studio
                 </p>

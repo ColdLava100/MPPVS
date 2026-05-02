@@ -42,7 +42,7 @@ interface ElectionData {
   topCandidates: TopCandidate[];
 }
 
-export default function MPPVotingPortal() {
+export default function SRCVotingPortal() {
   const [electionData, setElectionData] = useState<ElectionData | null>(null);
   const [countdown, setCountdown] = useState('00 : 00 : 00');
   const [isMounted, setIsMounted] = useState(false);

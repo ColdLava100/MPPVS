@@ -174,7 +174,7 @@ return (
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., MPP Election 2026"
+                placeholder="e.g., SRC Election 2026"
                 className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
                 required
               />

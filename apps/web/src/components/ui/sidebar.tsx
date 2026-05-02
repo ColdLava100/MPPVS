@@ -82,10 +82,10 @@ export default function UniversalSidebar({ role }: SidebarProps) {
       { label: 'ELECTIONS', icon: Vote, path: '/dashboard/advisor' },
     ],
     spr: [
-      { label: 'HOME', icon: Home, path: '/dashboard/spr' },
-      { label: 'COURSES', icon: Users, path: '/dashboard/spr' },
-      { label: 'ELECTIONS', icon: Vote, path: '/dashboard/spr' },
-      { label: 'SESSIONS', icon: Radio, path: '/dashboard/spr' },
+      { label: 'HOME', icon: Home, path: '/dashboard/ec' },
+      { label: 'COURSES', icon: Users, path: '/dashboard/ec' },
+      { label: 'ELECTIONS', icon: Vote, path: '/dashboard/ec' },
+      { label: 'SESSIONS', icon: Radio, path: '/dashboard/ec' },
     ]
   };
 

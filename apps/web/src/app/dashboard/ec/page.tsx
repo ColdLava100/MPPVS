@@ -189,7 +189,7 @@ return (
         </button>
       )}
 
-      <UniversalHeader role="spr" userName={currentUser?.name} />
+      <UniversalHeader role="ec" userName={currentUser?.name} />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar">
         <div 
@@ -202,10 +202,10 @@ return (
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                  <Activity size={14} className="text-red-600 animate-pulse" /> SPR Operations
+                  <Activity size={14} className="text-red-600 animate-pulse" /> EC Operations
                 </p>
                 <h1 className="text-6xl font-bold uppercase tracking-tighter leading-none text-white">
-                  Welcome, <span className="italic">{currentUser?.name || 'SPR'}</span>
+                  Welcome, <span className="italic">{currentUser?.name || 'EC'}</span>
                 </h1>
               </div>
               

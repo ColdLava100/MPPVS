@@ -63,7 +63,7 @@ export default function SessionList({ electionId }: SessionListProps) {
         <Calendar size={48} className="text-slate-300 mx-auto mb-4" />
         <p className="text-slate-500 text-lg font-bold">No voting sessions created</p>
         <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-2">
-          Sessions can be created from the SPR Dashboard workflow
+          Sessions can be created from the EC Dashboard workflow
         </p>
       </div>
     );

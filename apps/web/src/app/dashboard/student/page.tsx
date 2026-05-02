@@ -133,7 +133,7 @@ export default function StudentPage() {
 
     // FIXED: Check if course has chairs allocated
     if (maxChairs === 0) {
-      alert(`Voting Configuration Error: The course '${prefix}' has not been allocated any chairs for this election. Please contact the SPR.`);
+      alert(`Voting Configuration Error: The course '${prefix}' has not been allocated any chairs for this election. Please contact the EC.`);
       return;
     }
 

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  role?: 'student' | 'candidate' | 'admin' | 'superadmin' | 'mpp_advisor' | 'spr';
+  role?: 'student' | 'candidate' | 'admin' | 'superadmin' | 'mpp_advisor' | 'ec';
   userName?: string;
   onLogout?: () => void;
 }
@@ -31,40 +31,23 @@ interface NavItem {
 
 const navConfigs: Record<string, NavItem[]> = {
   student: [
-    { label: 'Dashboard', href: '/dashboard/student', icon: LayoutDashboard },
+    { label: 'Voting Portal', href: '/dashboard/student', icon: LayoutDashboard },
     { label: 'Vote', href: '/ballot', icon: Vote },
-    { label: 'Candidates', href: '/dashboard/student/candidates/all', icon: Users },
-    { label: 'Results', href: '/dashboard/student/results', icon: BarChart3 },
   ],
   candidate: [
     { label: 'Dashboard', href: '/dashboard/candidate', icon: LayoutDashboard },
-    { label: 'Campaign', href: '/dashboard/candidate/campaign', icon: Megaphone },
-    { label: 'Profile', href: '/dashboard/candidate/profile', icon: UserCog },
   ],
   admin: [
     { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
-    { label: 'Elections', href: '/dashboard/admin', icon: Vote },
-    { label: 'Candidates', href: '/dashboard/admin', icon: Users },
-    { label: 'Sessions', href: '/dashboard/admin', icon: BarChart3 },
-    { label: 'Settings', href: '/dashboard/admin', icon: Settings },
   ],
   superadmin: [
-    { label: 'Dashboard', href: '/dashboard/superadmin', icon: LayoutDashboard },
-    { label: 'Users', href: '/dashboard/superadmin', icon: Users },
-    { label: 'Settings', href: '/dashboard/superadmin', icon: Settings },
+    { label: 'System Admin', href: '/dashboard/superadmin', icon: LayoutDashboard },
   ],
   mpp_advisor: [
     { label: 'Dashboard', href: '/dashboard/mppadvisor', icon: LayoutDashboard },
-    { label: 'Elections', href: '/dashboard/mppadvisor', icon: Vote },
-    { label: 'Candidates', href: '/dashboard/mppadvisor', icon: Users },
-    { label: 'Results', href: '/dashboard/mppadvisor', icon: BarChart3 },
   ],
-  spr: [
-    { label: 'Dashboard', href: '/dashboard/spr', icon: LayoutDashboard },
-    { label: 'Elections', href: '/dashboard/spr', icon: Vote },
-    { label: 'Candidates', href: '/dashboard/spr', icon: Users },
-    { label: 'Voters', href: '/dashboard/spr', icon: Users },
-    { label: 'Sessions', href: '/dashboard/spr', icon: BarChart3 },
+  ec: [
+    { label: 'EC Operations', href: '/dashboard/ec', icon: LayoutDashboard },
   ],
 };
 
@@ -104,10 +87,10 @@ export default function UniversalHeader({ role = 'student', userName, onLogout }
         
         <div className="flex flex-col">
           <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-tight">
-            MPP Voting
+            SRC Voting
           </span>
           <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/40">
-            {role === 'spr' ? 'SPR Portal' : role === 'admin' ? 'Administrator' : role === 'superadmin' ? 'Super Admin' : role === 'mpp_advisor' ? 'MPP Advisor' : role === 'candidate' ? 'Candidate' : 'Student Portal'}
+            {role === 'ec' ? 'EC Operations' : role === 'admin' ? 'Administrator' : role === 'superadmin' ? 'Super Admin' : role === 'mpp_advisor' ? 'SRC Advisor' : role === 'candidate' ? 'Candidate' : 'Student Portal'}
           </span>
         </div>
       </div>

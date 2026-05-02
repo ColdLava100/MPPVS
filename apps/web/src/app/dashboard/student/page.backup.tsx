@@ -106,7 +106,7 @@ export default function StudentDashboard() {
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
                   <Activity size={14} className="text-red-600 animate-pulse" />
-                  MPP 2026 Live Metrics
+                  SRC 2026 Live Metrics
                 </p>
                 <h1 className="text-6xl font-bold uppercase tracking-tighter text-white italic leading-none">
                   Campus-Wide <br /> Election Pulse

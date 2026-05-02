@@ -30,7 +30,7 @@ export default function StudentHeader({ onVoteClick }: HeaderProps) {
         
         <div className="flex flex-col">
           <span className="text-[13px] font-black uppercase tracking-[0.2em] leading-tight">
-            MPP Voting System
+            SRC Voting System
           </span>
           <span className="text-[10px] font-bold opacity-40 uppercase tracking-[0.4em] mt-0.5">
             Official Student Portal

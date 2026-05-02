@@ -16,7 +16,7 @@ export default function Header() {
         </div>
         {/* Changed text color to white with high opacity */}
         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90">
-          MPP Voting System
+          SRC Voting System
         </span>
       </div>
 
