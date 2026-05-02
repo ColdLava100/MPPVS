@@ -142,6 +142,22 @@ export class UsersService {
     return result;
   }
 
+  async generateSecurityCode(userId: string, actorId: string) {
+    const securityCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { securityCode },
+    });
+
+    await this.auditLogsService.logAction(actorId, 'GENERATE_SECURITY_CODE', {
+      targetUserId: userId,
+    });
+
+    const { password: _, ...result } = user;
+    return result;
+  }
+
   async deleteUser(userId: string, superAdminId: string) {
     const user = await prisma.user.delete({
       where: { id: userId },

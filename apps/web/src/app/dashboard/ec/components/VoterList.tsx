@@ -15,6 +15,7 @@ interface Voter {
   studentId: string;
   courseCode: string;
   courseName: string;
+  securityCode: string | null;
   hasVoted: boolean;
   votedAt: string | null;
 }
@@ -90,6 +91,53 @@ export default function VoterList({ electionId, courses }: VoterListProps) {
     return new Date(date).toLocaleString();
   };
 
+  const generateSingleCode = async (userId: string) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/security-code`,
+        { method: 'POST', credentials: 'include' }
+      );
+      if (res.ok) {
+        fetchVoters();
+      }
+    } catch (err) {
+      console.error('Failed to generate security code:', err);
+    }
+  };
+
+  const generateBulkCodes = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/elections/${electionId}/generate-security-codes`,
+        { method: 'POST', credentials: 'include' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Successfully generated ${data.count} security code(s).`);
+        fetchVoters();
+      }
+    } catch (err) {
+      console.error('Failed to generate bulk security codes:', err);
+    }
+  };
+
+  const regenerateAllCodes = async () => {
+    if (!confirm('DANGER: Are you sure you want to regenerate ALL security codes for this election? Old codes will be destroyed.')) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/elections/${electionId}/regenerate-all-security-codes`,
+        { method: 'POST', credentials: 'include' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Successfully regenerated ${data.count} security code(s).`);
+        fetchVoters();
+      }
+    } catch (err) {
+      console.error('Failed to regenerate all security codes:', err);
+    }
+  };
+
   return (
     <div>
       {/* Filters */}
@@ -146,6 +194,12 @@ export default function VoterList({ electionId, courses }: VoterListProps) {
           <UserX size={14} />
           <span className="font-bold">{voters.filter(v => !v.hasVoted).length}</span> not voted
         </span>
+        <button onClick={generateBulkCodes} className="bg-[#4c0519] text-white px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-[#6b1324] transition-all ml-auto">
+          Generate Missing Codes
+        </button>
+        <button onClick={regenerateAllCodes} className="bg-white/5 border border-red-900/30 text-red-500 hover:bg-red-900/20 hover:text-red-400 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all">
+          Regenerate ALL Codes
+        </button>
       </div>
 
       {/* Table */}
@@ -166,6 +220,7 @@ export default function VoterList({ electionId, courses }: VoterListProps) {
                   <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Name</th>
                   <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Student ID</th>
                   <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Course</th>
+                  <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Security Code</th>
                   <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Status</th>
                   <th className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-4 py-3">Voted At</th>
                 </tr>
@@ -181,6 +236,18 @@ export default function VoterList({ electionId, courses }: VoterListProps) {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-sm text-slate-600">{voter.courseCode}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {voter.securityCode ? (
+                        <span className="inline-flex items-center">
+                          <span className="font-mono font-bold text-slate-700">{voter.securityCode}</span>
+                          <button onClick={() => { if(confirm('Regenerate code for this user? The old code will stop working immediately.')) generateSingleCode(voter.userId); }} className="ml-2 text-[10px] text-slate-400 hover:text-red-600 transition-colors" title="Regenerate Code">↻</button>
+                        </span>
+                      ) : (
+                        <button onClick={() => generateSingleCode(voter.userId)} className="text-[9px] font-black uppercase text-[#c5a021] hover:underline">
+                          Generate
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {voter.hasVoted ? (

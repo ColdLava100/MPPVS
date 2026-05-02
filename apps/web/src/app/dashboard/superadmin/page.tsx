@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Shield } from 'lucide-react';
 import SuperadminTab from './tabs/SuperadminTab';
 import AdminTab from './tabs/AdminTab';
 import AdvisorTab from './tabs/AdvisorTab';
@@ -122,6 +123,12 @@ export default function SuperAdminDashboard() {
         <button onClick={() => setActiveRoleTab('ADVISOR')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADVISOR' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SRC Advisor</button>
         <button onClick={() => setActiveRoleTab('CANDIDATE')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'CANDIDATE' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Candidate</button>
         
+        <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
+
+        <button onClick={() => router.push('/dashboard/superadmin/audit-logs')} style={{ padding: '0.75rem', textAlign: 'left', background: 'transparent', color: '#c5a021', border: 'none', cursor: 'pointer', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Shield size={16} /> Audit Logs
+        </button>
+
         <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
         
         <button onClick={() => setActiveRoleTab('SIMULATION')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SIMULATION' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SIMULATION: Voting & Tally</button>

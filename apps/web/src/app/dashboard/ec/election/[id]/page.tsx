@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Users, Calendar, Edit3 } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Edit3, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import VoterList from '../../components/VoterList';
 import CandidatesList from '../../components/CandidatesList';
 import SessionList from '../../components/SessionList';
+import AuditLogTable from '@/components/ui/AuditLogTable';
 
 const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
-type TabType = 'voters' | 'sessions' | 'candidates';
+type TabType = 'voters' | 'sessions' | 'candidates' | 'audit';
 
 export default function ElectionDetailPage() {
   const router = useRouter();
@@ -222,6 +223,17 @@ export default function ElectionDetailPage() {
                 <Users size={16} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Candidates</span>
               </button>
+              <button
+                onClick={() => setActiveTab('audit')}
+                className={`px-6 py-3 rounded-sm transition-all flex items-center gap-2 ${
+                  activeTab === 'audit' 
+                    ? 'bg-[#c5a021] text-black' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Shield size={16} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Audit Logs</span>
+              </button>
             </div>
 
             {/* Tab Content */}
@@ -241,6 +253,9 @@ export default function ElectionDetailPage() {
                 <CandidatesList 
                   electionId={electionId}
                 />
+              )}
+              {activeTab === 'audit' && (
+                <AuditLogTable electionId={electionId} />
               )}
             </div>
           </div>

@@ -155,6 +155,43 @@ export class ElectionsController {
     return this.electionsService.updateElection(id, body, req.user.id);
   }
 
+  @Post(':electionId/generate-security-codes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async generateSecurityCodes(
+    @Param('electionId') electionId: string,
+    @Req() req: any,
+  ) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.electionsService.generateBulkSecurityCodes(electionId, actorId);
+  }
+
+  @Post(':electionId/regenerate-all-security-codes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async regenerateAllSecurityCodes(
+    @Param('electionId') electionId: string,
+    @Req() req: any,
+  ) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.electionsService.regenerateAllSecurityCodes(
+      electionId,
+      actorId,
+    );
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)

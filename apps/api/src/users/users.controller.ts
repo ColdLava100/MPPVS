@@ -67,6 +67,12 @@ export class UsersController {
     return this.usersService.updateUser(id, dto, adminId);
   }
 
+  @Post(':id/security-code')
+  async generateSecurityCode(@Param('id') id: string, @Req() req: any) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.usersService.generateSecurityCode(id, actorId);
+  }
+
   @Delete(':id')
   async deleteUser(@Param('id') id: string, @Req() req: any) {
     return this.usersService.deleteUser(id, req.user.id);

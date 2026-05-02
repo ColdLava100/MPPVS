@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, Settings, BookOpen, Users, Clock, Vote } from 'lucide-react';
+import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
 import ElectionOverview from './components/ElectionOverview';
@@ -10,6 +10,7 @@ import ElectionSetup from './components/ElectionSetup';
 import CourseConfig from './components/CourseConfig';
 import VoterImport from './components/VoterImport';
 import SessionManager from './components/SessionManager';
+import AuditLogTable from '@/components/ui/AuditLogTable';
 import ElectionSetupButton from './components/ElectionSetupButton';
 
 const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
@@ -220,14 +221,24 @@ return (
 
             {viewMode === 'overview' ? (
               /* Main Overview View */
-              <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
-                <ElectionOverview 
-                  elections={elections}
-                  courses={courses}
-                  onEditElection={handleEditExisting}
-                  onRefresh={fetchActiveData}
-                />
-              </div>
+              <>
+                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                  <ElectionOverview 
+                    elections={elections}
+                    courses={courses}
+                    onEditElection={handleEditExisting}
+                    onRefresh={fetchActiveData}
+                  />
+                </div>
+
+                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                  <h2 className="text-lg font-bold uppercase tracking-tighter text-black mb-4 flex items-center gap-2">
+                    <Shield size={16} className="text-[#4c0519]" />
+                    Audit Logs
+                  </h2>
+                  <AuditLogTable />
+                </div>
+              </>
             ) : (
               /* Workflow View */
               <div className="flex flex-col gap-6">
@@ -280,6 +291,7 @@ return (
                       <button onClick={() => setCurrentStep(2)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 2 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><BookOpen size={14} />Courses</button>
                       <button onClick={() => setCurrentStep(3)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 3 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Users size={14} />Voters</button>
                       <button onClick={() => setCurrentStep(4)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 4 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Clock size={14} />Sessions</button>
+                      <button onClick={() => setCurrentStep(5)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 5 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Shield size={14} />Audit Logs</button>
                     </div>
                   )}
 
@@ -295,6 +307,9 @@ return (
                   )}
                   {currentStep === 4 && (
                     <SessionManager election={activeElection} courses={courses} votingSessions={votingSessions} onRefresh={fetchActiveData} />
+                  )}
+                  {currentStep === 5 && activeElectionId && (
+                    <AuditLogTable electionId={activeElectionId} />
                   )}
                 </div>
 

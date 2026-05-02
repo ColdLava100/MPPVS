@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly auditLogsService: AuditLogsService,
-  ) { }
+  ) {}
 
   async studentLogin(studentId: string, icNumber: string) {
     const user = await prisma.user.findUnique({
@@ -33,7 +33,7 @@ export class AuthService {
 
     if (lastVote) {
       throw new ForbiddenException(
-        `You have already voted on ${new Date(lastVote.createdAt).toLocaleString()}. Contact SPR if this is an error.`
+        `You have already voted on ${new Date(lastVote.createdAt).toLocaleString()}. Contact SPR if this is an error.`,
       );
     }
 
@@ -48,7 +48,7 @@ export class AuthService {
 
     if (!registration) {
       throw new ForbiddenException(
-        'You are not registered for any active election. Please contact SPR.'
+        'You are not registered for any active election. Please contact SPR.',
       );
     }
 
@@ -59,16 +59,28 @@ export class AuthService {
     let electionDateMessage = '';
 
     if (election.startDate || election.endDate) {
-      const startDate = election.startDate ? new Date(election.startDate) : null;
+      const startDate = election.startDate
+        ? new Date(election.startDate)
+        : null;
       const endDate = election.endDate ? new Date(election.endDate) : null;
 
       // Both `now` and startDate/endDate are UTC Date objects — comparison is always correct.
       console.log('[DEBUG][studentLogin] now (UTC):', now.toISOString());
-      console.log('[DEBUG][studentLogin] election.startDate (UTC):', startDate?.toISOString());
-      console.log('[DEBUG][studentLogin] election.endDate   (UTC):', endDate?.toISOString());
+      console.log(
+        '[DEBUG][studentLogin] election.startDate (UTC):',
+        startDate?.toISOString(),
+      );
+      console.log(
+        '[DEBUG][studentLogin] election.endDate   (UTC):',
+        endDate?.toISOString(),
+      );
 
       const toMYT = (d: Date) =>
-        d.toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', dateStyle: 'medium', timeStyle: 'short' });
+        d.toLocaleString('en-MY', {
+          timeZone: 'Asia/Kuala_Lumpur',
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        });
 
       if (startDate && now < startDate) {
         electionDateBlocked = true;
@@ -94,19 +106,23 @@ export class AuthService {
     let isWithinSessionTime = false;
 
     if (sessions.length > 0) {
-      const assignedSessions = sessions.filter(s => {
-        if (!s.studentIdStart || !s.studentIdEnd || !user.studentId) return false;
-        return user.studentId >= s.studentIdStart && user.studentId <= s.studentIdEnd;
+      const assignedSessions = sessions.filter((s) => {
+        if (!s.studentIdStart || !s.studentIdEnd || !user.studentId)
+          return false;
+        return (
+          user.studentId >= s.studentIdStart && user.studentId <= s.studentIdEnd
+        );
       });
 
       if (assignedSessions.length === 0) {
         canVote = false;
-        reason = 'You are not assigned to any voting session. Please contact SPR.';
+        reason =
+          'You are not assigned to any voting session. Please contact SPR.';
         hasAssignedSession = false;
       } else {
         hasAssignedSession = true;
 
-        const activeSession = assignedSessions.find(s => {
+        const activeSession = assignedSessions.find((s) => {
           const start = new Date(s.startTime);
           const end = new Date(s.endTime);
           return now >= start && now <= end;
@@ -121,16 +137,23 @@ export class AuthService {
           isWithinSessionTime = false;
 
           const sortedAssigned = assignedSessions.sort(
-            (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+            (a, b) =>
+              new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
           );
-          const nextSession = sortedAssigned.find(s => new Date(s.startTime) > now);
-          const pastSession = sortedAssigned.filter(s => new Date(s.endTime) < now);
+          const nextSession = sortedAssigned.find(
+            (s) => new Date(s.startTime) > now,
+          );
+          const pastSession = sortedAssigned.filter(
+            (s) => new Date(s.endTime) < now,
+          );
 
           if (nextSession) {
             const startTime = new Date(nextSession.startTime);
             const timeUntil = startTime.getTime() - now.getTime();
             const hours = Math.floor(timeUntil / (1000 * 60 * 60));
-            const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+            const minutes = Math.floor(
+              (timeUntil % (1000 * 60 * 60)) / (1000 * 60),
+            );
 
             let countdownText = '';
             if (hours > 0) {
@@ -139,7 +162,9 @@ export class AuthService {
               countdownText = ` (Starts in ${minutes} minute${minutes !== 1 ? 's' : ''})`;
             }
 
-            const startTimeMYT = startTime.toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' });
+            const startTimeMYT = startTime.toLocaleString('en-MY', {
+              timeZone: 'Asia/Kuala_Lumpur',
+            });
             reason = `Your voting session is not active yet. It starts on ${startTimeMYT} MYT${countdownText}`;
             session = nextSession;
           } else if (pastSession.length === sortedAssigned.length) {
@@ -174,13 +199,19 @@ export class AuthService {
       if (diff > 0) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        timeUntilStart = hours > 0
-          ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
-          : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        timeUntilStart =
+          hours > 0
+            ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
+            : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
 
         sessionInfo = {
           date: startTime.toLocaleDateString('en-MY'),
-          startTime: startTime.toLocaleTimeString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' }) + ' MYT',
+          startTime:
+            startTime.toLocaleTimeString('en-MY', {
+              timeZone: 'Asia/Kuala_Lumpur',
+              hour: '2-digit',
+              minute: '2-digit',
+            }) + ' MYT',
           timeUntilStart: timeUntilStart,
           nextSessionStart: session.startTime,
         };
@@ -215,14 +246,16 @@ export class AuthService {
         endDate: election.endDate,
         courseSettings: election.courseSettings,
       },
-      session: session ? {
-        id: session.id,
-        title: session.title,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        studentIdStart: session.studentIdStart,
-        studentIdEnd: session.studentIdEnd,
-      } : null,
+      session: session
+        ? {
+            id: session.id,
+            title: session.title,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            studentIdStart: session.studentIdStart,
+            studentIdEnd: session.studentIdEnd,
+          }
+        : null,
       hasAssignedSession,
       isWithinSessionTime,
       timeUntilStart,
@@ -265,16 +298,28 @@ export class AuthService {
     let electionDateMessage = '';
 
     if (election.startDate || election.endDate) {
-      const startDate = election.startDate ? new Date(election.startDate) : null;
+      const startDate = election.startDate
+        ? new Date(election.startDate)
+        : null;
       const endDate = election.endDate ? new Date(election.endDate) : null;
 
       // Both `now` and startDate/endDate are UTC Date objects — comparison is always correct.
       console.log('[DEBUG][getStudentStatus] now (UTC):', now.toISOString());
-      console.log('[DEBUG][getStudentStatus] election.startDate (UTC):', startDate?.toISOString());
-      console.log('[DEBUG][getStudentStatus] election.endDate   (UTC):', endDate?.toISOString());
+      console.log(
+        '[DEBUG][getStudentStatus] election.startDate (UTC):',
+        startDate?.toISOString(),
+      );
+      console.log(
+        '[DEBUG][getStudentStatus] election.endDate   (UTC):',
+        endDate?.toISOString(),
+      );
 
       const toMYT = (d: Date) =>
-        d.toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', dateStyle: 'medium', timeStyle: 'short' });
+        d.toLocaleString('en-MY', {
+          timeZone: 'Asia/Kuala_Lumpur',
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        });
 
       if (startDate && now < startDate) {
         electionDateBlocked = true;
@@ -306,19 +351,23 @@ export class AuthService {
     let isWithinSessionTime = false;
 
     if (sessions.length > 0) {
-      const assignedSessions = sessions.filter(s => {
-        if (!s.studentIdStart || !s.studentIdEnd || !user.studentId) return false;
-        return user.studentId >= s.studentIdStart && user.studentId <= s.studentIdEnd;
+      const assignedSessions = sessions.filter((s) => {
+        if (!s.studentIdStart || !s.studentIdEnd || !user.studentId)
+          return false;
+        return (
+          user.studentId >= s.studentIdStart && user.studentId <= s.studentIdEnd
+        );
       });
 
       if (assignedSessions.length === 0) {
         canVote = false;
-        reason = 'You are not assigned to any voting session. Please contact SPR.';
+        reason =
+          'You are not assigned to any voting session. Please contact SPR.';
         hasAssignedSession = false;
       } else {
         hasAssignedSession = true;
 
-        const activeSession = assignedSessions.find(s => {
+        const activeSession = assignedSessions.find((s) => {
           const start = new Date(s.startTime);
           const end = new Date(s.endTime);
           return now >= start && now <= end;
@@ -333,16 +382,23 @@ export class AuthService {
           isWithinSessionTime = false;
 
           const sortedAssigned = assignedSessions.sort(
-            (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+            (a, b) =>
+              new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
           );
-          const nextSession = sortedAssigned.find(s => new Date(s.startTime) > now);
-          const pastSession = sortedAssigned.filter(s => new Date(s.endTime) < now);
+          const nextSession = sortedAssigned.find(
+            (s) => new Date(s.startTime) > now,
+          );
+          const pastSession = sortedAssigned.filter(
+            (s) => new Date(s.endTime) < now,
+          );
 
           if (nextSession) {
             const startTime = new Date(nextSession.startTime);
             const timeUntil = startTime.getTime() - now.getTime();
             const hours = Math.floor(timeUntil / (1000 * 60 * 60));
-            const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+            const minutes = Math.floor(
+              (timeUntil % (1000 * 60 * 60)) / (1000 * 60),
+            );
 
             let countdownText = '';
             if (hours > 0) {
@@ -351,7 +407,9 @@ export class AuthService {
               countdownText = ` (Starts in ${minutes} minute${minutes !== 1 ? 's' : ''})`;
             }
 
-            const startTimeMYT = startTime.toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' });
+            const startTimeMYT = startTime.toLocaleString('en-MY', {
+              timeZone: 'Asia/Kuala_Lumpur',
+            });
             reason = `Your voting session is not active yet. It starts on ${startTimeMYT} MYT${countdownText}`;
             session = nextSession;
           } else if (pastSession.length === sortedAssigned.length) {
@@ -385,29 +443,36 @@ export class AuthService {
       if (diff > 0) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        timeUntilStart = hours > 0
-          ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
-          : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        timeUntilStart =
+          hours > 0
+            ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
+            : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
       }
     }
 
     return {
       canVote,
       reason,
-      election: canVote || reason === 'You have already cast your ballot for this election.' ? {
-        id: election.id,
-        title: election.title,
-        status: election.status,
-        startDate: election.startDate,
-        endDate: election.endDate,
-        courseSettings: election.courseSettings,
-      } : null,
-      session: session ? {
-        id: session.id,
-        title: session.title,
-        startTime: session.startTime,
-        endTime: session.endTime,
-      } : null,
+      election:
+        canVote ||
+        reason === 'You have already cast your ballot for this election.'
+          ? {
+              id: election.id,
+              title: election.title,
+              status: election.status,
+              startDate: election.startDate,
+              endDate: election.endDate,
+              courseSettings: election.courseSettings,
+            }
+          : null,
+      session: session
+        ? {
+            id: session.id,
+            title: session.title,
+            startTime: session.startTime,
+            endTime: session.endTime,
+          }
+        : null,
       hasVoted: !!existingVote,
       votedAt: existingVote?.createdAt || null,
       hasAssignedSession,
