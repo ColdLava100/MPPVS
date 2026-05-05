@@ -48,6 +48,11 @@ export class VotingSessionsController {
     return this.votingSessionsService.deleteVotingSession(id, req.user.id);
   }
 
+  @Get(':id/candidates')
+  async getSessionCandidates(@Param('id') id: string) {
+    return this.votingSessionsService.getSessionCandidates(id);
+  }
+
   @Get(':id/voters')
   async getSessionVoters(@Param('id') id: string) {
     return this.votingSessionsService.getSessionVoters(id);

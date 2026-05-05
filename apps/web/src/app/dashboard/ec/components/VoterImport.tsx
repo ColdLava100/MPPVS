@@ -22,6 +22,7 @@ export default function VoterImport({ electionId, onRefresh }: VoterImportProps)
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ success: number; failed: number; skipped?: number } | null>(null);
   const [importedVoters, setImportedVoters] = useState<any[]>([]);
+  const [importTab, setImportTab] = useState<'upload' | 'list'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch imported voters when electionId changes
@@ -261,7 +262,7 @@ if (!electionId) {
   }
 
   return (
-    <div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
@@ -280,7 +281,35 @@ if (!electionId) {
         </button>
       </div>
 
-      {/* Upload Area */}
+      {/* Sub-Tabs */}
+      <div className="flex items-center gap-2 mb-6">
+        <button
+          onClick={() => setImportTab('upload')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
+            importTab === 'upload'
+              ? 'bg-[#4c0519] text-white'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          }`}
+        >
+          <Upload size={14} />
+          Import CSV
+        </button>
+        <button
+          onClick={() => setImportTab('list')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
+            importTab === 'list'
+              ? 'bg-[#4c0519] text-white'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          }`}
+        >
+          <Users size={14} />
+          Imported List{importedVoters.length > 0 ? ` (${importedVoters.length})` : ''}
+        </button>
+      </div>
+
+      {importTab === 'upload' ? (
+        <>
+          {/* Upload Area */}
       <div 
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -349,106 +378,111 @@ if (!electionId) {
         </div>
       )}
 
-      {/* Import Result */}
-      {importResult && (
-        <div className={`mt-6 p-4 rounded-sm ${importResult.failed > 0 ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}`}>
-          <div className="flex items-center gap-3">
-            {importResult.failed > 0 ? (
-              <AlertCircle size={20} className="text-yellow-600" />
-            ) : (
-              <CheckCircle size={20} className="text-green-600" />
-            )}
-            <div>
-              <p className="text-sm font-bold text-black">
-                Import Complete: {importResult.success} succeeded, {importResult.failed} failed
-              </p>
-              {importResult.failed > 0 && (
-                <p className="text-[10px] text-slate-500">Failed voters may already exist in the system.</p>
-              )}
+          {/* Import Result */}
+          {importResult && (
+            <div className={`mt-6 p-4 rounded-sm ${importResult.failed > 0 ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}`}>
+              <div className="flex items-center gap-3">
+                {importResult.failed > 0 ? (
+                  <AlertCircle size={20} className="text-yellow-600" />
+                ) : (
+                  <CheckCircle size={20} className="text-green-600" />
+                )}
+                <div>
+                  <p className="text-sm font-bold text-black">
+                    Import Complete: {importResult.success} succeeded, {importResult.failed} failed
+                  </p>
+                  {importResult.failed > 0 && (
+                    <p className="text-[10px] text-slate-500">Failed voters may already exist in the system.</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Imported Voters Preview */}
-      {importedVoters.length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users size={18} className="text-[#4c0519]" />
-            <h4 className="text-lg font-bold uppercase tracking-tighter text-[#4c0519]">
-              Imported Voters ({importedVoters.length})
-            </h4>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-sm overflow-hidden max-h-80 overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 sticky top-0">
-                <tr>
-                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Name</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Student ID</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">IC Number</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Email</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {importedVoters.map((reg) => {
-                  const user = reg.user || {};
-                  return (
-                    <tr key={reg.id} className="border-t border-slate-100 hover:bg-slate-50">
-                      <td className="px-4 py-2 text-black font-medium">{user.name || '-'}</td>
-                      <td className="px-4 py-2 text-black font-mono text-xs">{user.studentId || '-'}</td>
-                      <td className="px-4 py-2 text-black font-mono text-xs">{user.icNumber || '-'}</td>
-                      <td className="px-4 py-2 text-xs text-slate-600">{user.email || '-'}</td>
-                      <td className="px-4 py-2">
-                        {reg.isArchived ? (
-                          <span className="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">Archived</span>
-                        ) : (
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-black uppercase">Active</span>
-                        )}
-                      </td>
+          {parsedVoters.length > 0 && (
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleImport}
+                disabled={isImporting}
+                className="bg-[#c5a021] text-black px-8 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
+              >
+                {isImporting ? 'Importing...' : `Import ${parsedVoters.length} Voters`}
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Imported Voters Table */}
+          {importedVoters.length > 0 ? (
+            <div>
+              <div className="bg-white border border-slate-200 rounded-sm overflow-hidden max-h-80 overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Name</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Student ID</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">IC Number</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Email</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase">Status</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+                  </thead>
+                  <tbody>
+                    {importedVoters.map((reg) => {
+                      const user = reg.user || {};
+                      return (
+                        <tr key={reg.id} className="border-t border-slate-100 hover:bg-slate-50">
+                          <td className="px-4 py-2 text-black font-medium">{user.name || '-'}</td>
+                          <td className="px-4 py-2 text-black font-mono text-xs">{user.studentId || '-'}</td>
+                          <td className="px-4 py-2 text-black font-mono text-xs">{user.icNumber || '-'}</td>
+                          <td className="px-4 py-2 text-xs text-slate-600">{user.email || '-'}</td>
+                          <td className="px-4 py-2">
+                            {reg.isArchived ? (
+                              <span className="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">Archived</span>
+                            ) : (
+                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-black uppercase">Active</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-      {/* Standardized Action Footer */}
-      <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-end gap-4">
-        {importedVoters.length > 0 && (
-          <button
-            onClick={async () => {
-              if (!electionId || !confirm('Archive all voters for this election?')) return;
-              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/${electionId}/archive`, {
-                method: 'POST',
-                credentials: 'include'
-              });
-              if (res.ok) {
-                alert('Voters archived successfully!');
-                fetchImportedVoters();
-                onRefresh();
-              } else {
-                alert('Failed to archive voters');
-              }
-            }}
-            className="bg-red-600 text-white px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
-          >
-            Archive All
-          </button>
-        )}
-        {parsedVoters.length > 0 && (
-          <button
-            onClick={handleImport}
-            disabled={isImporting}
-            className="bg-[#c5a021] text-black px-8 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
-          >
-            {isImporting ? 'Importing...' : `Import ${parsedVoters.length} Voters`}
-          </button>
-        )}
-      </div>
+              <div className="mt-6 flex items-center justify-end">
+                <button
+                  onClick={async () => {
+                    if (!electionId || !confirm('Archive all voters for this election?')) return;
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voter-registrations/${electionId}/archive`, {
+                      method: 'POST',
+                      credentials: 'include'
+                    });
+                    if (res.ok) {
+                      alert('Voters archived successfully!');
+                      fetchImportedVoters();
+                      onRefresh();
+                    } else {
+                      alert('Failed to archive voters');
+                    }
+                  }}
+                  className="bg-red-600 text-white px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
+                >
+                  Archive All
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12 border border-dashed border-slate-200 rounded-sm">
+              <Users size={48} className="text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500 font-bold">No voters imported yet</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-2">
+                Switch to the Import CSV tab to upload voters
+              </p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

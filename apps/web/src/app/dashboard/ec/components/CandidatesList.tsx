@@ -64,7 +64,7 @@ export default function CandidatesList({ electionId }: CandidatesListProps) {
   }
 
   return (
-    <div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
       {/* Summary */}
       <div className="flex items-center gap-6 mb-6 text-sm">
         <span className="text-slate-500">

@@ -7,11 +7,15 @@ import {
 import { prisma } from '@repo/database';
 import * as bcrypt from 'bcrypt';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { MailService } from '../mail/mail.service';
 import { Role } from '../common/decorators/roles.decorator';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly auditLogsService: AuditLogsService) {}
+  constructor(
+    private readonly auditLogsService: AuditLogsService,
+    private readonly mailService: MailService,
+  ) {}
 
   async getUsers(role?: string) {
     const where = role ? { role: role as Role } : {};
@@ -156,6 +160,33 @@ export class UsersService {
 
     const { password: _, ...result } = user;
     return result;
+  }
+
+  async sendSecurityCodeEmail(userId: string, actorId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    let code = user.securityCode;
+    if (!code) {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+      await prisma.user.update({
+        where: { id: userId },
+        data: { securityCode: code },
+      });
+    }
+
+    await this.mailService.dispatchVoterCode(user.email, code);
+
+    await this.auditLogsService.logAction(actorId, 'SENT_SECURITY_CODE_EMAIL', {
+      targetUserId: userId,
+    });
+
+    return { success: true };
   }
 
   async deleteUser(userId: string, superAdminId: string) {

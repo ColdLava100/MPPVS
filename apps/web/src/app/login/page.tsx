@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer } from 'lucide-react';
+import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'Staff', roles: ['SUPERADMIN', 'ADMIN'] },
@@ -46,7 +46,25 @@ export default function LoginPage() {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [pendingEmail, setPendingEmail] = useState('');
 
+  const [hasActiveElection, setHasActiveElection] = useState<boolean | null>(null);
+  const [requiresCode, setRequiresCode] = useState(false);
+  const [securityCode, setSecurityCode] = useState('');
+
   const router = useRouter();
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/public/active-config`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setHasActiveElection(data.hasActiveElection);
+          if (data.requireSecurityCode) setRequiresCode(true);
+        } else {
+          setHasActiveElection(false);
+        }
+      })
+      .catch(() => setHasActiveElection(false));
+  }, []);
 
   // Updated Login Logic to actually hit authentication endpoints
   const handleLogin = async (e: React.FormEvent) => {
@@ -61,7 +79,9 @@ export default function LoginPage() {
       : `${process.env.NEXT_PUBLIC_API_URL}/auth/staff/login`;
 
     const payload = isStudentRole
-      ? { studentId, icNumber }
+      ? requiresCode
+        ? { studentId, icNumber, securityCode }
+        : { studentId, icNumber }
       : { email, password };
 
     try {
@@ -289,6 +309,15 @@ export default function LoginPage() {
 
                 <div className="space-y-5">
                   {isStudentRole ? (
+                    hasActiveElection === false ? (
+                      <div className="flex flex-col items-center justify-center text-center py-8">
+                        <CalendarX size={48} className="text-slate-300 mb-4" />
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">No Active Election</h2>
+                        <p className="text-slate-500 text-sm max-w-xs">
+                          There is no ongoing election at this time. Please check back later or contact the Election Committee.
+                        </p>
+                      </div>
+                    ) : (
                     <>
                       <div className="space-y-1.5">
                         <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID Identification</label>
@@ -312,8 +341,22 @@ export default function LoginPage() {
                           required
                         />
                       </div>
+                      {requiresCode && (
+                        <div className="space-y-1.5">
+                          <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">6-Digit Security Code</label>
+                          <input
+                            type="text"
+                            value={securityCode}
+                            onChange={(e) => setSecurityCode(e.target.value)}
+                            placeholder="000000"
+                            maxLength={6}
+                            className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-mono tracking-[0.3em] font-bold"
+                            required
+                          />
+                        </div>
+                      )}
                     </>
-                  ) : (
+                    )) : (
                     <>
                       <div className="space-y-1.5">
                         <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">Institutional Email</label>
@@ -378,9 +421,11 @@ export default function LoginPage() {
                   </div>
                 )}
 
+                {(!isStudentRole || hasActiveElection !== false) && (
                 <button type="submit" disabled={isLoading} className="w-full bg-[#4c0519] text-white py-4 flex items-center justify-center gap-3 hover:bg-black transition-all uppercase text-[9px] font-black tracking-[0.3em] shadow-xl active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isLoading ? 'Authenticating...' : 'Login'}
                 </button>
+                )}
               </form>
             )}
           </div>

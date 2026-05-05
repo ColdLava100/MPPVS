@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@repo/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { MailService } from '../mail/mail.service';
 
 /**
  * Parses a naive local datetime string (e.g. "2026-04-15T09:00" or "2026-04-15T09:00:00")
@@ -64,7 +65,10 @@ function parseLocalDateTime(
 
 @Injectable()
 export class ElectionsService {
-  constructor(private readonly auditLogsService: AuditLogsService) {}
+  constructor(
+    private readonly auditLogsService: AuditLogsService,
+    private readonly mailService: MailService,
+  ) {}
 
   async getElections() {
     return prisma.election.findMany();
@@ -303,6 +307,7 @@ export class ElectionsService {
     userId: string,
     startDate?: string,
     endDate?: string,
+    requireSecurityCode: boolean = false,
   ) {
     console.log('[DEBUG] createElection received:', { startDate, endDate });
     console.log(
@@ -320,6 +325,7 @@ export class ElectionsService {
         courseSettings: courseSettings,
         startDate: parseLocalDateTime(startDate),
         endDate: parseLocalDateTime(endDate),
+        requireSecurityCode,
       },
     });
 
@@ -354,6 +360,8 @@ export class ElectionsService {
       updateData.endDate = parseLocalDateTime(data.endDate);
       console.log('[DEBUG] Parsed endDate:', updateData.endDate?.toISOString());
     }
+    if (data.requireSecurityCode !== undefined)
+      updateData.requireSecurityCode = data.requireSecurityCode;
 
     const election = await prisma.election.update({
       where: { id },
@@ -453,6 +461,141 @@ export class ElectionsService {
       {
         electionId,
         regeneratedCount: count,
+      },
+    );
+
+    return { count };
+  }
+
+  async getActiveConfig() {
+    const election = await prisma.election.findFirst({
+      where: { status: 'ACTIVE' },
+      select: { requireSecurityCode: true },
+    });
+
+    return {
+      hasActiveElection: !!election,
+      requireSecurityCode: election?.requireSecurityCode ?? false,
+    };
+  }
+
+  async sendBulkSecurityCodeEmails(electionId: string, actorId: string) {
+    const registrations = await prisma.voterRegistration.findMany({
+      where: { electionId, isArchived: false },
+      include: { user: true },
+    });
+
+    const votes = await prisma.vote.findMany({
+      where: { electionId },
+    });
+    const votedUserIds = new Set(votes.map((v) => v.voterId));
+
+    const eligibleUsers = registrations
+      .map((r) => r.user)
+      .filter(
+        (u) => u && !u.isArchived && u.securityCode && !votedUserIds.has(u.id),
+      );
+
+    if (eligibleUsers.length === 0) {
+      return { count: 0 };
+    }
+
+    let count = 0;
+    for (const user of eligibleUsers) {
+      try {
+        await this.mailService.dispatchVoterCode(
+          user.email,
+          user.securityCode!,
+        );
+        count++;
+      } catch (err) {
+        console.error(`Failed to send email to ${user.email}:`, err);
+      }
+    }
+
+    await this.auditLogsService.logAction(
+      actorId,
+      'BULK_SENT_SECURITY_CODE_EMAILS',
+      {
+        electionId,
+        sentCount: count,
+      },
+    );
+
+    return { count };
+  }
+
+  async sendSelectedSecurityCodeEmails(
+    electionId: string,
+    actorId: string,
+    userIds: string[],
+  ) {
+    const users = await prisma.user.findMany({
+      where: {
+        id: { in: userIds },
+        isArchived: false,
+        securityCode: { not: null },
+      },
+      select: { id: true, email: true, securityCode: true },
+    });
+
+    let count = 0;
+    for (const user of users) {
+      try {
+        await this.mailService.dispatchVoterCode(
+          user.email,
+          user.securityCode!,
+        );
+        count++;
+      } catch (err) {
+        console.error(`Failed to send email to ${user.email}:`, err);
+      }
+    }
+
+    await this.auditLogsService.logAction(
+      actorId,
+      'SENT_SELECTED_SECURITY_CODE_EMAILS',
+      {
+        electionId,
+        targetUserIds: userIds,
+      },
+    );
+
+    return { count };
+  }
+
+  async regenerateSelectedSecurityCodes(
+    electionId: string,
+    actorId: string,
+    userIds: string[],
+  ) {
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds }, isArchived: false },
+      select: { id: true },
+    });
+
+    const usedCodes = new Set<string>();
+    let count = 0;
+    for (const user of users) {
+      let code: string;
+      do {
+        code = Math.floor(100000 + Math.random() * 900000).toString();
+      } while (usedCodes.has(code));
+
+      usedCodes.add(code);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { securityCode: code },
+      });
+      count++;
+    }
+
+    await this.auditLogsService.logAction(
+      actorId,
+      'REGENERATE_SELECTED_SECURITY_CODES',
+      {
+        electionId,
+        targetUserIds: userIds,
       },
     );
 

@@ -71,7 +71,7 @@ export default function CourseConfig({ election, courses, onRefresh }: CourseCon
   }
 
 return (
-    <div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
           <BookOpen size={20} className="text-white" />

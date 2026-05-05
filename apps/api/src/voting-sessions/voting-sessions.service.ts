@@ -221,8 +221,48 @@ export class VotingSessionsService {
       userId: user.id,
       name: user.name,
       studentId: user.studentId || 'N/A',
+      icNumber: user.icNumber || 'N/A',
+      courseCode: user.course?.code || 'N/A',
       hasVoted: votedVoterIds.has(user.id),
       votedAt: votes.find((v) => v.voterId === user.id)?.createdAt || null,
+    }));
+  }
+
+  async getSessionCandidates(sessionId: string) {
+    const session = await prisma.votingSession.findUnique({
+      where: { id: sessionId },
+      include: { election: true },
+    });
+
+    if (!session) {
+      throw new BadRequestException('Voting session not found');
+    }
+
+    const candidates = await prisma.candidate.findMany({
+      where: { electionId: session.electionId, status: 'APPROVED' },
+      include: { user: { include: { course: true } } },
+    });
+
+    const votes = await prisma.vote.findMany({
+      where: {
+        electionId: session.electionId,
+        createdAt: {
+          gte: session.startTime,
+          lte: session.endTime,
+        },
+      },
+    });
+
+    const voteCounts: Record<string, number> = {};
+    votes.forEach((v) => {
+      voteCounts[v.candidateId] = (voteCounts[v.candidateId] || 0) + 1;
+    });
+
+    return candidates.map((c) => ({
+      id: c.id,
+      name: c.user?.name || 'Unknown',
+      courseCode: c.user?.course?.code || 'N/A',
+      voteCount: voteCounts[c.id] || 0,
     }));
   }
 }

@@ -27,6 +27,12 @@ export class ElectionsController {
     return this.electionsService.getPublicMetrics();
   }
 
+  @Get('public/active-config')
+  @UseGuards()
+  async getActiveConfig() {
+    return this.electionsService.getActiveConfig();
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
@@ -129,6 +135,7 @@ export class ElectionsController {
       req.user.id,
       body.startDate,
       body.endDate,
+      body.requireSecurityCode,
     );
   }
 
@@ -189,6 +196,64 @@ export class ElectionsController {
     return this.electionsService.regenerateAllSecurityCodes(
       electionId,
       actorId,
+    );
+  }
+
+  @Post(':id/send-bulk-emails')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async sendBulkEmails(@Param('id') id: string, @Req() req: any) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.electionsService.sendBulkSecurityCodeEmails(id, actorId);
+  }
+
+  @Post(':id/send-selected-emails')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async sendSelectedEmails(
+    @Param('id') id: string,
+    @Body() body: { userIds: string[] },
+    @Req() req: any,
+  ) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.electionsService.sendSelectedSecurityCodeEmails(
+      id,
+      actorId,
+      body.userIds,
+    );
+  }
+
+  @Post(':id/regenerate-selected-codes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    Role.SUPERADMIN,
+    Role.ADMIN,
+    Role.MPP_ADVISOR,
+    Role.SPR_ADVISOR,
+    Role.SPR_VOLUNTEER,
+  )
+  async regenerateSelectedCodes(
+    @Param('id') id: string,
+    @Body() body: { userIds: string[] },
+    @Req() req: any,
+  ) {
+    const actorId = req.user?.sub || req.user?.id;
+    return this.electionsService.regenerateSelectedSecurityCodes(
+      id,
+      actorId,
+      body.userIds,
     );
   }
 

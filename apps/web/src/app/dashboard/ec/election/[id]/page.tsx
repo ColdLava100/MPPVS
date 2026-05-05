@@ -239,20 +239,13 @@ export default function ElectionDetailPage() {
             {/* Tab Content */}
             <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
               {activeTab === 'voters' && (
-                <VoterList 
-                  electionId={electionId} 
-                  courses={getCourseList()}
-                />
+                <VoterList electionId={electionId} courses={getCourseList()} />
               )}
               {activeTab === 'sessions' && (
-                <SessionList 
-                  electionId={electionId}
-                />
+                <SessionList electionId={electionId} />
               )}
               {activeTab === 'candidates' && (
-                <CandidatesList 
-                  electionId={electionId}
-                />
+                <CandidatesList electionId={electionId} />
               )}
               {activeTab === 'audit' && (
                 <AuditLogTable electionId={electionId} />

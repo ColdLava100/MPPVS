@@ -309,6 +309,7 @@ export default function ElectionOverview({ elections, courses, onEditElection, o
           election={selectedElection}
           courses={courses}
           onClose={() => setSelectedElection(null)}
+          onEditElection={onEditElection}
         />
       )}
     </div>

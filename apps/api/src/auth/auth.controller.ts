@@ -21,6 +21,7 @@ import { prisma } from '@repo/database';
 class StudentLoginDto {
   studentId: string;
   icNumber: string;
+  securityCode?: string;
 }
 
 class StaffLoginDto {
@@ -44,6 +45,7 @@ export class AuthController {
     const result = await this.authService.studentLogin(
       body.studentId,
       body.icNumber,
+      body.securityCode,
     );
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,

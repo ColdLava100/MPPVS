@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { X, Calendar, Users, Clock, FileText } from 'lucide-react';
+import { X, Calendar, Users, Clock, FileText, Edit3 } from 'lucide-react';
 
 interface ElectionDetailModalProps {
   election: any;
   courses: any[];
   onClose: () => void;
+  onEditElection?: (election: any) => void;
 }
 
-export default function ElectionDetailModal({ election, courses, onClose }: ElectionDetailModalProps) {
+export default function ElectionDetailModal({ election, courses, onClose, onEditElection }: ElectionDetailModalProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -113,10 +114,19 @@ export default function ElectionDetailModal({ election, courses, onClose }: Elec
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-200">
+        <div className="mt-6 pt-4 border-t border-slate-200 flex gap-3">
+          {onEditElection && (
+            <button 
+              onClick={() => { onEditElection(election); onClose(); }}
+              className="flex-1 bg-[#c5a021] hover:bg-yellow-400 text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+            >
+              <Edit3 size={16} />
+              Edit Election
+            </button>
+          )}
           <button 
             onClick={onClose}
-            className="w-full bg-slate-100 hover:bg-slate-200 text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-colors"
+            className="flex-1 bg-slate-100 hover:bg-slate-200 text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-colors"
           >
             Close
           </button>

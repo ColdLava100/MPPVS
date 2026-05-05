@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
@@ -26,6 +26,7 @@ type ViewMode = 'overview' | 'workflow';
 
 export default function SprDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
@@ -110,6 +111,19 @@ export default function SprDashboard() {
     setCurrentStep(1);
     setViewMode('workflow');
   };
+
+  useEffect(() => {
+    if (!isLoading && elections.length > 0) {
+      const editParam = searchParams.get('edit');
+      if (editParam) {
+        const existing = elections.find((e: any) => e.id === editParam);
+        if (existing) {
+          handleEditExisting(existing);
+          router.replace('/dashboard/ec');
+        }
+      }
+    }
+  }, [isLoading, elections, searchParams]);
 
   const handleBackToOverview = () => {
     setViewMode('overview');

@@ -28,6 +28,7 @@ export default function ElectionSetup({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [status, setStatus] = useState('DRAFT');
+  const [requireSecurityCode, setRequireSecurityCode] = useState(false);
   const [courseConfig, setCourseConfig] = useState<Record<string, { enabled: boolean, chairs: number }>>({});
 
   // Helper function to convert UTC ISO string to YYYY-MM-DDTHH:mm in local time
@@ -44,6 +45,7 @@ export default function ElectionSetup({
       setStartDate(formatForDateTimeInput(activeElection.startDate));
       setEndDate(formatForDateTimeInput(activeElection.endDate));
       setStatus(activeElection.status || 'DRAFT');
+      setRequireSecurityCode(activeElection.requireSecurityCode ?? false);
 
       const settings: Record<string, { enabled: boolean, chairs: number }> = {};
       courses.forEach(c => {
@@ -82,6 +84,7 @@ export default function ElectionSetup({
       status,
       startDate: startDate || null,
       endDate: endDate || null,
+      requireSecurityCode,
     };
 
     try {
@@ -139,15 +142,12 @@ export default function ElectionSetup({
     setStartDate('');
     setEndDate('');
     setStatus('DRAFT');
-    const initial: Record<string, { enabled: boolean, chairs: number }> = {};
-    courses.forEach(c => {
-      initial[c.studentPrefix] = { enabled: false, chairs: 1 };
-    });
-    setCourseConfig(initial);
+    setRequireSecurityCode(false);
+    setCourseConfig({});
   };
 
 return (
-    <div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
           <Vote size={20} className="text-white" />
@@ -191,6 +191,19 @@ return (
                 <option value="COMPLETED" className="text-black">Completed</option>
               </select>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3 mb-6">
+            <input
+              type="checkbox"
+              id="requireCode"
+              checked={requireSecurityCode}
+              onChange={(e) => setRequireSecurityCode(e.target.checked)}
+              className="accent-[#4c0519] w-4 h-4"
+            />
+            <label htmlFor="requireCode" className="text-sm font-bold text-slate-700 cursor-pointer">
+              Require 6-Digit Security Code for Voting
+            </label>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

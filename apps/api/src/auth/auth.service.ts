@@ -16,7 +16,11 @@ export class AuthService {
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
-  async studentLogin(studentId: string, icNumber: string) {
+  async studentLogin(
+    studentId: string,
+    icNumber: string,
+    securityCode?: string,
+  ) {
     const user = await prisma.user.findUnique({
       where: { studentId },
       include: { course: true },
@@ -93,6 +97,17 @@ export class AuthService {
 
     if (electionDateBlocked) {
       throw new ForbiddenException(electionDateMessage);
+    }
+
+    if (election.requireSecurityCode) {
+      if (!securityCode) {
+        throw new UnauthorizedException(
+          'A security code is required for this election. Please check your email.',
+        );
+      }
+      if (user.securityCode !== securityCode) {
+        throw new UnauthorizedException('Invalid security code.');
+      }
     }
 
     const sessions = await prisma.votingSession.findMany({
