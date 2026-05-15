@@ -1,9 +1,0 @@
-{
-  "buildCommand": "pnpm run build --filter=web",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "git": {
-    "deploymentEnabled": true
-  }
-}
