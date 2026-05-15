@@ -15,6 +15,7 @@ enum Role {
   CANDIDATE
   SPR_ADVISOR
   SPR_VOLUNTEER
+  SRC_ADVISOR
 }
 
 model User {

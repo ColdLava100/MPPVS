@@ -27,7 +27,7 @@ interface ImportVotersDto {
 
 @Controller('voter-registrations')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SUPERADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER)
+@Roles(Role.SUPERADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER, Role.SRC_ADVISOR, Role.MPP_ADVISOR)
 export class VoterRegistrationsController {
   constructor(
     private readonly voterRegistrationsService: VoterRegistrationsService,

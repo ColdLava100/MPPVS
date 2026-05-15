@@ -8,6 +8,7 @@ export enum Role {
   CANDIDATE = 'CANDIDATE',
   SPR_ADVISOR = 'SPR_ADVISOR',
   SPR_VOLUNTEER = 'SPR_VOLUNTEER',
+  SRC_ADVISOR = 'SRC_ADVISOR',
 }
 
 export const ROLES_KEY = 'roles';

@@ -1,19 +1,24 @@
 'use client';
 
 import React from 'react';
-import { Users, Clock, Vote, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle, CheckCircle, Vote } from 'lucide-react';
 
 interface AdvisorMetricsGridProps {
   elections: any[];
   votingSessions: any[];
   candidates: any[];
+  electionId?: string | null;
 }
 
-export default function AdvisorMetricsGrid({ elections, votingSessions, candidates }: AdvisorMetricsGridProps) {
-  const activeElections = elections.filter(e => e.status === 'ACTIVE').length;
-  const pendingCandidates = candidates.filter(c => c.status === 'PENDING').length;
-  const approvedCandidates = candidates.filter(c => c.status === 'APPROVED').length;
-  const activeSessions = votingSessions.filter(vs => {
+export default function AdvisorMetricsGrid({ elections, votingSessions, candidates, electionId }: AdvisorMetricsGridProps) {
+  const scopedCandidates = electionId
+    ? candidates.filter((c: any) => c.electionId === electionId)
+    : candidates;
+
+  const activeElections = elections.filter((e: any) => e.status === 'ACTIVE').length;
+  const pendingCandidates = scopedCandidates.filter((c: any) => c.status === 'PENDING').length;
+  const approvedCandidates = scopedCandidates.filter((c: any) => c.status === 'APPROVED').length;
+  const activeSessions = votingSessions.filter((vs: any) => {
     const now = new Date();
     const start = vs.startTime ? new Date(vs.startTime) : null;
     const end = vs.endTime ? new Date(vs.endTime) : null;
@@ -21,52 +26,40 @@ export default function AdvisorMetricsGrid({ elections, votingSessions, candidat
   }).length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-blue-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <Users size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">TOTAL</span>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="bg-white/5 border border-white/10 backdrop-blur-xl border-b-2 border-b-blue-600 rounded-sm p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Users size={18} className="text-blue-400" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</span>
         </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{candidates.length}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">All Candidates</p>
+        <span className="text-2xl font-bold text-white tabular-nums">{scopedCandidates.length}</span>
       </div>
 
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-yellow-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <AlertCircle size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">PENDING</span>
+      <div className="bg-white/5 border border-white/10 backdrop-blur-xl border-b-2 border-b-yellow-600 rounded-sm p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <AlertCircle size={18} className="text-yellow-400" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending</span>
         </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{pendingCandidates}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Awaiting Review</p>
+        <span className="text-2xl font-bold text-white tabular-nums">{pendingCandidates}</span>
       </div>
 
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-green-700 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <CheckCircle size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">APPROVED</span>
+      <div className="bg-white/5 border border-white/10 backdrop-blur-xl border-b-2 border-b-green-700 rounded-sm p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <CheckCircle size={18} className="text-green-400" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Approved</span>
         </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{approvedCandidates}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Candidates</p>
+        <span className="text-2xl font-bold text-white tabular-nums">{approvedCandidates}</span>
       </div>
 
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-red-700 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <Vote size={24} />
+      <div className="bg-white/5 border border-white/10 backdrop-blur-xl border-b-2 border-b-red-700 rounded-sm p-4 flex flex-col justify-center gap-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Vote size={18} className="text-red-400" />
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Elections</span>
           </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">ELECTION</span>
+          <span className="text-2xl font-bold text-white tabular-nums">{activeElections}</span>
         </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{activeElections}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Elections</p>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-red-600">{activeSessions} Sessions Live</span>
-        </div>
+        <p className="text-[10px] font-bold text-red-400">{activeSessions} sessions live</p>
       </div>
     </div>
   );

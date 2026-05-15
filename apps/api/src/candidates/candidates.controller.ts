@@ -35,7 +35,7 @@ export class CandidatesController {
   }
 
   @Post()
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
   async registerCandidate(
     @Body()
     body: {
@@ -103,7 +103,7 @@ export class CandidatesController {
   }
 
   @Post(':id/qualification')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
   async upsertQualification(
     @Param('id') candidateId: string,
     @Body() body: { positions: string[]; cgpa: string; justification: string },
@@ -119,7 +119,7 @@ export class CandidatesController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
   async updateCandidate(
     @Param('id') candidateId: string,
     @Body()
@@ -139,7 +139,7 @@ export class CandidatesController {
   }
 
   @Delete(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
   async deleteCandidate(@Param('id') candidateId: string, @Req() req: any) {
     return this.candidatesService.deleteCandidate(candidateId, req.user.id);
   }
