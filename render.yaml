@@ -5,9 +5,7 @@ services:
     region: ohio
     plan: free
     buildCommand: |
-      pnpm install --frozen-lockfile
-      cd packages/database && npx prisma generate && cd ../..
-      cd apps/api && npx prisma generate && cd ../..
+      NODE_ENV=development pnpm install --frozen-lockfile
       pnpm run build --filter=api
     startCommand: node apps/api/dist/main
     envVars:
