@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
+    "@types/node": "^22.10.7",
     "bcrypt": "^6.0.0",
     "prisma": "^5.0.0"
   },
