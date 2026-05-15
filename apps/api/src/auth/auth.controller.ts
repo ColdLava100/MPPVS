@@ -9,13 +9,14 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles, Role } from '../common/decorators/roles.decorator';
 import { TwoFactorAuthService } from '../two-factor-auth/two-factor-auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { prisma } from '@repo/database';
 
 class StudentLoginDto {
@@ -31,11 +32,27 @@ class StaffLoginDto {
 
 @Controller('auth')
 export class AuthController {
+  private readonly cookieOptions: {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: 'none' | 'lax' | 'strict';
+    maxAge: number;
+  };
+
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    this.cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    };
+  }
 
   @Post('student/login')
   async studentLogin(
@@ -47,12 +64,7 @@ export class AuthController {
       body.icNumber,
       body.securityCode,
     );
-    res.cookie('accessToken', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    });
+    res.cookie('accessToken', result.accessToken, this.cookieOptions);
     return result;
   }
 
@@ -69,12 +81,7 @@ export class AuthController {
     }
 
     // Normal login - set cookie
-    res.cookie('accessToken', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    });
+    res.cookie('accessToken', result.accessToken, this.cookieOptions);
     return result;
   }
 
@@ -107,12 +114,7 @@ export class AuthController {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24,
-    });
+    res.cookie('accessToken', accessToken, this.cookieOptions);
 
     return { accessToken };
   }
@@ -133,18 +135,13 @@ export class AuthController {
 
     if (req.cookies && req.cookies.accessToken) {
       res.cookie('originalToken', req.cookies.accessToken, {
-        httpOnly: true,
+        ...this.cookieOptions,
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
       });
     }
 
     res.cookie('accessToken', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24, // Overwrite with 1 day
+      ...this.cookieOptions,
       path: '/',
     });
 
@@ -162,19 +159,17 @@ export class AuthController {
     }
 
     res.cookie('accessToken', originalToken, {
-      httpOnly: true,
+      ...this.cookieOptions,
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
     });
-    res.clearCookie('originalToken', { path: '/' });
+    res.clearCookie('originalToken', { path: '/', secure: this.cookieOptions.secure, sameSite: this.cookieOptions.sameSite });
 
     return { success: true };
   }
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('accessToken', { path: '/', secure: this.cookieOptions.secure, sameSite: this.cookieOptions.sameSite });
     return { success: true };
   }
 

@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: mppvs-api
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: |
+      pnpm install --frozen-lockfile
+      cd packages/database && npx prisma generate && cd ../..
+      cd apps/api && npx prisma generate && cd ../..
+      pnpm run build --filter=api
+    startCommand: node apps/api/dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: FRONTEND_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: TZ
+        value: Asia/Kuala_Lumpur
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false

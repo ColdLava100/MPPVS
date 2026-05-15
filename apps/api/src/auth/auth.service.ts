@@ -69,15 +69,17 @@ export class AuthService {
       const endDate = election.endDate ? new Date(election.endDate) : null;
 
       // Both `now` and startDate/endDate are UTC Date objects — comparison is always correct.
-      console.log('[DEBUG][studentLogin] now (UTC):', now.toISOString());
-      console.log(
-        '[DEBUG][studentLogin] election.startDate (UTC):',
-        startDate?.toISOString(),
-      );
-      console.log(
-        '[DEBUG][studentLogin] election.endDate   (UTC):',
-        endDate?.toISOString(),
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[DEBUG][studentLogin] now (UTC):', now.toISOString());
+        console.log(
+          '[DEBUG][studentLogin] election.startDate (UTC):',
+          startDate?.toISOString(),
+        );
+        console.log(
+          '[DEBUG][studentLogin] election.endDate   (UTC):',
+          endDate?.toISOString(),
+        );
+      }
 
       const toMYT = (d: Date) =>
         d.toLocaleString('en-MY', {
@@ -319,15 +321,17 @@ export class AuthService {
       const endDate = election.endDate ? new Date(election.endDate) : null;
 
       // Both `now` and startDate/endDate are UTC Date objects — comparison is always correct.
-      console.log('[DEBUG][getStudentStatus] now (UTC):', now.toISOString());
-      console.log(
-        '[DEBUG][getStudentStatus] election.startDate (UTC):',
-        startDate?.toISOString(),
-      );
-      console.log(
-        '[DEBUG][getStudentStatus] election.endDate   (UTC):',
-        endDate?.toISOString(),
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[DEBUG][getStudentStatus] now (UTC):', now.toISOString());
+        console.log(
+          '[DEBUG][getStudentStatus] election.startDate (UTC):',
+          startDate?.toISOString(),
+        );
+        console.log(
+          '[DEBUG][getStudentStatus] election.endDate   (UTC):',
+          endDate?.toISOString(),
+        );
+      }
 
       const toMYT = (d: Date) =>
         d.toLocaleString('en-MY', {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
@@ -25,6 +25,18 @@ const STEPS = [
 type ViewMode = 'overview' | 'workflow';
 
 export default function SprDashboard() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#4c0519' }}>
+        <p style={{ color: '#c5a021', fontSize: '14px', letterSpacing: '3px' }}>Loading...</p>
+      </div>
+    }>
+      <SprDashboardContent />
+    </Suspense>
+  );
+}
+
+function SprDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
