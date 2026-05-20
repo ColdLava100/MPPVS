@@ -106,10 +106,10 @@ export default function SRCVotingPortal() {
 
       <Header />
 
-      <main className="flex-grow max-w-7xl mx-auto px-10 py-10 w-full relative z-10">
+      <main className="flex-grow max-w-7xl mx-auto px-4 md:px-10 py-4 md:py-10 w-full relative z-10">
 
         {/* 1. LIVE METRICS SECTION */}
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
           <div style={{ fontFamily: 'Arial, sans-serif' }}>
             <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
               <Activity size={12} className="text-red-500" /> {activeTitle} Live Metrics
@@ -168,19 +168,19 @@ export default function SRCVotingPortal() {
         </div>
 
         {/* 2. HERO BANNER */}
-        <section className="relative rounded-xl p-20 text-white mb-24 overflow-hidden bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black shadow-2xl border border-white/5 backdrop-blur-sm">
-          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
+        <section className="relative rounded-xl p-6 md:p-20 text-white mb-16 md:mb-24 overflow-hidden bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black shadow-2xl border border-white/5 backdrop-blur-sm">
+          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none hidden md:block">
             <div className="w-full h-full border-[40px] border-white/20 rounded-full -mr-40 mt-10" />
           </div>
 
           <div className="relative z-10 max-w-2xl">
-            <p className="text-[11px] font-black uppercase tracking-[0.5em] text-yellow-500 mb-6">Student Representative Council 2024</p>
-            <h2 className="text-7xl font-bold mb-8 leading-[0.85] tracking-tighter italic uppercase">LEAD THE <br /> FUTURE</h2>
-            <p className="text-base opacity-80 leading-relaxed mb-10 font-light max-w-lg">
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.5em] text-yellow-500 mb-4 md:mb-6">Student Representative Council 2024</p>
+            <h2 className="text-4xl md:text-7xl font-bold mb-6 md:mb-8 leading-[0.85] tracking-tighter italic uppercase">LEAD THE <br /> FUTURE</h2>
+            <p className="text-sm md:text-base opacity-80 leading-relaxed mb-8 md:mb-10 font-light max-w-lg">
               Your vote is the cornerstone of academic excellence. Choose the visionaries who will shape the next era of our institutional governance.
             </p>
-            <div className="flex gap-6">
-              <button className="bg-[#c5a021] text-slate-900 px-10 py-4 rounded-sm text-[11px] font-black uppercase tracking-[0.2em] hover:bg-yellow-400 transition-all shadow-lg active:scale-95 flex items-center gap-2">
+            <div className="flex gap-4 md:gap-6">
+              <button className="bg-[#c5a021] text-slate-900 px-6 md:px-10 py-3 md:py-4 rounded-sm text-[11px] font-black uppercase tracking-[0.2em] hover:bg-yellow-400 transition-all shadow-lg active:scale-95 flex items-center gap-2">
                 Vote Now <ChevronRight size={14} />
               </button>
             </div>
@@ -188,13 +188,13 @@ export default function SRCVotingPortal() {
         </section>
 
         {/* 3. VISIONARY LEADERS */}
-        <section className="mb-20">
-          <div className="flex items-center gap-6 mb-16">
-            <h2 className="text-5xl font-medium uppercase tracking-tighter italic text-white">Visionary Leaders</h2>
+        <section className="mb-16 md:mb-20">
+          <div className="flex items-center gap-4 md:gap-6 mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-medium uppercase tracking-tighter italic text-white">Visionary Leaders</h2>
             <div className="flex-grow h-[1px] bg-white/20" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <LeaderCard
               name="Ahmad Daniel"
               dept="Computer Science"
@@ -225,7 +225,7 @@ export default function SRCVotingPortal() {
 /* Sub-components */
 function MetricBox({ code, votes, seats, color, icon }: any) {
   return (
-    <div className={`p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
+    <div className={`p-4 md:p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
       <div className="flex justify-between items-start mb-6">
         <div className="text-slate-400 group-hover:text-slate-900 transition-colors">
           {icon || <BarChart3 size={20} />}
@@ -248,7 +248,7 @@ function MetricBox({ code, votes, seats, color, icon }: any) {
 
 function StatItem({ label, value, color = "text-white", light = false }: any) {
   return (
-    <div className="p-8 border-r border-white/10 last:border-0 hover:bg-white/5 transition-colors">
+    <div className="p-4 md:p-8 border-r border-white/10 last:border-0 hover:bg-white/5 transition-colors">
       <span className={`block text-[10px] font-black ${light ? 'text-slate-300' : 'text-slate-400'} uppercase tracking-[0.2em] mb-2`}>{label}</span>
       <span className={`text-2xl font-bold tracking-tighter ${color}`}>{value}</span>
     </div>

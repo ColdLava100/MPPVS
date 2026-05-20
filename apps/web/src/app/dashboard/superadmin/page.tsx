@@ -31,6 +31,7 @@ export default function SuperAdminDashboard() {
   
   // Current user state
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Global data state
   const [courses, setCourses] = useState<any[]>([]);
@@ -114,14 +115,42 @@ export default function SuperAdminDashboard() {
     currentUser
   };
 
+  const tabLabel = activeRoleTab === 'SUPERADMIN' ? 'Super Admin'
+    : activeRoleTab === 'ADMIN' ? 'Admin'
+    : activeRoleTab === 'ADVISOR' ? 'SRC Advisor'
+    : activeRoleTab === 'CANDIDATE' ? 'Candidate'
+    : 'Simulation';
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff', color: '#000000', fontFamily: 'sans-serif' }}>
-      <aside style={{ width: '250px', backgroundColor: '#111827', color: '#fff', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '100vh' }}>
+      {/* Mobile top bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex md:hidden items-center justify-between px-4 py-3 bg-[#111827] text-white">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.25rem' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span style={{ fontSize: '0.9rem', fontWeight: 'bold', letterSpacing: '0.1em' }}>Tracer Bullet — {tabLabel}</span>
+        <div style={{ width: '20px' }} />
+      </div>
+
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 md:hidden bg-black/50" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`
+        fixed md:sticky top-0 z-50 md:z-auto
+        ${sidebarOpen ? 'left-0' : '-left-full md:left-0'}
+        transition-all duration-300
+      `} style={{ width: '250px', backgroundColor: '#111827', color: '#fff', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '100vh' }}>
+        {/* Close button on mobile */}
+        <div className="flex md:hidden justify-end mb-2">
+          <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
+        </div>
         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #374151', paddingBottom: '0.5rem' }}>Tracer Bullet</h2>
-        <button onClick={() => setActiveRoleTab('SUPERADMIN')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SUPERADMIN' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Super Admin / System</button>
-        <button onClick={() => setActiveRoleTab('ADMIN')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADMIN' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Admin (Election Ops)</button>
-        <button onClick={() => setActiveRoleTab('ADVISOR')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADVISOR' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SRC Advisor</button>
-        <button onClick={() => setActiveRoleTab('CANDIDATE')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'CANDIDATE' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Candidate</button>
+        <button onClick={() => { setActiveRoleTab('SUPERADMIN'); setSidebarOpen(false); }} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SUPERADMIN' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Super Admin / System</button>
+        <button onClick={() => { setActiveRoleTab('ADMIN'); setSidebarOpen(false); }} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADMIN' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Admin (Election Ops)</button>
+        <button onClick={() => { setActiveRoleTab('ADVISOR'); setSidebarOpen(false); }} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'ADVISOR' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SRC Advisor</button>
+        <button onClick={() => { setActiveRoleTab('CANDIDATE'); setSidebarOpen(false); }} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'CANDIDATE' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Candidate</button>
         
         <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
 
@@ -131,14 +160,14 @@ export default function SuperAdminDashboard() {
 
         <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
         
-        <button onClick={() => setActiveRoleTab('SIMULATION')} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SIMULATION' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SIMULATION: Voting & Tally</button>
+        <button onClick={() => { setActiveRoleTab('SIMULATION'); setSidebarOpen(false); }} style={{ padding: '0.75rem', textAlign: 'left', background: activeRoleTab === 'SIMULATION' ? '#374151' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>SIMULATION: Voting & Tally</button>
         
         <div style={{ borderTop: '1px solid #374151', margin: '0.5rem 0' }} />
         
         <button onClick={async () => { await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }); router.push('/login'); }} style={{ padding: '0.75rem', textAlign: 'left', background: '#dc2626', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px', marginTop: 'auto' }}>Logout</button>
       </aside>
 
-      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto mt-14 md:mt-0">
         {activeRoleTab === 'SUPERADMIN' && <SuperadminTab {...commonProps} />}
         {activeRoleTab === 'ADMIN' && <AdminTab {...commonProps} />}
         {activeRoleTab === 'ADVISOR' && <AdvisorTab {...commonProps} />}

@@ -103,14 +103,14 @@ export default function AdminDashboard() {
           style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
         />
 
-        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8 md:gap-12">
             {/* Hero Section */}
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
                   <Activity size={14} className="text-red-600 animate-pulse" /> Admin Operations
                 </p>
-                <h1 className="text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+                <h1 className="text-3xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
                   Welcome, <span className="italic">{currentUser?.name || 'Admin'}</span>
                 </h1>
               </div>

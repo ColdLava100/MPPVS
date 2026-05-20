@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MPP Voting System",
   description: "Official MPP Student Representative Council Election Voting Platform",
+  icons: {
+    icon: '/icon-192.svg',
+    apple: '/icon-512.svg',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#4c0519',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

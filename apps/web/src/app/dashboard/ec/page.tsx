@@ -224,14 +224,14 @@ return (
           style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
         />
 
-        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-6 md:gap-12">
             {/* Hero Section */}
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
                   <Activity size={14} className="text-red-600 animate-pulse" /> EC Operations
                 </p>
-                <h1 className="text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+                <h1 className="text-3xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
                   Welcome, <span className="italic">{currentUser?.name || 'EC'}</span>
                 </h1>
               </div>
@@ -248,7 +248,7 @@ return (
             {viewMode === 'overview' ? (
               /* Main Overview View */
               <>
-                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                <div className="p-4 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
                   <ElectionOverview 
                     elections={elections}
                     courses={courses}
@@ -257,7 +257,7 @@ return (
                   />
                 </div>
 
-                <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
+                <div className="p-4 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
                   <h2 className="text-lg font-bold uppercase tracking-tighter text-black mb-4 flex items-center gap-2">
                     <Shield size={16} className="text-[#4c0519]" />
                     Audit Logs
@@ -271,8 +271,8 @@ return (
                 
                 {/* CREATE MODE: Numbered Stepper Pipeline */}
                 {!activeElectionId && (
-                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-6">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm p-4 md:p-6">
+                    <div className="flex items-center justify-between overflow-x-auto gap-2 md:gap-0">
                       {STEPS.map((step, index) => (
                         <React.Fragment key={step.id}>
                           <div className="flex flex-col items-center">
@@ -301,7 +301,7 @@ return (
                 )}
 
 {/* Main Content Card (Unified for Edit and Create modes) */}
-                <div className="p-8 bg-white/95 backdrop-blur-5xl border border-white/20 shadow-2xl rounded-sm">
+                <div className="p-4 md:p-8 bg-white/95 backdrop-blur-5xl border border-white/20 shadow-2xl rounded-sm">
                   
                   {/* Back to Overview - Global for Edit Mode (hoisted above Tab Bar) */}
                   {activeElectionId && (
@@ -312,7 +312,7 @@ return (
 
                   {/* Integrated Tab Bar - ONLY IN EDIT MODE */}
                   {activeElectionId && (
-                    <div className="flex items-center justify-start gap-2 pb-4 mb-6 border-b border-slate-200">
+                    <div className="flex items-center justify-start gap-2 pb-4 mb-6 border-b border-slate-200 overflow-x-auto">
                       <button onClick={() => setCurrentStep(1)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 1 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Settings size={14} />Settings</button>
                       <button onClick={() => setCurrentStep(2)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 2 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><BookOpen size={14} />Courses</button>
                       <button onClick={() => setCurrentStep(3)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 3 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Users size={14} />Voters</button>
@@ -341,16 +341,16 @@ return (
 
                 {/* Navigation Buttons - ONLY IN CREATE MODE */}
                 {!activeElectionId && (
-                  <div className="flex justify-between">
-                    <button onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep} className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}>
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <button onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep} className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2`}>
                       ← {currentStep === 1 ? 'Back to Overview' : 'Back'}
                     </button>
                     {currentStep < 4 ? (
-                      <button onClick={handleNextStep} disabled={!canProceed(currentStep)} className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${!canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <button onClick={handleNextStep} disabled={!canProceed(currentStep)} className={`bg-[#c5a021] text-black px-8 md:px-14 py-4 md:py-6 rounded-sm text-[11px] md:text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center justify-center gap-4 ${!canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         Next Step →
                       </button>
                     ) : (
-                      <button onClick={handleComplete} disabled={!activeElectionId} className={`bg-[#c5a021] text-black px-14 py-6 rounded-sm text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center gap-4 ${!activeElectionId ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <button onClick={handleComplete} disabled={!activeElectionId} className={`bg-[#c5a021] text-black px-8 md:px-14 py-4 md:py-6 rounded-sm text-[11px] md:text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center justify-center gap-4 ${!activeElectionId ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         Complete
                       </button>
                     )}

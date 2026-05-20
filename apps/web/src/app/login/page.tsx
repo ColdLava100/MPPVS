@@ -181,7 +181,7 @@ export default function LoginPage() {
       />
 
       {/* HEADER */}
-      <header className="relative z-50 px-10 py-5 flex justify-between items-center bg-[#4c0519]/90 backdrop-blur-md border-b border-white/5 shadow-2xl">
+      <header className="relative z-50 px-4 md:px-10 py-5 flex justify-between items-center bg-[#4c0519]/90 backdrop-blur-md border-b border-white/5 shadow-2xl">
         <Link href="/">
           <button className="group flex items-center gap-3 text-white/80 hover:text-white transition-all">
             <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/20 group-hover:border-white/40 group-hover:bg-white/10 transition-all">
@@ -199,7 +199,7 @@ export default function LoginPage() {
 
       {/* FLOATING MAIN CARD */}
       <main className="relative z-10 flex-grow flex items-center justify-center p-6">
-        <div className="w-full max-w-4xl bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.55)] flex overflow-hidden min-h-[550px] rounded-sm">
+        <div className="w-full max-w-4xl bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.55)] flex flex-col md:flex-row overflow-hidden rounded-sm">
 
           {/* LEFT HERO PANEL */}
           <div className="hidden md:flex w-5/12 relative bg-[#2D0A0A]">
@@ -222,8 +222,8 @@ export default function LoginPage() {
           </div>
 
           {/* RIGHT FORM PANEL */}
-          <div className="w-full md:w-7/12 p-12 lg:p-13 flex flex-col justify-center">
-            <h3 className="text-6xl font-black text-slate-900 mb-1 tracking-tighter leading-none">
+          <div className="w-full md:w-7/12 p-6 md:p-12 flex flex-col justify-center">
+            <h3 className="text-4xl md:text-6xl font-black text-slate-900 mb-1 tracking-tighter leading-none">
               LOGIN
             </h3>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
@@ -269,7 +269,7 @@ export default function LoginPage() {
                   <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Access Role</label>
 
                   {/* Category Tabs */}
-                  <div className="flex gap-6 border-b border-white/10 mb-4">
+                  <div className="flex gap-4 md:gap-6 border-b border-white/10 mb-4 overflow-x-auto">
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}

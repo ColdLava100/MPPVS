@@ -210,7 +210,7 @@ export default function StudentPage() {
               style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
             />
             <div className="relative z-10">
-              <div className="bg-white p-12 rounded-sm max-w-md w-full mx-4 text-center">
+              <div className="bg-white p-6 md:p-12 rounded-sm max-w-md w-full mx-4 text-center">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -256,7 +256,7 @@ export default function StudentPage() {
           style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
         />
 
-        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full">
             <StudentDashboard
               election={election}
               session={session}
