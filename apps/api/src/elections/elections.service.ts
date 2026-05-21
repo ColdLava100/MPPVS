@@ -80,13 +80,16 @@ export class ElectionsService {
       include: {
         sessions: true,
         candidates: {
+      include: {
+        user: {
           include: {
-            user: {
-              include: {
-                course: true,
-              },
-            },
+            course: true,
           },
+        },
+        qualification: true,
+        manifestos: true,
+        posters: true,
+      },
         },
       },
     });
@@ -197,6 +200,9 @@ export class ElectionsService {
             course: true,
           },
         },
+        qualification: true,
+        manifestos: true,
+        posters: true,
       },
     });
 
@@ -235,6 +241,11 @@ export class ElectionsService {
         courseCode: candidate.user?.course?.code || 'N/A',
         courseName: candidate.user?.course?.name || 'N/A',
         voteCount,
+        profilePicture: candidate.profilePicture || null,
+        information: candidate.information || null,
+        qualification: candidate.qualification || null,
+        manifestos: candidate.manifestos || [],
+        posters: candidate.posters || [],
         user: {
           name: candidate.user?.name,
           studentId: candidate.user?.studentId,

@@ -37,7 +37,7 @@ export class UpdateUserDto {
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SUPERADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER, Role.SRC_ADVISOR, Role.MPP_ADVISOR)
+@Roles(Role.SUPERADMIN, Role.ADMIN, Role.SPR_ADVISOR, Role.SPR_VOLUNTEER, Role.SRC_ADVISOR, Role.MPP_ADVISOR)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

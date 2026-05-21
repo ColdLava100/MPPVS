@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Users, Calendar, Edit3, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
+import Background from '@/components/ui/background';
 import VoterList from '../../components/VoterList';
 import CandidatesList from '../../components/CandidatesList';
 import SessionList from '../../components/SessionList';
 import AuditLogTable from '@/components/ui/AuditLogTable';
-
-const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
 type TabType = 'voters' | 'sessions' | 'candidates' | 'audit';
 
@@ -101,13 +100,10 @@ export default function ElectionDetailPage() {
 
   if (!election) {
     return (
-      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <div className="min-h-screen overflow-hidden relative font-sans text-white">
         <UniversalHeader role="ec" />
         <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
-          <div 
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-            style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-          />
+          <Background />
           <div className="relative z-10 p-12 max-w-7xl mx-auto w-full">
             <p className="text-slate-400">Election not found.</p>
             <button 
@@ -123,14 +119,11 @@ export default function ElectionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
       <UniversalHeader role="ec" />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
-        <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-        />
+        <Background />
 
         <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex flex-col gap-8">
             {/* Header */}

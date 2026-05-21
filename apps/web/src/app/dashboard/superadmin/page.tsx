@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield } from 'lucide-react';
+import Background from '@/components/ui/background';
 import SuperadminTab from './tabs/SuperadminTab';
 import AdminTab from './tabs/AdminTab';
 import AdvisorTab from './tabs/AdvisorTab';
@@ -122,7 +123,9 @@ export default function SuperAdminDashboard() {
     : 'Simulation';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff', color: '#000000', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', color: '#000000', fontFamily: 'sans-serif' }}>
+      <Background />
+      <div className="relative z-10" style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       {/* Mobile top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex md:hidden items-center justify-between px-4 py-3 bg-[#111827] text-white">
         <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.25rem' }}>
@@ -174,6 +177,7 @@ export default function SuperAdminDashboard() {
         {activeRoleTab === 'CANDIDATE' && <CandidateTab {...commonProps} />}
         {activeRoleTab === 'SIMULATION' && <VotingSimulationTab {...commonProps} />}
       </main>
+      </div>
     </div>
   );
 }

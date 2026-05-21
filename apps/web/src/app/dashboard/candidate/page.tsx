@@ -25,6 +25,7 @@ import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
 import CropModal from '@/components/ui/crop-modal';
 import ConfirmationModal from '@/components/ui/confirmation-modal';
+import Background from '@/components/ui/background';
 import { getYouTubeEmbedUrl, detectSlideType, getSlideEmbedUrl } from '@/lib/embed-utils';
 
 interface Qualification {
@@ -104,8 +105,6 @@ export default function CandidateDashboard() {
   const [isQualSaving, setIsQualSaving] = useState(false);
 
   const [activeMaterialTab, setActiveMaterialTab] = useState<'manifesto' | 'video' | 'slide' | 'poster'>('manifesto');
-
-  const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -385,12 +384,9 @@ export default function CandidateDashboard() {
 
       <UniversalHeader role="candidate" userName={currentUser?.name} />
 
-      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-        <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-        />
+      <Background />
 
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
         <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8 md:gap-12">
             {/* Hero Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">

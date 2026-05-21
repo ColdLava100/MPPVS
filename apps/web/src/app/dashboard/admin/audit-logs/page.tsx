@@ -7,7 +7,7 @@ import UniversalHeader from '@/components/ui/universal-header';
 import Background from '@/components/ui/background';
 import AuditLogTable from '@/components/ui/AuditLogTable';
 
-export default function AuditLogsPage() {
+export default function AdminAuditLogsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,14 +32,7 @@ export default function AuditLogsPage() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
         <p>Loading...</p>
       </div>
     );
@@ -47,14 +40,14 @@ export default function AuditLogsPage() {
 
   return (
     <div className="min-h-screen overflow-hidden relative font-sans text-white">
-      <UniversalHeader role="superadmin" />
+      <UniversalHeader role="admin" />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
         <Background />
         <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex flex-col gap-8">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.push('/dashboard/superadmin')}
+              onClick={() => router.push('/dashboard/admin')}
               className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
             >
               <ArrowLeft size={20} />

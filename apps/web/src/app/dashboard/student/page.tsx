@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import UniversalHeader from '@/components/ui/universal-header';
 import StudentDashboard from './components/StudentDashboard';
 import CandidateProfileModal from './components/CandidateProfileModal';
-
-const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
+import Background from '@/components/ui/background';
 
 export default function StudentPage() {
   const router = useRouter();
@@ -190,7 +189,7 @@ export default function StudentPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <div className="min-h-screen overflow-hidden relative font-sans text-white">
         <UniversalHeader role="student" />
         <main className="flex-grow flex items-center justify-center pt-[120px]">
           <p className="text-slate-400">Loading...</p>
@@ -202,13 +201,10 @@ export default function StudentPage() {
   // Check if user has voted - show success popup
   if (hasVoted) {
     return (
-      <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+      <div className="min-h-screen overflow-hidden relative font-sans text-white">
         <UniversalHeader role="student" />
         <main className="flex-grow flex items-center justify-center relative pt-[120px]">
-            <div 
-              className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
-            />
+            <Background />
             <div className="relative z-10">
               <div className="bg-white p-6 md:p-12 rounded-sm max-w-md w-full mx-4 text-center">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -247,14 +243,11 @@ export default function StudentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
       <UniversalHeader role="student" userName={currentUser?.name} />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-        <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
-        />
+        <Background />
 
         <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full">
             <StudentDashboard

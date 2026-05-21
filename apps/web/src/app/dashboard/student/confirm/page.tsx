@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
-
-const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
+import Background from '@/components/ui/background';
 
 export default function ConfirmPage() {
   const router = useRouter();
@@ -81,14 +80,11 @@ export default function ConfirmPage() {
   }, {} as Record<string, any[]>);
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
       <UniversalHeader role="student" />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar pt-[120px]">
-        <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.3)' }}
-        />
+        <Background />
 
         <div className="relative z-10 p-12 max-w-3xl mx-auto w-full">
             <button 

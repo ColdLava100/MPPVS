@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, UserPlus } from 'lucide-react';
+import { Activity, UserPlus, Users } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
-import { AdvisorMetricsGrid, CandidateReviewGrid, ElectionMonitor } from './components';
+import Background from '@/components/ui/background';
+import { CandidateReviewGrid } from './components';
 import CandidateDetailModal from './components/CandidateDetailModal';
 import CandidateModal from './components/CandidateModal';
-
-const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
 export default function AdvisorDashboard() {
   const router = useRouter();
@@ -16,10 +15,8 @@ export default function AdvisorDashboard() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [elections, setElections] = useState<any[]>([]);
-  const [votingSessions, setVotingSessions] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'candidates' | 'elections'>('candidates');
   const [selectedElectionId, setSelectedElectionId] = useState<string | null>(null);
 
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
@@ -48,13 +45,11 @@ export default function AdvisorDashboard() {
 
   const fetchActiveData = async () => {
     try {
-      const [eRes, vsRes, candRes] = await Promise.all([
+      const [eRes, candRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections`, { credentials: 'include' }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions`, { credentials: 'include' }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates`, { credentials: 'include' })
       ]);
       if (eRes.ok) setElections(await eRes.json());
-      if (vsRes.ok) setVotingSessions(await vsRes.json());
       if (candRes.ok) setCandidates(await candRes.json());
     } catch (err) {
       console.error('Failed to fetch data', err);
@@ -70,10 +65,9 @@ export default function AdvisorDashboard() {
   useEffect(() => {
     if (elections.length > 0 && !selectedElectionId) {
       const active = elections.find((e: any) => e.status === 'ACTIVE');
-      const draft = elections.find((e: any) => e.status === 'DRAFT');
-      setSelectedElectionId(active?.id || draft?.id || null);
+      if (active) setSelectedElectionId(active.id);
     }
-  }, [elections, selectedElectionId]);
+  }, [elections]);
 
   const handleStopImpersonation = async () => {
     try {
@@ -100,7 +94,7 @@ export default function AdvisorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
       {currentUser?.isImpersonating && (
         <button
           onClick={handleStopImpersonation}
@@ -113,99 +107,91 @@ export default function AdvisorDashboard() {
       <UniversalHeader role="mpp_advisor" userName={currentUser?.name} />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-        <div
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-        />
+        <Background />
 
-        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
-            {/* Hero Section */}
-            <div className="flex justify-between items-end">
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                  <Activity size={14} className="text-red-600 animate-pulse" /> Advisor Dashboard
-                </p>
-                <h1 className="text-3xl font-bold uppercase tracking-tighter leading-none text-white">
-                  Welcome, <span className="italic">{currentUser?.name || 'Advisor'}</span>
-                </h1>
-              </div>
-              <button
-                onClick={() => setShowCandidateModal(true)}
-                className="bg-[#c5a021] hover:bg-yellow-400 text-black px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-              >
-                <UserPlus size={14} /> Add Candidate
-              </button>
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8">
+          {/* Hero Section */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
+                <Activity size={14} className="text-red-600 animate-pulse" /> Advisor Dashboard
+              </p>
+              <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+                Welcome, <span className="italic">{currentUser?.name || 'Advisor'}</span>
+              </h1>
             </div>
+            <button
+              onClick={() => setShowCandidateModal(true)}
+              className="bg-[#c5a021] hover:bg-yellow-400 text-black px-4 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 w-full md:w-auto justify-center"
+            >
+              <UserPlus size={14} /> Add Candidate
+            </button>
+          </div>
 
-            {/* Metrics Grid — always visible */}
-            <AdvisorMetricsGrid
-              elections={elections}
-              votingSessions={votingSessions}
-              candidates={candidates}
-              electionId={selectedElectionId}
-            />
-
-            {/* Tab Navigation */}
-            <div className="flex gap-2 border-b border-white/10 pb-4">
-              {[
-                { id: 'candidates', label: 'Candidates' },
-                { id: 'elections', label: 'Elections' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                  className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-[#4c0519] text-white'
-                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
-                  }`}
+          {/* Single Large Card */}
+          <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8">
+            {/* Election Selector */}
+            <div className="mb-6 pb-6 border-b border-slate-200">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Select Election</label>
+              <div className="relative">
+                <select
+                  value={selectedElectionId || ''}
+                  onChange={(e) => setSelectedElectionId(e.target.value || null)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-sm px-4 py-3 text-slate-900 text-sm font-medium outline-none focus:border-[#c5a021] transition-colors appearance-none cursor-pointer"
                 >
-                  {tab.label}
-                </button>
-              ))}
+                  <option value="">Select an election...</option>
+                  {elections.map((e: any) => (
+                    <option key={e.id} value={e.id}>
+                      {e.title} ({e.status})
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            {/* Tab Content */}
-            {activeTab === 'candidates' && (
+            {/* Candidate Section */}
+            {selectedElectionId ? (
               <CandidateReviewGrid
+                electionId={selectedElectionId}
                 candidates={candidates}
-                elections={elections}
-                selectedElectionId={selectedElectionId}
-                onElectionChange={setSelectedElectionId}
                 onViewDetails={handleViewDetails}
                 onRefresh={fetchActiveData}
               />
-            )}
-
-            {activeTab === 'elections' && (
-              <ElectionMonitor
-                elections={elections}
-                votingSessions={votingSessions}
-              />
+            ) : (
+              <div className="text-center py-16">
+                <Users size={48} className="mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500 text-sm font-medium">Select an election above to review its candidates</p>
+              </div>
             )}
           </div>
+        </div>
 
-          <div className="relative z-10 w-full mt-auto">
-            <div className="h-24" />
-          </div>
-        </main>
+        <div className="relative z-10 w-full mt-auto">
+          <div className="h-24" />
+        </div>
+      </main>
 
-        {selectedCandidate && (
-          <CandidateDetailModal
-            candidate={selectedCandidate}
-            onClose={() => setSelectedCandidate(null)}
-            onRefresh={fetchActiveData}
-          />
-        )}
+      {selectedCandidate && (
+        <CandidateDetailModal
+          candidate={selectedCandidate}
+          onClose={() => setSelectedCandidate(null)}
+          onRefresh={fetchActiveData}
+        />
+      )}
 
-        {showCandidateModal && (
-          <CandidateModal
-            elections={elections}
-            selectedElectionId={selectedElectionId}
-            onClose={() => setShowCandidateModal(false)}
-            onRefresh={fetchActiveData}
-          />
-        )}
-      </div>
-    );
+      {showCandidateModal && (
+        <CandidateModal
+          elections={elections}
+          selectedElectionId={selectedElectionId}
+          onClose={() => setShowCandidateModal(false)}
+          onRefresh={fetchActiveData}
+        />
+      )}
+    </div>
+  );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Vote, Clock, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Vote, Clock, Users, CheckCircle } from 'lucide-react';
 
 interface AdminMetricsGridProps {
   elections: any[];
@@ -19,63 +19,28 @@ export default function AdminMetricsGrid({ elections, votingSessions, candidates
   }).length;
   const pendingCandidates = candidates.filter(c => c.status === 'PENDING').length;
   const approvedCandidates = candidates.filter(c => c.status === 'APPROVED').length;
+  const pct = candidates.length > 0 ? ((approvedCandidates / candidates.length) * 100).toFixed(0) : '0';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-blue-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <Vote size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">ELECTION</span>
-        </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{elections.length}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Elections</p>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-green-600">{activeElections} Active</span>
-        </div>
+    <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-sm">
+        <Vote size={13} className="text-blue-600" />
+        <span className="text-[10px] font-bold text-blue-700">{elections.length} Elections</span>
+        {activeElections > 0 && <span className="text-[9px] text-blue-500">({activeElections} active)</span>}
       </div>
-
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-red-700 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <Clock size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">SESSION</span>
-        </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{votingSessions.length}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Sessions</p>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-red-600">{activeSessions} Live Now</span>
-        </div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-sm">
+        <Clock size={13} className="text-red-600" />
+        <span className="text-[10px] font-bold text-red-700">{votingSessions.length} Sessions</span>
+        {activeSessions > 0 && <span className="text-[9px] text-red-500">({activeSessions} live)</span>}
       </div>
-
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-orange-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <Users size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CANDIDATE</span>
-        </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{candidates.length}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Candidates</p>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-orange-600">{pendingCandidates} Pending</span>
-        </div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-sm">
+        <Users size={13} className="text-orange-600" />
+        <span className="text-[10px] font-bold text-orange-700">{candidates.length} Candidates</span>
+        {pendingCandidates > 0 && <span className="text-[9px] text-orange-500">({pendingCandidates} pending)</span>}
       </div>
-
-      <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-green-700 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-        <div className="flex justify-between items-start mb-6">
-          <div className="text-slate-300 group-hover:text-[#4c0519] transition-colors duration-500">
-            <CheckCircle size={24} />
-          </div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">APPROVED</span>
-        </div>
-        <div className="text-5xl font-bold mb-2 tracking-tighter text-slate-900">{approvedCandidates}</div>
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Candidates</p>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-green-600">{((approvedCandidates / (candidates.length || 1)) * 100).toFixed(0)}% Approved</span>
-        </div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-sm">
+        <CheckCircle size={13} className="text-green-600" />
+        <span className="text-[10px] font-bold text-green-700">{approvedCandidates} Approved ({pct}%)</span>
       </div>
     </div>
   );

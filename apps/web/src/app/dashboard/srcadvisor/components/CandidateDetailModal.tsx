@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FileText, Video, Presentation, ImageIcon, User, Award, ExternalLink, CheckCircle, XCircle, Loader2, Monitor, File } from 'lucide-react';
+import { X, FileText, Video, Presentation, ImageIcon, User, Award, ExternalLink, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { getYouTubeEmbedUrl, detectSlideType, getSlideEmbedUrl } from '@/lib/embed-utils';
 
 interface CandidateDetailModalProps {
@@ -18,13 +18,13 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Approved</span>;
+        return <span className="bg-green-100 text-green-700 border border-green-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Approved</span>;
       case 'REJECTED':
-        return <span className="bg-red-600/20 text-red-400 border border-red-600/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Rejected</span>;
+        return <span className="bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Rejected</span>;
       case 'PENDING':
-        return <span className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending</span>;
+        return <span className="bg-yellow-100 text-yellow-700 border border-yellow-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending</span>;
       default:
-        return <span className="bg-slate-500/20 text-slate-400 border border-slate-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
+        return <span className="bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
     }
   };
 
@@ -55,30 +55,30 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-black/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-sm max-w-4xl w-full max-h-[85vh] overflow-y-auto"
+        className="bg-white border border-slate-200 shadow-2xl rounded-sm max-w-4xl w-full max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-black/90 backdrop-blur-2xl border-b border-white/10 p-6 flex items-center justify-between z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-xl font-bold text-white">
+        <div className="sticky top-0 bg-white border-b border-slate-200 p-4 md:p-6 flex items-center justify-between z-10">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-[#4c0519]/10 rounded-full flex items-center justify-center text-lg md:text-xl font-bold text-[#4c0519] flex-shrink-0">
               {candidate.user?.name?.[0]?.toUpperCase() || '?'}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">{candidate.user?.name || 'Unknown'}</h2>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{candidate.election?.title || 'No election'}</p>
+            <div className="min-w-0">
+              <h2 className="text-lg md:text-xl font-bold text-slate-900 truncate">{candidate.user?.name || 'Unknown'}</h2>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">{candidate.election?.title || 'No election'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             {getStatusBadge(candidate.status)}
             {candidate.status === 'PENDING' && (
-              <div className="flex gap-2">
+              <div className="hidden md:flex gap-2">
                 <button
                   onClick={() => handleUpdateStatus('APPROVED')}
                   disabled={updating}
-                  className="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-green-500/30 transition flex items-center gap-2 disabled:opacity-50"
+                  className="bg-green-100 text-green-700 border border-green-200 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-green-200 transition flex items-center gap-2 disabled:opacity-50"
                 >
                   {updating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
                   Approve
@@ -86,30 +86,52 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 <button
                   onClick={() => handleUpdateStatus('REJECTED')}
                   disabled={updating}
-                  className="bg-red-600/20 text-red-400 border border-red-600/30 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-600/30 transition flex items-center gap-2 disabled:opacity-50"
+                  className="bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-200 transition flex items-center gap-2 disabled:opacity-50"
                 >
                   {updating ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                   Reject
                 </button>
               </div>
             )}
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-sm transition">
-              <X size={20} className="text-slate-400" />
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-sm transition">
+              <X size={20} className="text-slate-500" />
             </button>
           </div>
         </div>
 
+        {/* Mobile approve/reject (visible when PENDING) */}
+        {candidate.status === 'PENDING' && (
+          <div className="md:hidden flex gap-2 px-4 md:px-6 py-3 bg-slate-50 border-b border-slate-200">
+            <button
+              onClick={() => handleUpdateStatus('APPROVED')}
+              disabled={updating}
+              className="flex-1 bg-green-100 text-green-700 border border-green-200 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-green-200 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {updating ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+              Approve
+            </button>
+            <button
+              onClick={() => handleUpdateStatus('REJECTED')}
+              disabled={updating}
+              className="flex-1 bg-red-100 text-red-600 border border-red-200 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-red-200 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {updating ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+              Reject
+            </button>
+          </div>
+        )}
+
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 md:p-6 space-y-6">
           {/* Contact Info */}
           <section>
             <div className="flex items-center gap-2 mb-3">
               <User size={16} className="text-[#c5a021]" />
               <h3 className="text-[10px] font-black uppercase text-[#c5a021] tracking-widest">Contact Information</h3>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-sm p-5 space-y-2">
-              <p className="text-slate-300 text-sm"><span className="text-slate-500 font-bold">Email:</span> {candidate.user?.email || 'Not provided'}</p>
-              <p className="text-slate-300 text-sm"><span className="text-slate-500 font-bold">Student ID:</span> {candidate.user?.studentId || 'Not provided'}</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5 space-y-2">
+              <p className="text-slate-700 text-sm"><span className="text-slate-500 font-bold">Email:</span> {candidate.user?.email || 'Not provided'}</p>
+              <p className="text-slate-700 text-sm"><span className="text-slate-500 font-bold">Student ID:</span> {candidate.user?.studentId || 'Not provided'}</p>
             </div>
           </section>
 
@@ -117,27 +139,27 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
           <section>
             <h3 className="text-[10px] font-black uppercase text-[#c5a021] tracking-widest mb-3">Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-white/5 border border-white/10 rounded-sm p-5">
+              <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Profile Picture</p>
                 {candidate.profilePicture ? (
-                  <img src={candidate.profilePicture} alt="Profile" className="w-32 h-32 object-cover rounded-sm" />
+                  <img src={candidate.profilePicture} alt="Profile" className="w-full max-w-[128px] h-32 object-cover rounded-sm" />
                 ) : (
-                  <p className="text-slate-500 italic text-sm">Not provided</p>
+                  <p className="text-slate-400 italic text-sm">Not provided</p>
                 )}
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-sm p-5">
+              <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Spotlight Banner</p>
                 {candidate.spotlightBanner ? (
                   <img src={candidate.spotlightBanner} alt="Banner" className="w-full h-32 object-cover rounded-sm" />
                 ) : (
-                  <p className="text-slate-500 italic text-sm">Not provided</p>
+                  <p className="text-slate-400 italic text-sm">Not provided</p>
                 )}
               </div>
             </div>
             {candidate.information && (
-              <div className="mt-3 bg-white/5 border border-white/10 rounded-sm p-5">
+              <div className="mt-3 bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Information</p>
-                <p className="text-slate-300 text-sm">{candidate.information}</p>
+                <p className="text-slate-700 text-sm">{candidate.information}</p>
               </div>
             )}
           </section>
@@ -149,13 +171,13 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
               <h3 className="text-[10px] font-black uppercase text-[#c5a021] tracking-widest">Qualification</h3>
             </div>
             {candidate.qualification ? (
-              <div className="bg-white/5 border border-white/10 rounded-sm p-5 space-y-2">
-                <p className="text-slate-300 text-sm"><span className="text-slate-500 font-bold">Positions:</span> {candidate.qualification.positions?.join(', ') || 'Not specified'}</p>
-                <p className="text-slate-300 text-sm"><span className="text-slate-500 font-bold">CGPA:</span> {candidate.qualification.cgpa || 'Not specified'}</p>
-                <p className="text-slate-300 text-sm"><span className="text-slate-500 font-bold">Justification:</span> {candidate.qualification.justification || 'Not provided'}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5 space-y-2">
+                <p className="text-slate-700 text-sm"><span className="text-slate-500 font-bold">Positions:</span> {candidate.qualification.positions?.join(', ') || 'Not specified'}</p>
+                <p className="text-slate-700 text-sm"><span className="text-slate-500 font-bold">CGPA:</span> {candidate.qualification.cgpa || 'Not specified'}</p>
+                <p className="text-slate-700 text-sm"><span className="text-slate-500 font-bold">Justification:</span> {candidate.qualification.justification || 'Not provided'}</p>
               </div>
             ) : (
-              <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No qualifications added.</p>
+              <p className="text-slate-400 italic text-sm bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">No qualifications added.</p>
             )}
           </section>
 
@@ -168,14 +190,14 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
             {candidate.manifestos && candidate.manifestos.length > 0 ? (
               <div className="space-y-2">
                 {candidate.manifestos.map((m: any) => (
-                  <div key={m.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
-                    <p className="font-bold text-slate-200 text-sm">{m.title}</p>
-                    <p className="text-slate-400 text-sm mt-1">{m.description}</p>
+                  <div key={m.id} className="bg-slate-50 border border-slate-200 rounded-sm p-4">
+                    <p className="font-bold text-slate-900 text-sm">{m.title}</p>
+                    <p className="text-slate-600 text-sm mt-1">{m.description}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No manifestos added.</p>
+              <p className="text-slate-400 italic text-sm bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">No manifestos added.</p>
             )}
           </section>
 
@@ -190,11 +212,11 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 {candidate.videos.map((v: any) => {
                   const embedUrl = getYouTubeEmbedUrl(v.videoLink);
                   return (
-                    <div key={v.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
-                      <p className="font-bold text-slate-200 text-sm">{v.videoTitle || 'Untitled'}</p>
-                      {v.videoDescription && <p className="text-slate-400 text-sm mt-1">{v.videoDescription}</p>}
+                    <div key={v.id} className="bg-slate-50 border border-slate-200 rounded-sm p-4">
+                      <p className="font-bold text-slate-900 text-sm">{v.videoTitle || 'Untitled'}</p>
+                      {v.videoDescription && <p className="text-slate-600 text-sm mt-1">{v.videoDescription}</p>}
                       {embedUrl ? (
-                        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+                        <div className="mt-3 rounded-sm overflow-hidden border border-slate-200">
                           <div className="aspect-video">
                             <iframe
                               src={embedUrl}
@@ -206,7 +228,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                           </div>
                         </div>
                       ) : v.videoLink ? (
-                        <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm mt-2">
+                        <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-600 transition flex items-center gap-1 text-sm mt-2">
                           <ExternalLink size={14} /> View
                         </a>
                       ) : null}
@@ -215,7 +237,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 })}
               </div>
             ) : (
-              <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No videos added.</p>
+              <p className="text-slate-400 italic text-sm bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">No videos added.</p>
             )}
           </section>
 
@@ -231,14 +253,14 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                   const { embedUrl, warning } = getSlideEmbedUrl(s.slideLink);
                   const slideType = detectSlideType(s.slideLink);
                   return (
-                    <div key={s.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
-                      <p className="font-bold text-slate-200 text-sm">{s.slideTitle || 'Untitled'}</p>
+                    <div key={s.id} className="bg-slate-50 border border-slate-200 rounded-sm p-4">
+                      <p className="font-bold text-slate-900 text-sm">{s.slideTitle || 'Untitled'}</p>
                       {warning ? (
-                        <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                          <p className="text-xs text-yellow-400">{warning}</p>
+                        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-sm">
+                          <p className="text-xs text-yellow-700">{warning}</p>
                         </div>
                       ) : embedUrl ? (
-                        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+                        <div className="mt-3 rounded-sm overflow-hidden border border-slate-200">
                           <div className={slideType === 'pdf' ? 'aspect-[3/4]' : 'aspect-video'}>
                             <iframe
                               src={embedUrl}
@@ -249,7 +271,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                           </div>
                         </div>
                       ) : s.slideLink ? (
-                        <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm mt-2">
+                        <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-600 transition flex items-center gap-1 text-sm mt-2">
                           <ExternalLink size={14} /> View
                         </a>
                       ) : null}
@@ -258,7 +280,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 })}
               </div>
             ) : (
-              <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No slides added.</p>
+              <p className="text-slate-400 italic text-sm bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">No slides added.</p>
             )}
           </section>
 
@@ -271,12 +293,12 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
             {candidate.posters && candidate.posters.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {candidate.posters.map((p: any) => (
-                  <div key={p.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
+                  <div key={p.id} className="bg-slate-50 border border-slate-200 rounded-sm p-3">
                     {p.posterLink && (
-                      <img src={p.posterLink} alt="Poster" className="w-full max-h-48 object-contain rounded-sm mb-2 bg-black/20" />
+                      <img src={p.posterLink} alt="Poster" className="w-full max-h-48 object-contain rounded-sm mb-2" />
                     )}
                     {p.posterLink && (
-                      <a href={p.posterLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition text-xs flex items-center gap-1">
+                      <a href={p.posterLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-600 transition text-xs flex items-center gap-1">
                         <ExternalLink size={12} /> View Full
                       </a>
                     )}
@@ -284,7 +306,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No posters added.</p>
+              <p className="text-slate-400 italic text-sm bg-slate-50 border border-slate-200 rounded-sm p-4 md:p-5">No posters added.</p>
             )}
           </section>
         </div>

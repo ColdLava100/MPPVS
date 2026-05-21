@@ -111,66 +111,66 @@ export default function CandidateModal({ elections, selectedElectionId, onClose,
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-black/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-sm max-w-md w-full"
+        className="bg-white border border-slate-200 border-t-[4px] border-t-[#c5a021] shadow-2xl rounded-sm max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        <div className="flex items-center justify-between p-5 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <UserPlus size={18} className="text-[#c5a021]" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-white">Register Candidate</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">Register Candidate</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-sm transition">
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-sm transition">
             <X size={18} className="text-slate-400" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-sm p-3 text-red-400 text-xs font-bold uppercase tracking-widest">{error}</div>
+            <div className="bg-red-50 border border-red-200 rounded-sm p-3 text-red-700 text-xs font-bold uppercase tracking-widest">{error}</div>
           )}
 
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Student Name</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Student Name</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)}
               placeholder="e.g., John Doe"
-              className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-[#c5a021] placeholder:text-slate-600" />
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors placeholder:text-slate-400" />
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Student ID</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Student ID</label>
             <input type="text" value={studentId} onChange={(e) => setStudentId(e.target.value)}
               placeholder="e.g., BCS2311-001"
-              className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-sm text-white uppercase outline-none focus:border-[#c5a021] placeholder:text-slate-600 font-mono" />
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 uppercase outline-none focus:border-[#c5a021] transition-colors placeholder:text-slate-400 font-mono" />
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">IC Number</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">IC Number</label>
             <input type="text" value={icNumber} onChange={(e) => setIcNumber(e.target.value)}
               placeholder="e.g., 010101-01-0001"
-              className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-[#c5a021] placeholder:text-slate-600" />
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors placeholder:text-slate-400" />
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Election</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Election</label>
             <select value={electionId} onChange={(e) => { setElectionId(e.target.value); setCoursePrefix(''); }}
-              className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-[#c5a021]">
-              <option value="" className="bg-slate-800">Select election...</option>
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors">
+              <option value="">Select election...</option>
               {elections.map((e: any) => (
-                <option key={e.id} value={e.id} className="bg-slate-800">{e.title}</option>
+                <option key={e.id} value={e.id}>{e.title}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Course</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Course</label>
             <select value={coursePrefix} onChange={(e) => setCoursePrefix(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-[#c5a021]"
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors"
               disabled={!electionId}>
-              <option value="" className="bg-slate-800">Select course...</option>
+              <option value="">Select course...</option>
               {courseKeys.map((c: string) => (
-                <option key={c} value={c} className="bg-slate-800">{c}</option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>

@@ -109,7 +109,7 @@ export default function UniversalHeader({ role = 'student', userName, onLogout }
         </div>
 
         {/* CENTER: HORIZONTAL NAVIGATION - DESKTOP ONLY */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden items-center gap-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;

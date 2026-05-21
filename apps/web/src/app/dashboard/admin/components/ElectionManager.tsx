@@ -12,22 +12,19 @@ interface ElectionManagerProps {
 export default function ElectionManager({ elections, courses, onRefresh }: ElectionManagerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   // Add form state
   const [title, setTitle] = useState('');
   const [courseConfig, setCourseConfig] = useState<Record<string, { enabled: boolean, chairs: number }>>({});
-  
+
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
   const [editCourseConfig, setEditCourseConfig] = useState<Record<string, { enabled: boolean, chairs: number }>>({});
 
-  // Initialize course config when courses change
   React.useEffect(() => {
     if (courses.length > 0 && Object.keys(courseConfig).length === 0) {
       const initial: Record<string, { enabled: boolean, chairs: number }> = {};
-      courses.forEach(c => {
-        initial[c.studentPrefix] = { enabled: false, chairs: 1 };
-      });
+      courses.forEach(c => { initial[c.studentPrefix] = { enabled: false, chairs: 1 }; });
       setCourseConfig(initial);
     }
   }, [courses]);
@@ -35,9 +32,7 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
   const resetAddForm = () => {
     setTitle('');
     const initial: Record<string, { enabled: boolean, chairs: number }> = {};
-    courses.forEach(c => {
-      initial[c.studentPrefix] = { enabled: false, chairs: 1 };
-    });
+    courses.forEach(c => { initial[c.studentPrefix] = { enabled: false, chairs: 1 }; });
     setCourseConfig(initial);
     setShowAddForm(false);
   };
@@ -46,11 +41,7 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
     e.preventDefault();
     const courseSettings = Object.entries(courseConfig)
       .filter(([_, config]) => config.enabled)
-      .reduce((acc, [prefix, config]) => {
-        acc[prefix] = config.chairs;
-        return acc;
-      }, {} as Record<string, number>);
-
+      .reduce((acc, [prefix, config]) => { acc[prefix] = config.chairs; return acc; }, {} as Record<string, number>);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections`, {
         method: 'POST',
@@ -58,13 +49,8 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
         credentials: 'include',
         body: JSON.stringify({ title, courseSettings })
       });
-      if (res.ok) {
-        alert('Election Created!');
-        resetAddForm();
-        onRefresh();
-      } else {
-        alert(`Failed: ${res.status}`);
-      }
+      if (res.ok) { alert('Election Created!'); resetAddForm(); onRefresh(); }
+      else { alert(`Failed: ${res.status}`); }
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
@@ -98,11 +84,9 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
     const savedSettings = election.courseSettings || {};
     courses.forEach(c => {
       const p = c.studentPrefix;
-      if (savedSettings[p] !== undefined) {
-        loaded[p] = { enabled: true, chairs: Number(savedSettings[p]) };
-      } else {
-        loaded[p] = { enabled: false, chairs: 1 };
-      }
+      loaded[p] = savedSettings[p] !== undefined
+        ? { enabled: true, chairs: Number(savedSettings[p]) }
+        : { enabled: false, chairs: 1 };
     });
     setEditCourseConfig(loaded);
   };
@@ -110,11 +94,7 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
   const handleSaveEdit = async (id: string) => {
     const courseSettings = Object.entries(editCourseConfig)
       .filter(([_, config]) => config.enabled)
-      .reduce((acc, [prefix, config]) => {
-        acc[prefix] = config.chairs;
-        return acc;
-      }, {} as Record<string, number>);
-
+      .reduce((acc, [prefix, config]) => { acc[prefix] = config.chairs; return acc; }, {} as Record<string, number>);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elections/${id}`, {
         method: 'PATCH',
@@ -122,138 +102,128 @@ export default function ElectionManager({ elections, courses, onRefresh }: Elect
         credentials: 'include',
         body: JSON.stringify({ title: editTitle, courseSettings })
       });
-      if (res.ok) {
-        alert('Election Updated!');
-        setEditingId(null);
-        onRefresh();
-      } else {
-        alert(`Failed: ${res.status}`);
-      }
+      if (res.ok) { alert('Election Updated!'); setEditingId(null); onRefresh(); }
+      else { alert(`Failed: ${res.status}`); }
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-3xl rounded-sm border border-white/10 shadow-2xl mb-8 p-8 text-black">
-      <div className="flex items-center justify-between mb-6 text-white">
+    <div>
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
-            <Vote size={20} className="text-white" />
+          <div className="p-2 bg-[#4c0519]/10 rounded-sm">
+            <Vote size={16} className="text-[#4c0519]" />
           </div>
-          <h3 className="text-2xl font-bold uppercase tracking-tighter">Election Management</h3>
+          <h3 className="text-base font-bold text-slate-900 uppercase tracking-tight">Elections</h3>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">({elections.length})</span>
         </div>
-        <button 
+        <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-[#c5a021] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
+          className="bg-[#c5a021] text-black px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
         >
-          <Plus size={16} /> New Election
+          <Plus size={14} /> New
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddElection} className="mb-6 p-6 bg-black/20 rounded-lg border border-white/10 text-black">
-          <div className="mb-4">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Election Title</label>
-            <input 
-              type="text" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., SRC Election 2026"
-              className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
-              required
-            />
+        <form onSubmit={handleAddElection} className="mb-4 p-5 bg-slate-50 border border-slate-200 rounded-sm">
+          <div className="mb-3">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Election Title</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., SRC Election 2026" required
+              className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors placeholder:text-slate-400" />
           </div>
-          <div className="mb-4">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Course Configuration</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mb-3">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Course Configuration</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {courses.map(course => (
-                <div key={course.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-white">{course.studentPrefix}</span>
-                    <input 
-                      type="checkbox"
-                      checked={courseConfig[course.studentPrefix]?.enabled || false}
-                      onChange={(e) => setCourseConfig({
-                        ...courseConfig,
-                        [course.studentPrefix]: { ...courseConfig[course.studentPrefix], enabled: e.target.checked }
-                      })}
-                      className="w-4 h-4"
-                    />
+                <div key={course.id} className="p-3 bg-white border border-slate-200 rounded-sm">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-slate-900">{course.studentPrefix}</span>
+                    <input type="checkbox" checked={courseConfig[course.studentPrefix]?.enabled || false}
+                      onChange={(e) => setCourseConfig({ ...courseConfig, [course.studentPrefix]: { ...courseConfig[course.studentPrefix], enabled: e.target.checked } })}
+                      className="w-3.5 h-3.5" />
                   </div>
-                  <input 
-                    type="number"
-                    min="1"
+                  <input type="number" min="1"
                     value={courseConfig[course.studentPrefix]?.chairs || 1}
-                    onChange={(e) => setCourseConfig({
-                      ...courseConfig,
-                      [course.studentPrefix]: { ...courseConfig[course.studentPrefix], chairs: Number(e.target.value) }
-                    })}
+                    onChange={(e) => setCourseConfig({ ...courseConfig, [course.studentPrefix]: { ...courseConfig[course.studentPrefix], chairs: Number(e.target.value) } })}
                     disabled={!courseConfig[course.studentPrefix]?.enabled}
-                    className="w-full bg-white border-b border-slate-300 px-2 py-1 text-xs text-black text-center"
-                  />
+                    className="w-full bg-white border border-slate-200 rounded-sm px-2 py-1 text-xs text-slate-900 text-center disabled:opacity-40" />
                 </div>
               ))}
             </div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="bg-[#c5a021] text-black px-6 py-2 rounded text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-              <Save size={14} /> Create Election
+            <button type="submit" className="bg-[#c5a021] text-black px-5 py-2 rounded text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-yellow-400 transition-all">
+              <Save size={14} /> Create
             </button>
-            <button type="button" onClick={resetAddForm} className="bg-white/10 text-white px-6 py-2 rounded text-[10px] font-black uppercase tracking-widest">
+            <button type="button" onClick={resetAddForm} className="bg-slate-100 text-slate-700 px-5 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
               Cancel
             </button>
           </div>
         </form>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {elections.map(election => (
-          <div key={election.id} className="p-6 bg-white/5 rounded-lg border border-white/10 flex items-center justify-between">
+          <div key={election.id} className="bg-slate-50 border border-slate-200 rounded-sm p-4">
             {editingId === election.id ? (
-              <div className="flex-1 flex gap-4 items-center">
-                <input 
-                  type="text" 
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="bg-slate-50 border-b border-slate-200 px-3 py-2 text-sm text-black flex-1"
-                />
-                <button onClick={() => handleSaveEdit(election.id)} className="text-green-500"><Save size={18} /></button>
-                <button onClick={() => setEditingId(null)} className="text-red-500"><X size={18} /></button>
+              <div className="space-y-3">
+                <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {courses.map(course => (
+                    <div key={course.id} className="p-2 bg-white border border-slate-200 rounded-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-slate-900">{course.studentPrefix}</span>
+                        <input type="checkbox" checked={editCourseConfig[course.studentPrefix]?.enabled || false}
+                          onChange={(e) => setEditCourseConfig({ ...editCourseConfig, [course.studentPrefix]: { ...editCourseConfig[course.studentPrefix], enabled: e.target.checked } })} />
+                      </div>
+                      <input type="number" min="1"
+                        value={editCourseConfig[course.studentPrefix]?.chairs || 1}
+                        onChange={(e) => setEditCourseConfig({ ...editCourseConfig, [course.studentPrefix]: { ...editCourseConfig[course.studentPrefix], chairs: Number(e.target.value) } })}
+                        disabled={!editCourseConfig[course.studentPrefix]?.enabled}
+                        className="w-full bg-white border border-slate-200 rounded-sm px-2 py-1 text-xs text-center disabled:opacity-40" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleSaveEdit(election.id)} className="bg-green-100 text-green-700 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest hover:bg-green-200 transition flex items-center gap-1"><Save size={12} /> Save</button>
+                  <button onClick={() => setEditingId(null)} className="bg-red-100 text-red-600 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest hover:bg-red-200 transition flex items-center gap-1"><X size={12} /> Cancel</button>
+                </div>
               </div>
             ) : (
-              <>
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-white">{election.title}</p>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  <p className="text-sm font-bold text-slate-900">{election.title}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">
                     {Object.keys(election.courseSettings || {}).join(', ') || 'No courses'}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    election.status === 'ACTIVE' ? 'bg-green-500 text-black' : 'bg-yellow-500 text-black'
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    election.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
                     {election.status}
                   </span>
-                  <button 
-                    onClick={() => handleToggleStatus(election.id, election.status)}
-                    className="p-2 hover:bg-white/10 rounded transition"
-                    title={election.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                  >
-                    {election.status === 'ACTIVE' ? <XCircle size={16} className="text-red-400" /> : <CheckCircle size={16} className="text-green-400" />}
+                  <button onClick={() => handleToggleStatus(election.id, election.status)}
+                    className="p-1.5 hover:bg-slate-200 rounded transition"
+                    title={election.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}>
+                    {election.status === 'ACTIVE' ? <XCircle size={14} className="text-red-500" /> : <CheckCircle size={14} className="text-green-600" />}
                   </button>
-                  <button onClick={() => handleEditClick(election)} className="p-2 hover:bg-white/10 rounded transition">
-                    <Edit2 size={16} className="text-slate-400" />
+                  <button onClick={() => handleEditClick(election)} className="p-1.5 hover:bg-slate-200 rounded transition">
+                    <Edit2 size={14} className="text-slate-500" />
                   </button>
-                  <button onClick={() => handleDeleteElection(election.id)} className="p-2 hover:bg-white/10 rounded transition">
-                    <Trash2 size={16} className="text-red-400" />
+                  <button onClick={() => handleDeleteElection(election.id)} className="p-1.5 hover:bg-slate-200 rounded transition">
+                    <Trash2 size={14} className="text-red-500" />
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ))}
         {elections.length === 0 && (
-          <p className="text-slate-400 text-sm italic text-center py-8">No elections created yet.</p>
+          <p className="text-slate-400 text-sm italic text-center py-6">No elections created yet.</p>
         )}
       </div>
     </div>

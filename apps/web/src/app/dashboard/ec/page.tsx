@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
+import Background from '@/components/ui/background';
 import ElectionOverview from './components/ElectionOverview';
 import ElectionSetup from './components/ElectionSetup';
 import CourseConfig from './components/CourseConfig';
@@ -12,8 +13,6 @@ import VoterImport from './components/VoterImport';
 import SessionManager from './components/SessionManager';
 import AuditLogTable from '@/components/ui/AuditLogTable';
 import ElectionSetupButton from './components/ElectionSetupButton';
-
-const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
 const STEPS = [
   { id: 1, label: 'Election Setup' },
@@ -206,7 +205,7 @@ function SprDashboardContent() {
   }
 
 return (
-    <div className="min-h-screen bg-black overflow-hidden relative font-sans text-white">
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
       {currentUser?.isImpersonating && (
         <button
           onClick={handleStopImpersonation}
@@ -219,10 +218,7 @@ return (
       <UniversalHeader role="ec" userName={currentUser?.name} />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar">
-        <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
-        />
+        <Background />
 
         <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-6 md:gap-12">
             {/* Hero Section */}
