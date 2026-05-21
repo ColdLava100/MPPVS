@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FileText, Video, Presentation, ImageIcon, User, Award, ExternalLink, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { X, FileText, Video, Presentation, ImageIcon, User, Award, ExternalLink, CheckCircle, XCircle, Loader2, Monitor, File } from 'lucide-react';
+import { getYouTubeEmbedUrl, detectSlideType, getSlideEmbedUrl } from '@/lib/embed-utils';
 
 interface CandidateDetailModalProps {
   candidate: any;
@@ -185,20 +186,33 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
               <h3 className="text-[10px] font-black uppercase text-[#c5a021] tracking-widest">Videos ({candidate.videos?.length || 0})</h3>
             </div>
             {candidate.videos && candidate.videos.length > 0 ? (
-              <div className="space-y-2">
-                {candidate.videos.map((v: any) => (
-                  <div key={v.id} className="bg-white/5 border border-white/10 rounded-sm p-4 flex items-center justify-between">
-                    <div>
+              <div className="space-y-4">
+                {candidate.videos.map((v: any) => {
+                  const embedUrl = getYouTubeEmbedUrl(v.videoLink);
+                  return (
+                    <div key={v.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
                       <p className="font-bold text-slate-200 text-sm">{v.videoTitle || 'Untitled'}</p>
                       {v.videoDescription && <p className="text-slate-400 text-sm mt-1">{v.videoDescription}</p>}
+                      {embedUrl ? (
+                        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+                          <div className="aspect-video">
+                            <iframe
+                              src={embedUrl}
+                              title={v.videoTitle || 'Video'}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        </div>
+                      ) : v.videoLink ? (
+                        <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm mt-2">
+                          <ExternalLink size={14} /> View
+                        </a>
+                      ) : null}
                     </div>
-                    {v.videoLink && (
-                      <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm">
-                        <ExternalLink size={14} /> View
-                      </a>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No videos added.</p>
@@ -212,17 +226,36 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
               <h3 className="text-[10px] font-black uppercase text-[#c5a021] tracking-widest">Slides ({candidate.slides?.length || 0})</h3>
             </div>
             {candidate.slides && candidate.slides.length > 0 ? (
-              <div className="space-y-2">
-                {candidate.slides.map((s: any) => (
-                  <div key={s.id} className="bg-white/5 border border-white/10 rounded-sm p-4 flex items-center justify-between">
-                    <p className="font-bold text-slate-200 text-sm">{s.slideTitle || 'Untitled'}</p>
-                    {s.slideLink && (
-                      <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm">
-                        <ExternalLink size={14} /> View
-                      </a>
-                    )}
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {candidate.slides.map((s: any) => {
+                  const { embedUrl, warning } = getSlideEmbedUrl(s.slideLink);
+                  const slideType = detectSlideType(s.slideLink);
+                  return (
+                    <div key={s.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
+                      <p className="font-bold text-slate-200 text-sm">{s.slideTitle || 'Untitled'}</p>
+                      {warning ? (
+                        <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                          <p className="text-xs text-yellow-400">{warning}</p>
+                        </div>
+                      ) : embedUrl ? (
+                        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+                          <div className={slideType === 'pdf' ? 'aspect-[3/4]' : 'aspect-video'}>
+                            <iframe
+                              src={embedUrl}
+                              title={s.slideTitle || 'Slide'}
+                              className="w-full h-full"
+                              allowFullScreen
+                            />
+                          </div>
+                        </div>
+                      ) : s.slideLink ? (
+                        <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition flex items-center gap-1 text-sm mt-2">
+                          <ExternalLink size={14} /> View
+                        </a>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-slate-500 italic text-sm bg-white/5 border border-white/10 rounded-sm p-5">No slides added.</p>
@@ -240,7 +273,7 @@ export default function CandidateDetailModal({ candidate, onClose, onRefresh }: 
                 {candidate.posters.map((p: any) => (
                   <div key={p.id} className="bg-white/5 border border-white/10 rounded-sm p-4">
                     {p.posterLink && (
-                      <img src={p.posterLink} alt="Poster" className="w-full h-32 object-cover rounded-sm mb-2" />
+                      <img src={p.posterLink} alt="Poster" className="w-full max-h-48 object-contain rounded-sm mb-2 bg-black/20" />
                     )}
                     {p.posterLink && (
                       <a href={p.posterLink} target="_blank" rel="noopener noreferrer" className="text-[#c5a021] hover:text-yellow-400 transition text-xs flex items-center gap-1">

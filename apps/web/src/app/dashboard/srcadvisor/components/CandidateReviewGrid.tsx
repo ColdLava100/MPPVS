@@ -130,9 +130,13 @@ export default function CandidateReviewGrid({ candidates, elections, selectedEle
           return (
             <div key={candidate.id} className="p-6 bg-white/5 rounded-lg border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-white font-bold">
-                  {candidate.user?.name?.[0]?.toUpperCase() || '?'}
-                </div>
+                {candidate.profilePicture ? (
+                  <img src={candidate.profilePicture} alt={candidate.user?.name || 'Candidate'} className="w-12 h-12 rounded-full object-cover border-2 border-[#c5a021]/30" />
+                ) : (
+                  <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-white font-bold">
+                    {candidate.user?.name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-bold text-white">{candidate.user?.name || 'Unknown'}</p>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">
