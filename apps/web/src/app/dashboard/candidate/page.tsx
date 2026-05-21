@@ -401,7 +401,7 @@ export default function CandidateDashboard() {
                     ) : (
                       <button
                         onClick={() => setEditMode('profile')}
-                        className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all"
+                        className="w-full flex items-center justify-center gap-2 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
                       >
                         <Edit2 size={12} /> Edit
                       </button>
@@ -469,7 +469,7 @@ export default function CandidateDashboard() {
                     ) : (
                       <button
                         onClick={() => setEditMode('banner')}
-                        className="w-full max-w-xs flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all"
+                        className="w-full max-w-xs flex items-center justify-center gap-2 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
                       >
                         <Edit2 size={12} /> Edit
                       </button>
@@ -589,11 +589,30 @@ function getYouTubeEmbedUrl(url: string): string | null {
   return null;
 }
 
-function detectSlideType(url: string): 'canva' | 'pdf' | 'other' {
+function detectSlideType(url: string): 'canva-embed' | 'canva-short' | 'canva-view' | 'pdf' | 'other' {
   if (!url) return 'other';
-  if (url.includes('canva.com')) return 'canva';
+  if (url.includes('canva.link')) return 'canva-short';
+  if (url.includes('canva.com') && url.includes('/embed')) return 'canva-embed';
+  if (url.includes('canva.com') && url.includes('/view')) return 'canva-view';
   if (url.toLowerCase().endsWith('.pdf') || url.includes('.pdf?')) return 'pdf';
   return 'other';
+}
+
+function getSlideEmbedUrl(url: string): { embedUrl: string | null; warning: string | null } {
+  if (!url) return { embedUrl: null, warning: null };
+  const slideType = detectSlideType(url);
+  if (slideType === 'canva-embed') return { embedUrl: url, warning: null };
+  if (slideType === 'canva-view') {
+    const embedUrl = url.includes('?') ? `${url}&embed` : `${url}?embed`;
+    return { embedUrl, warning: null };
+  }
+  if (slideType === 'canva-short') {
+    return { embedUrl: null, warning: 'This is a short link. Please use the embed URL from Canva (Share → Embed → Copy embed code)' };
+  }
+  if (slideType === 'pdf') {
+    return { embedUrl: url, warning: null };
+  }
+  return { embedUrl: null, warning: null };
 }
 
 function MaterialList({ candidateId, materials, type, icon, title, refreshData }: MaterialListProps) {
@@ -604,10 +623,14 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
   const [newDesc, setNewDesc] = useState('');
   const [newLink, setNewLink] = useState('');
   const [manifestoItems, setManifestoItems] = useState([{ title: '', description: '' }]);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
 
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editLink, setEditLink] = useState('');
+  const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
+  const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -621,12 +644,63 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     setNewDesc('');
     setNewLink('');
     setManifestoItems([{ title: '', description: '' }]);
+    setPosterFile(null);
+    setPosterPreview(null);
     setShowAddForm(false);
+  };
+
+  const handlePosterFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File must be less than 5MB.');
+      return;
+    }
+    setPosterFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPosterPreview(reader.result as string);
+    reader.readAsDataURL(file);
+    if (e.target) e.target.value = '';
   };
 
   const handleAddMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!candidateId) return;
+
+    if (type === 'poster' && posterFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', posterFile);
+        formData.append('upload_preset', 'mppvs_preset');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dkce1wxaw/image/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Upload failed');
+
+        const data = await res.json();
+        const url = data.secure_url;
+
+        const matRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateId}/materials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ type: 'poster', title: posterFile.name, link: url }),
+        });
+
+        if (matRes.ok) {
+          resetAddForm();
+          refreshData();
+        } else {
+          alert(`Failed: ${matRes.status}`);
+        }
+      } catch (err: any) {
+        alert(`Upload error: ${err.message}`);
+      }
+      return;
+    }
 
     const payload: any = { type };
     
@@ -705,6 +779,8 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       setEditTitle('');
       setEditDesc('');
       setEditLink(item.posterLink || '');
+      setEditPosterFile(null);
+      setEditPosterPreview(item.posterLink || null);
     }
   };
 
@@ -713,20 +789,55 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     setEditTitle('');
     setEditDesc('');
     setEditLink('');
+    setEditPosterFile(null);
+    setEditPosterPreview(null);
   };
 
   const handleSaveEdit = async (materialId: string) => {
     if (!candidateId) return;
 
+    if (type === 'poster' && editPosterFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', editPosterFile);
+        formData.append('upload_preset', 'mppvs_preset');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dkce1wxaw/image/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Upload failed');
+
+        const data = await res.json();
+        const url = data.secure_url;
+
+        const matRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateId}/materials/poster/${materialId}`,
+          { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ link: url }) }
+        );
+
+        if (matRes.ok) {
+          handleCancelEdit();
+          refreshData();
+        } else {
+          alert(`Failed: ${matRes.status}`);
+        }
+      } catch (err: any) {
+        alert(`Upload error: ${err.message}`);
+      }
+      return;
+    }
+
     let payload: any;
     if (type === 'manifesto') {
       payload = { title: editTitle, description: editDesc };
     } else if (type === 'video') {
-      payload = { videoTitle: editTitle, videoDescription: editDesc, videoLink: editLink };
+      payload = { title: editTitle, description: editDesc, link: editLink };
     } else if (type === 'slide') {
-      payload = { slideTitle: editTitle, slideLink: editLink };
+      payload = { title: editTitle, link: editLink };
     } else if (type === 'poster') {
-      payload = { posterLink: editLink };
+      payload = { link: editLink };
     }
 
     try {
@@ -764,13 +875,21 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     }
 
     if (type === 'slide' && item.slideLink) {
-      const slideType = detectSlideType(item.slideLink);
-      if (slideType === 'canva') {
+      const { embedUrl, warning } = getSlideEmbedUrl(item.slideLink);
+      if (warning) {
+        return (
+          <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <p className="text-xs text-yellow-400">{warning}</p>
+          </div>
+        );
+      }
+      if (embedUrl) {
+        const slideType = detectSlideType(item.slideLink);
         return (
           <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-            <div className="aspect-video">
+            <div className={slideType === 'pdf' ? 'aspect-[3/4]' : 'aspect-video'}>
               <iframe
-                src={item.slideLink}
+                src={embedUrl}
                 title={item.slideTitle || 'Slide'}
                 className="w-full h-full"
                 allowFullScreen
@@ -779,19 +898,14 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
           </div>
         );
       }
-      if (slideType === 'pdf') {
-        return (
-          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-            <div className="aspect-[3/4]">
-              <iframe
-                src={item.slideLink}
-                title={item.slideTitle || 'PDF'}
-                className="w-full h-full"
-              />
-            </div>
-          </div>
-        );
-      }
+    }
+
+    if (type === 'poster' && item.posterLink) {
+      return (
+        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+          <img src={item.posterLink} alt={item.title || 'Poster'} className="w-full max-h-64 object-contain bg-black/20" />
+        </div>
+      );
     }
 
     return null;
@@ -803,7 +917,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     
     if (type === 'slide') {
       const slideType = detectSlideType(link);
-      const icon = slideType === 'canva' ? <Monitor size={12} /> : slideType === 'pdf' ? <File size={12} /> : <ExternalLink size={12} />;
+      const icon = slideType === 'canva-embed' || slideType === 'canva-view' ? <Monitor size={12} /> : slideType === 'pdf' ? <File size={12} /> : <ExternalLink size={12} />;
       return (
         <a href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] text-yellow-500 hover:underline flex items-center gap-1 mt-1">
           {icon} {link}
@@ -888,14 +1002,33 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                   rows={2}
                 />
               )}
-              <input 
-                type="url" 
-                value={newLink}
-                onChange={(e) => setNewLink(e.target.value)}
-                placeholder={type === 'video' ? 'YouTube URL' : type === 'slide' ? 'Canva/PDF/Slide URL' : 'Image URL'}
-                className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold text-black mb-4"
-                required
-              />
+              {type === 'poster' ? (
+                <>
+                  {posterPreview ? (
+                    <div className="mb-4">
+                      <img src={posterPreview} alt="Preview" className="w-full max-h-48 object-contain rounded-lg border border-white/10" />
+                      <button type="button" onClick={() => { setPosterFile(null); setPosterPreview(null); }} className="text-xs text-red-400 mt-2 hover:text-red-300">Remove</button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/40 hover:bg-white/5 transition-all mb-4">
+                      <Upload size={24} className="text-white/50 mb-2" />
+                      <span className="text-[10px] text-white/50 uppercase tracking-widest">Click to upload poster</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePosterFileSelect} />
+                    </label>
+                  )}
+                </>
+              ) : (
+                <>
+                  <input 
+                    type="url" 
+                    value={newLink}
+                    onChange={(e) => setNewLink(e.target.value)}
+                    placeholder={type === 'video' ? 'YouTube URL' : type === 'slide' ? 'Canva/PDF/Slide URL' : 'Image URL'}
+                    className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold text-black mb-4"
+                    required
+                  />
+                </>
+              )}
             </>
           )}
           <div className="flex gap-2">
@@ -979,13 +1112,29 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                     </>
                   )}
                   {type === 'poster' && (
-                    <input 
-                      type="url" 
-                      value={editLink}
-                      onChange={(e) => setEditLink(e.target.value)}
-                      placeholder="Poster URL"
-                      className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
-                    />
+                    <>
+                      {editPosterPreview ? (
+                        <div className="mb-2">
+                          <img src={editPosterPreview} alt="Preview" className="w-full max-h-40 object-contain rounded-lg border border-white/10" />
+                          <button type="button" onClick={() => { setEditPosterFile(null); setEditPosterPreview(null); setEditLink(''); }} className="text-xs text-red-400 mt-1 hover:text-red-300">Remove</button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/40 hover:bg-white/5 transition-all mb-2">
+                          <Upload size={20} className="text-white/50 mb-1" />
+                          <span className="text-[9px] text-white/50 uppercase tracking-widest">Upload new poster</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) { alert('File must be less than 5MB.'); return; }
+                            setEditPosterFile(file);
+                            const reader = new FileReader();
+                            reader.onload = () => setEditPosterPreview(reader.result as string);
+                            reader.readAsDataURL(file);
+                            if (e.target) e.target.value = '';
+                          }} />
+                        </label>
+                      )}
+                    </>
                   )}
                   <div className="flex gap-2 pt-2">
                     <button onClick={() => handleSaveEdit(item.id)} className="bg-green-600/20 text-green-400 px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-green-600/40 transition-all flex items-center gap-1">

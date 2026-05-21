@@ -5,10 +5,14 @@ import {
 } from '@nestjs/common';
 import { prisma } from '@repo/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class CandidatesService {
-  constructor(private readonly auditLogsService: AuditLogsService) {}
+  constructor(
+    private readonly auditLogsService: AuditLogsService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async getCandidates() {
     return prisma.candidate.findMany({
@@ -290,12 +294,25 @@ export class CandidatesService {
           data: { slideTitle: payload.title, slideLink: payload.link },
         });
         break;
-      case 'poster':
-        material = await prisma.poster.update({
-          where: { id: materialId },
-          data: { posterLink: payload.link },
-        });
+      case 'poster': {
+        if (payload.link) {
+          const existing = await prisma.poster.findUnique({ where: { id: materialId } });
+          if (existing?.posterLink) {
+            const oldPublicId = this.cloudinaryService.extractPublicId(existing.posterLink);
+            if (oldPublicId) await this.cloudinaryService.deleteImage(oldPublicId);
+          }
+          material = await prisma.poster.update({
+            where: { id: materialId },
+            data: { posterLink: payload.link },
+          });
+        } else {
+          material = await prisma.poster.update({
+            where: { id: materialId },
+            data: payload,
+          });
+        }
         break;
+      }
       default:
         throw new BadRequestException('Invalid material type');
     }
@@ -323,9 +340,15 @@ export class CandidatesService {
       case 'slide':
         await prisma.slide.delete({ where: { id: materialId } });
         break;
-      case 'poster':
+      case 'poster': {
+        const poster = await prisma.poster.findUnique({ where: { id: materialId } });
+        if (poster?.posterLink) {
+          const publicId = this.cloudinaryService.extractPublicId(poster.posterLink);
+          if (publicId) await this.cloudinaryService.deleteImage(publicId);
+        }
         await prisma.poster.delete({ where: { id: materialId } });
         break;
+      }
       default:
         throw new BadRequestException('Invalid material type');
     }
