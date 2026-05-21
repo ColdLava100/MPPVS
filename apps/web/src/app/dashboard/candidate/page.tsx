@@ -407,12 +407,12 @@ export default function CandidateDashboard() {
               </div>
             </div>
 
-            {/* 2-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              {/* Left Column: Compact Info Card */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* Compact Info Card */}
-                <div className="p-6 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm">
+            {/* Single Large Card */}
+            <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8">
+              {/* 2-Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                {/* Left Column: Compact Info */}
+                <div className="lg:col-span-1 space-y-6">
                   {/* Profile Picture */}
                   <div className="flex flex-col items-center mb-6 pb-6 border-b border-slate-200">
                     <div className="relative w-20 h-20 mb-3">
@@ -672,16 +672,13 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Right Column: Campaign Materials */}
-              <div className="lg:col-span-2">
-                <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-tighter italic leading-none text-white mb-6 lg:mb-8">
-                  Campaign Materials
-                </h2>
+                {/* Right Column: Campaign Materials */}
+                <div className="lg:col-span-2 lg:border-l lg:border-slate-200 lg:pl-8">
+                  <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-tighter italic leading-none text-slate-900 mb-6 lg:mb-8">
+                    Campaign Materials
+                  </h2>
 
-                {/* Single Unified Card - White/Brown Theme */}
-                <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8">
                   {/* Tab Bar */}
                   <div className="flex flex-col lg:flex-row gap-2 mb-6">
                     <button
