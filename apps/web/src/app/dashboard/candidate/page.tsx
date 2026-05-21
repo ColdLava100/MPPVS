@@ -103,6 +103,8 @@ export default function CandidateDashboard() {
   const [qualJustification, setQualJustification] = useState('');
   const [isQualSaving, setIsQualSaving] = useState(false);
 
+  const [activeMaterialTab, setActiveMaterialTab] = useState<'manifesto' | 'video' | 'slide' | 'poster'>('manifesto');
+
   const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
   useEffect(() => {
@@ -678,41 +680,124 @@ export default function CandidateDashboard() {
                   Campaign Materials
                 </h2>
 
-                <MaterialList 
-                  candidateId={candidateProfile?.id}
-                  materials={candidateProfile?.manifestos || []}
-                  type="manifesto"
-                  icon={<FileText size={20} />}
-                  title="Manifestos"
-                  refreshData={fetchCandidateProfile}
-                />
+                {/* Single Unified Card - White/Brown Theme */}
+                <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8">
+                  {/* Tab Bar */}
+                  <div className="flex flex-col lg:flex-row gap-2 mb-6">
+                    <button
+                      onClick={() => setActiveMaterialTab('manifesto')}
+                      className={`flex items-center justify-between px-4 py-3 rounded text-[9px] font-black uppercase tracking-widest transition-all ${
+                        activeMaterialTab === 'manifesto'
+                          ? 'bg-[#c5a021] text-black'
+                          : 'bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 border border-[#4c0519]/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} />
+                        <span>Manifestos</span>
+                      </div>
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-black/10 text-[8px]">
+                        {(candidateProfile?.manifestos || []).length}
+                      </span>
+                    </button>
 
-                <MaterialList 
-                  candidateId={candidateProfile?.id}
-                  materials={candidateProfile?.videos || []}
-                  type="video"
-                  icon={<Video size={20} />}
-                  title="Videos"
-                  refreshData={fetchCandidateProfile}
-                />
+                    <button
+                      onClick={() => setActiveMaterialTab('video')}
+                      className={`flex items-center justify-between px-4 py-3 rounded text-[9px] font-black uppercase tracking-widest transition-all ${
+                        activeMaterialTab === 'video'
+                          ? 'bg-[#c5a021] text-black'
+                          : 'bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 border border-[#4c0519]/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Video size={16} />
+                        <span>Videos</span>
+                      </div>
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-black/10 text-[8px]">
+                        {(candidateProfile?.videos || []).length}
+                      </span>
+                    </button>
 
-                <MaterialList 
-                  candidateId={candidateProfile?.id}
-                  materials={candidateProfile?.slides || []}
-                  type="slide"
-                  icon={<Presentation size={20} />}
-                  title="Slides"
-                  refreshData={fetchCandidateProfile}
-                />
+                    <button
+                      onClick={() => setActiveMaterialTab('slide')}
+                      className={`flex items-center justify-between px-4 py-3 rounded text-[9px] font-black uppercase tracking-widest transition-all ${
+                        activeMaterialTab === 'slide'
+                          ? 'bg-[#c5a021] text-black'
+                          : 'bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 border border-[#4c0519]/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Presentation size={16} />
+                        <span>Slides</span>
+                      </div>
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-black/10 text-[8px]">
+                        {(candidateProfile?.slides || []).length}
+                      </span>
+                    </button>
 
-                <MaterialList 
-                  candidateId={candidateProfile?.id}
-                  materials={candidateProfile?.posters || []}
-                  type="poster"
-                  icon={<Image size={20} />}
-                  title="Posters"
-                  refreshData={fetchCandidateProfile}
-                />
+                    <button
+                      onClick={() => setActiveMaterialTab('poster')}
+                      className={`flex items-center justify-between px-4 py-3 rounded text-[9px] font-black uppercase tracking-widest transition-all ${
+                        activeMaterialTab === 'poster'
+                          ? 'bg-[#c5a021] text-black'
+                          : 'bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 border border-[#4c0519]/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Image size={16} />
+                        <span>Posters</span>
+                      </div>
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-black/10 text-[8px]">
+                        {(candidateProfile?.posters || []).length}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  {activeMaterialTab === 'manifesto' && (
+                    <MaterialListInner
+                      candidateId={candidateProfile?.id}
+                      materials={candidateProfile?.manifestos || []}
+                      type="manifesto"
+                      icon={<FileText size={20} />}
+                      title="Manifestos"
+                      refreshData={fetchCandidateProfile}
+                    />
+                  )}
+
+                  {activeMaterialTab === 'video' && (
+                    <MaterialListInner
+                      candidateId={candidateProfile?.id}
+                      materials={candidateProfile?.videos || []}
+                      type="video"
+                      icon={<Video size={20} />}
+                      title="Videos"
+                      refreshData={fetchCandidateProfile}
+                    />
+                  )}
+
+                  {activeMaterialTab === 'slide' && (
+                    <MaterialListInner
+                      candidateId={candidateProfile?.id}
+                      materials={candidateProfile?.slides || []}
+                      type="slide"
+                      icon={<Presentation size={20} />}
+                      title="Slides"
+                      refreshData={fetchCandidateProfile}
+                    />
+                  )}
+
+                  {activeMaterialTab === 'poster' && (
+                    <MaterialListInner
+                      candidateId={candidateProfile?.id}
+                      materials={candidateProfile?.posters || []}
+                      type="poster"
+                      icon={<Image size={20} />}
+                      title="Posters"
+                      refreshData={fetchCandidateProfile}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -764,7 +849,7 @@ interface MaterialListProps {
   refreshData: () => void;
 }
 
-function MaterialList({ candidateId, materials, type, icon, title, refreshData }: MaterialListProps) {
+function MaterialListInner({ candidateId, materials, type, icon, title, refreshData }: MaterialListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
@@ -1008,7 +1093,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       const embedUrl = getYouTubeEmbedUrl(item.videoLink);
       if (embedUrl) {
         return (
-          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+          <div className="mt-3 rounded-lg overflow-hidden border border-slate-200">
             <div className="aspect-video">
               <iframe
                 src={embedUrl}
@@ -1027,15 +1112,15 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       const { embedUrl, warning } = getSlideEmbedUrl(item.slideLink);
       if (warning) {
         return (
-          <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-xs text-yellow-400">{warning}</p>
+          <div className="mt-3 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <p className="text-xs text-yellow-700">{warning}</p>
           </div>
         );
       }
       if (embedUrl) {
         const slideType = detectSlideType(item.slideLink);
         return (
-          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+          <div className="mt-3 rounded-lg overflow-hidden border border-slate-200">
             <div className={slideType === 'pdf' ? 'aspect-[3/4]' : 'aspect-video'}>
               <iframe
                 src={embedUrl}
@@ -1051,8 +1136,8 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
 
     if (type === 'poster' && item.posterLink) {
       return (
-        <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-          <img src={item.posterLink} alt={item.title || 'Poster'} className="w-full max-h-64 object-contain bg-black/20" />
+        <div className="mt-3 rounded-lg overflow-hidden border border-slate-200">
+          <img src={item.posterLink} alt={item.title || 'Poster'} className="w-full max-h-64 object-contain bg-slate-100" />
         </div>
       );
     }
@@ -1082,29 +1167,29 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-3xl rounded-sm border border-white/10 shadow-2xl mb-8 p-6 md:p-8">
+    <>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
+          <div className="p-3 bg-[#4c0519]/10 rounded-lg border border-[#4c0519]/20">
             {icon}
           </div>
-          <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tighter">{title}</h3>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">({materials.length})</span>
+          <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tighter text-slate-900">{title}</h3>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">({materials.length})</span>
         </div>
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2"
+          className="bg-[#4c0519]/10 hover:bg-[#4c0519]/20 border border-[#4c0519]/20 text-[#4c0519] px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2"
         >
           <Plus size={14} /> Add New
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddMaterial} className="mb-6 p-6 bg-black/20 rounded-lg border border-white/10">
+        <form onSubmit={handleAddMaterial} className="mb-6 p-6 bg-slate-100 rounded-lg border border-slate-200">
           {type === 'manifesto' ? (
             <>
               {manifestoItems.map((m, i) => (
-                <div key={i} className="flex gap-4 mb-4 p-4 bg-white/5 rounded">
+                <div key={i} className="flex gap-4 mb-4 p-4 bg-white rounded">
                   <input 
                     type="text" 
                     value={m.title}
@@ -1155,13 +1240,13 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                 <>
                   {posterPreview ? (
                     <div className="mb-4">
-                      <img src={posterPreview} alt="Preview" className="w-full max-h-48 object-contain rounded-lg border border-white/10" />
-                      <button type="button" onClick={() => { setPosterFile(null); setPosterPreview(null); }} className="text-xs text-red-400 mt-2 hover:text-red-300">Remove</button>
+                      <img src={posterPreview} alt="Preview" className="w-full max-h-48 object-contain rounded-lg border border-slate-200" />
+                      <button type="button" onClick={() => { setPosterFile(null); setPosterPreview(null); }} className="text-xs text-red-600 mt-2 hover:text-red-700">Remove</button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/40 hover:bg-white/5 transition-all mb-4">
-                      <Upload size={24} className="text-white/50 mb-2" />
-                      <span className="text-[10px] text-white/50 uppercase tracking-widest">Click to upload poster</span>
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-slate-400 hover:bg-slate-50 transition-all mb-4">
+                      <Upload size={24} className="text-slate-400 mb-2" />
+                      <span className="text-[10px] text-slate-500 uppercase tracking-widest">Click to upload poster</span>
                       <input type="file" accept="image/*" className="hidden" onChange={handlePosterFileSelect} />
                     </label>
                   )}
@@ -1184,7 +1269,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
             <button type="submit" className="bg-[#c5a021] text-black px-6 py-2 rounded text-[10px] font-black uppercase tracking-widest">
               <Save size={14} className="inline mr-2" /> Save
             </button>
-            <button type="button" onClick={resetAddForm} className="bg-white/10 text-white px-6 py-2 rounded text-[10px] font-black uppercase tracking-widest">
+            <button type="button" onClick={resetAddForm} className="bg-slate-200 text-slate-700 px-6 py-2 rounded text-[10px] font-black uppercase tracking-widest">
               Cancel
             </button>
           </div>
@@ -1192,11 +1277,11 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       )}
 
       {materials.length === 0 ? (
-        <p className="text-slate-400 text-sm italic">No {title.toLowerCase()} added yet.</p>
+        <p className="text-slate-500 text-sm italic">No {title.toLowerCase()} added yet.</p>
       ) : (
         <div className="space-y-4">
           {materials.map((item) => (
-            <div key={item.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
+            <div key={item.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
               {editingId === item.id ? (
                 <div className="space-y-3">
                   {type === 'manifesto' && (
@@ -1264,13 +1349,13 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                     <>
                       {editPosterPreview ? (
                         <div className="mb-2">
-                          <img src={editPosterPreview} alt="Preview" className="w-full max-h-40 object-contain rounded-lg border border-white/10" />
-                          <button type="button" onClick={() => { setEditPosterFile(null); setEditPosterPreview(null); setEditLink(''); }} className="text-xs text-red-400 mt-1 hover:text-red-300">Remove</button>
+                          <img src={editPosterPreview} alt="Preview" className="w-full max-h-40 object-contain rounded-lg border border-slate-200" />
+                          <button type="button" onClick={() => { setEditPosterFile(null); setEditPosterPreview(null); setEditLink(''); }} className="text-xs text-red-600 mt-1 hover:text-red-700">Remove</button>
                         </div>
                       ) : (
-                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/40 hover:bg-white/5 transition-all mb-2">
-                          <Upload size={20} className="text-white/50 mb-1" />
-                          <span className="text-[9px] text-white/50 uppercase tracking-widest">Upload new poster</span>
+                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-slate-400 hover:bg-slate-50 transition-all mb-2">
+                          <Upload size={20} className="text-slate-400 mb-1" />
+                          <span className="text-[9px] text-slate-500 uppercase tracking-widest">Upload new poster</span>
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
@@ -1286,10 +1371,10 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                     </>
                   )}
                   <div className="flex gap-2 pt-2">
-                    <button onClick={() => handleSaveEdit(item.id)} className="bg-green-600/20 text-green-400 px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-green-600/40 transition-all flex items-center gap-1">
+                    <button onClick={() => handleSaveEdit(item.id)} className="bg-green-100 text-green-700 px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-green-200 transition-all flex items-center gap-1">
                       <Save size={12} /> Save
                     </button>
-                    <button onClick={handleCancelEdit} className="bg-white/10 text-white px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-1">
+                    <button onClick={handleCancelEdit} className="bg-slate-200 text-slate-700 px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-300 transition-all flex items-center gap-1">
                       <X size={12} /> Cancel
                     </button>
                   </div>
@@ -1298,20 +1383,20 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                 <>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-white truncate">{item.title || item.description || 'Untitled'}</p>
+                      <p className="text-sm font-bold text-slate-900 truncate">{item.title || item.description || 'Untitled'}</p>
                       {item.description && type !== 'video' && (
-                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{item.description}</p>
                       )}
                       {item.videoDescription && (
-                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.videoDescription}</p>
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{item.videoDescription}</p>
                       )}
                       {renderLink(item)}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => handleEditClick(item)} className="bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1">
+                      <button onClick={() => handleEditClick(item)} className="bg-[#4c0519]/10 hover:bg-[#4c0519]/20 border border-[#4c0519]/20 text-[#4c0519] px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1">
                         <Edit2 size={12} /> Edit
                       </button>
-                      <button onClick={() => promptDelete(item.id)} className="bg-red-600/20 hover:bg-red-600/40 border border-red-600/30 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1 text-red-400">
+                      <button onClick={() => promptDelete(item.id)} className="bg-red-100 hover:bg-red-200 border border-red-200 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1 text-red-600">
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -1332,6 +1417,6 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       />
-    </div>
+    </>
   );
 }
