@@ -14,6 +14,7 @@ import { CoursesModule } from './courses/courses.module';
 import { CandidatesModule } from './candidates/candidates.module';
 import { VotesModule } from './votes/votes.module';
 import { VoterRegistrationsModule } from './voter-registrations/voter-registrations.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { VoterRegistrationsModule } from './voter-registrations/voter-registrati
     CandidatesModule,
     VotesModule,
     VoterRegistrationsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

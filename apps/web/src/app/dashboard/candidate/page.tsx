@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Activity, 
@@ -12,10 +12,19 @@ import {
   Video,
   FileText,
   Image,
-  Presentation
+  Presentation,
+  Camera,
+  Upload,
+  Loader2,
+  Pencil,
+  ExternalLink,
+  File,
+  Monitor
 } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Footer from '@/components/ui/footer';
+import CropModal from '@/components/ui/crop-modal';
+import ConfirmationModal from '@/components/ui/confirmation-modal';
 
 interface Qualification {
   id: string;
@@ -54,6 +63,8 @@ interface CandidateProfile {
   status: string;
   userId: string;
   electionId: string;
+  profilePicture?: string | null;
+  spotlightBanner?: string | null;
   qualification: Qualification | null;
   manifestos: ManifestoItem[];
   videos: VideoItem[];
@@ -68,6 +79,21 @@ export default function CandidateDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
+
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropTarget, setCropTarget] = useState<'profile' | 'banner' | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [editMode, setEditMode] = useState<'profile' | 'banner' | null>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
@@ -94,7 +120,6 @@ export default function CandidateDashboard() {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    
     fetchCandidateProfile();
   }, [currentUser]);
 
@@ -127,6 +152,103 @@ export default function CandidateDashboard() {
         alert('Failed to return to superadmin.');
       }
     } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
+
+  const handleFileSelect = (target: 'profile' | 'banner', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File must be less than 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropTarget(target);
+      setCropImageSrc(reader.result as string);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleCropSave = async (croppedBlob: Blob) => {
+    if (!cropTarget || !candidateProfile?.id) return;
+    setIsUploading(true);
+    setCropModalOpen(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', croppedBlob, 'crop.jpg');
+      formData.append('upload_preset', 'mppvs_preset');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/dkce1wxaw/image/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+
+      const data = await res.json();
+      const url = data.secure_url;
+
+      const field = cropTarget === 'profile' ? 'profilePicture' : 'spotlightBanner';
+      const patchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateProfile.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ [field]: url }),
+      });
+
+      if (patchRes.ok) {
+        await fetchCandidateProfile();
+      } else {
+        alert('Failed to update profile.');
+      }
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+      setCropTarget(null);
+      setCropImageSrc(null);
+    }
+  };
+
+  const promptRemoveImage = (target: 'profile' | 'banner') => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Remove ${target === 'profile' ? 'Profile Picture' : 'Banner'}`,
+      message: `This will permanently remove your ${target === 'profile' ? 'profile picture' : 'spotlight banner'} from the server. This action cannot be undone.`,
+      onConfirm: () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        removeImage(target);
+      },
+    });
+  };
+
+  const removeImage = async (target: 'profile' | 'banner') => {
+    if (!candidateProfile?.id) return;
+    setIsUploading(true);
+
+    const endpoint = target === 'profile'
+      ? `${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateProfile.id}/profile-picture`
+      : `${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateProfile.id}/spotlight-banner`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        await fetchCandidateProfile();
+      } else {
+        alert('Failed to remove image.');
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+      setEditMode(null);
+    }
   };
 
   if (isLoading) {
@@ -171,14 +293,14 @@ export default function CandidateDashboard() {
           style={{ backgroundImage: `url(${bgImageUrl})`, filter: 'blur(10px) brightness(0.2)' }}
         />
 
-        <div className="relative z-10 p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-12">
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8 md:gap-12">
             {/* Hero Section */}
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
                   <Activity size={14} className="text-red-600 animate-pulse" /> Campaign Headquarters
                 </p>
-                <h1 className="text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+                <h1 className="text-3xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
                   Welcome, <span className="italic">{currentUser?.name || 'Candidate'}</span>
                 </h1>
               </div>
@@ -220,9 +342,153 @@ export default function CandidateDashboard() {
               </div>
             </div>
 
+            {/* Profile & Banner Section */}
+            <section>
+              <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter italic leading-none text-white mb-8 md:mb-12">
+                Profile & Banner
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Profile Picture Card */}
+                <div className="md:col-span-1 p-6 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#4c0519] shadow-2xl rounded-sm">
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-32 h-32 mb-6">
+                      {candidateProfile?.profilePicture ? (
+                        <img
+                          src={candidateProfile.profilePicture}
+                          alt="Profile"
+                          className="w-full h-full rounded-full object-cover border-4 border-[#c5a021]/30"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center border-4 border-slate-200">
+                          <Camera size={40} className="text-slate-400" />
+                        </div>
+                      )}
+                      {isUploading && cropTarget === 'profile' && (
+                        <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                          <Loader2 size={24} className="text-white animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">
+                      Profile Picture
+                    </p>
+                    {editMode === 'profile' ? (
+                      <div className="flex gap-2 w-full">
+                        <button
+                          onClick={() => profileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="flex-1 flex items-center justify-center gap-2 bg-[#c5a021] text-black py-2.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
+                        >
+                          <Upload size={12} /> Update
+                        </button>
+                        {candidateProfile?.profilePicture && (
+                          <button
+                            onClick={() => promptRemoveImage('profile')}
+                            disabled={isUploading}
+                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setEditMode(null)}
+                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setEditMode('profile')}
+                        className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
+                        <Edit2 size={12} /> Edit
+                      </button>
+                    )}
+                    <input
+                      ref={profileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect('profile', e)}
+                    />
+                  </div>
+                </div>
+
+                {/* Spotlight Banner Card */}
+                <div className="md:col-span-2 p-6 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-yellow-600 shadow-2xl rounded-sm">
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-full aspect-[16/9] mb-6 bg-slate-100 rounded-sm overflow-hidden border-2 border-slate-200">
+                      {candidateProfile?.spotlightBanner ? (
+                        <img
+                          src={candidateProfile.spotlightBanner}
+                          alt="Banner"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                          <Image size={40} className="text-slate-400 mb-2" />
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest">No Banner</p>
+                        </div>
+                      )}
+                      {isUploading && cropTarget === 'banner' && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 size={24} className="text-white animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">
+                      Spotlight Banner (16:9)
+                    </p>
+                    {editMode === 'banner' ? (
+                      <div className="flex gap-2 w-full max-w-xs">
+                        <button
+                          onClick={() => bannerInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="flex-1 flex items-center justify-center gap-2 bg-[#c5a021] text-black py-2.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
+                        >
+                          <Upload size={12} /> Update
+                        </button>
+                        {candidateProfile?.spotlightBanner && (
+                          <button
+                            onClick={() => promptRemoveImage('banner')}
+                            disabled={isUploading}
+                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setEditMode(null)}
+                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setEditMode('banner')}
+                        className="w-full max-w-xs flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
+                        <Edit2 size={12} /> Edit
+                      </button>
+                    )}
+                    <input
+                      ref={bannerInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect('banner', e)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Campaign Materials Section */}
             <section>
-              <h2 className="text-5xl font-bold uppercase tracking-tighter italic leading-none text-white mb-12">
+              <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter italic leading-none text-white mb-8 md:mb-12">
                 Campaign Materials
               </h2>
 
@@ -268,6 +534,24 @@ export default function CandidateDashboard() {
             <Footer />
           </div>
         </main>
+
+        <CropModal
+          isOpen={cropModalOpen}
+          imageSrc={cropImageSrc}
+          aspect={cropTarget === 'profile' ? 1 : 16 / 9}
+          title={cropTarget === 'profile' ? 'Crop Profile Picture' : 'Crop Spotlight Banner'}
+          onSave={handleCropSave}
+          onClose={() => { setCropModalOpen(false); setCropTarget(null); setCropImageSrc(null); }}
+        />
+
+        <ConfirmationModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel="Remove"
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        />
       </div>
     );
 }
@@ -293,20 +577,44 @@ interface MaterialListProps {
   refreshData: () => void;
 }
 
+function getYouTubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return null;
+}
+
+function detectSlideType(url: string): 'canva' | 'pdf' | 'other' {
+  if (!url) return 'other';
+  if (url.includes('canva.com')) return 'canva';
+  if (url.toLowerCase().endsWith('.pdf') || url.includes('.pdf?')) return 'pdf';
+  return 'other';
+}
+
 function MaterialList({ candidateId, materials, type, icon, title, refreshData }: MaterialListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingMaterial, setEditingMaterial] = useState<{ id: string; type: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
-  // Add form state
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newLink, setNewLink] = useState('');
   const [manifestoItems, setManifestoItems] = useState([{ title: '', description: '' }]);
 
-  // Edit form state
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editLink, setEditLink] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   const resetAddForm = () => {
     setNewTitle('');
@@ -344,7 +652,6 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert(`${title} Added!`);
         resetAddForm();
         refreshData();
       } else {
@@ -353,15 +660,26 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
+  const promptDelete = (materialId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Delete ${type}`,
+      message: `Are you sure you want to delete this ${type}? This action cannot be undone.`,
+      onConfirm: () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        handleDeleteMaterial(materialId);
+      },
+    });
+  };
+
   const handleDeleteMaterial = async (materialId: string) => {
-    if (!candidateId || !confirm(`Delete this ${type}?`)) return;
+    if (!candidateId) return;
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateId}/materials/${type}/${materialId}`,
         { method: 'DELETE', credentials: 'include' }
       );
       if (res.ok) {
-        alert('Material Deleted');
         refreshData();
       } else {
         alert(`Failed: ${res.status}`);
@@ -370,7 +688,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
   };
 
   const handleEditClick = (item: MaterialItem) => {
-    setEditingMaterial({ id: item.id, type });
+    setEditingId(item.id);
     if (type === 'manifesto') {
       setEditTitle(item.title || '');
       setEditDesc(item.description || '');
@@ -388,6 +706,13 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       setEditDesc('');
       setEditLink(item.posterLink || '');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditTitle('');
+    setEditDesc('');
+    setEditLink('');
   };
 
   const handleSaveEdit = async (materialId: string) => {
@@ -410,11 +735,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
         { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) }
       );
       if (res.ok) { 
-        alert('Material Updated!'); 
-        setEditingMaterial(null); 
-        setEditTitle(''); 
-        setEditDesc('');
-        setEditLink('');
+        handleCancelEdit();
         refreshData(); 
       } else {
         alert(`Failed: ${res.status}`);
@@ -422,14 +743,89 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
     } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
+  const renderPreview = (item: MaterialItem) => {
+    if (type === 'video' && item.videoLink) {
+      const embedUrl = getYouTubeEmbedUrl(item.videoLink);
+      if (embedUrl) {
+        return (
+          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+            <div className="aspect-video">
+              <iframe
+                src={embedUrl}
+                title={item.videoTitle || 'Video'}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        );
+      }
+    }
+
+    if (type === 'slide' && item.slideLink) {
+      const slideType = detectSlideType(item.slideLink);
+      if (slideType === 'canva') {
+        return (
+          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+            <div className="aspect-video">
+              <iframe
+                src={item.slideLink}
+                title={item.slideTitle || 'Slide'}
+                className="w-full h-full"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        );
+      }
+      if (slideType === 'pdf') {
+        return (
+          <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+            <div className="aspect-[3/4]">
+              <iframe
+                src={item.slideLink}
+                title={item.slideTitle || 'PDF'}
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return null;
+  };
+
+  const renderLink = (item: MaterialItem) => {
+    const link = item.videoLink || item.slideLink || item.posterLink;
+    if (!link) return null;
+    
+    if (type === 'slide') {
+      const slideType = detectSlideType(link);
+      const icon = slideType === 'canva' ? <Monitor size={12} /> : slideType === 'pdf' ? <File size={12} /> : <ExternalLink size={12} />;
+      return (
+        <a href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] text-yellow-500 hover:underline flex items-center gap-1 mt-1">
+          {icon} {link}
+        </a>
+      );
+    }
+
+    return (
+      <a href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] text-yellow-500 hover:underline flex items-center gap-1 mt-1">
+        <ExternalLink size={12} /> {link}
+      </a>
+    );
+  };
+
   return (
-    <div className="bg-white/5 backdrop-blur-3xl rounded-sm border border-white/10 shadow-2xl mb-8 p-8">
+    <div className="bg-white/5 backdrop-blur-3xl rounded-sm border border-white/10 shadow-2xl mb-8 p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-[#4c0519]/20 rounded-lg border border-white/10">
             {icon}
           </div>
-          <h3 className="text-2xl font-bold uppercase tracking-tighter">{title}</h3>
+          <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tighter">{title}</h3>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">({materials.length})</span>
         </div>
         <button 
@@ -481,7 +877,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Title"
                 className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold text-black mb-4"
-                required
+                required={type !== 'poster'}
               />
               {type === 'video' && (
                 <textarea 
@@ -496,7 +892,7 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                 type="url" 
                 value={newLink}
                 onChange={(e) => setNewLink(e.target.value)}
-                placeholder={type === 'video' ? 'Video URL' : 'Image/Link URL'}
+                placeholder={type === 'video' ? 'YouTube URL' : type === 'slide' ? 'Canva/PDF/Slide URL' : 'Image URL'}
                 className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors font-bold text-black mb-4"
                 required
               />
@@ -518,21 +914,9 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
       ) : (
         <div className="space-y-4">
           {materials.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex-1">
-                <p className="text-sm font-bold text-white">{item.title || item.description}</p>
-                {(item.videoLink || item.slideLink || item.posterLink) && (
-                  <a href={item.videoLink || item.slideLink || item.posterLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-yellow-500 hover:underline">
-                    {item.videoLink || item.slideLink || item.posterLink}
-                  </a>
-                )}
-                {item.videoDescription && (
-                  <p className="text-xs text-slate-400 mt-1">{item.videoDescription}</p>
-                )}
-              </div>
-              
-              {editingMaterial?.id === item.id ? (
-                <div className="flex flex-col gap-2 w-full">
+            <div key={item.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
+              {editingId === item.id ? (
+                <div className="space-y-3">
                   {type === 'manifesto' && (
                     <>
                       <input 
@@ -540,14 +924,14 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         placeholder="Title"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
-                      <input 
-                        type="text" 
+                      <textarea 
                         value={editDesc}
                         onChange={(e) => setEditDesc(e.target.value)}
                         placeholder="Description"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        rows={2}
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
                     </>
                   )}
@@ -558,21 +942,21 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         placeholder="Video Title"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
-                      <input 
-                        type="text" 
+                      <textarea 
                         value={editDesc}
                         onChange={(e) => setEditDesc(e.target.value)}
                         placeholder="Video Description"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        rows={2}
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
                       <input 
                         type="url" 
                         value={editLink}
                         onChange={(e) => setEditLink(e.target.value)}
-                        placeholder="Video URL"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        placeholder="YouTube URL"
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
                     </>
                   )}
@@ -583,14 +967,14 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         placeholder="Slide Title"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
                       <input 
                         type="url" 
                         value={editLink}
                         onChange={(e) => setEditLink(e.target.value)}
-                        placeholder="Slide URL"
-                        className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                        placeholder="Canva/PDF/Slide URL"
+                        className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                       />
                     </>
                   )}
@@ -600,32 +984,56 @@ function MaterialList({ candidateId, materials, type, icon, title, refreshData }
                       value={editLink}
                       onChange={(e) => setEditLink(e.target.value)}
                       placeholder="Poster URL"
-                      className="bg-slate-50 border-b border-slate-200 px-2 py-1 text-xs text-black"
+                      className="w-full bg-slate-50 border-b border-slate-200 px-2 py-1.5 text-sm text-black"
                     />
                   )}
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={() => handleSaveEdit(item.id)} className="text-green-500 flex items-center gap-1 text-xs font-bold uppercase">
-                      <Save size={14} /> Save
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={() => handleSaveEdit(item.id)} className="bg-green-600/20 text-green-400 px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-green-600/40 transition-all flex items-center gap-1">
+                      <Save size={12} /> Save
                     </button>
-                    <button onClick={() => setEditingMaterial(null)} className="text-red-500 flex items-center gap-1 text-xs font-bold uppercase">
-                      <X size={14} /> Cancel
+                    <button onClick={handleCancelEdit} className="bg-white/10 text-white px-4 py-1.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-1">
+                      <X size={12} /> Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <button onClick={() => handleEditClick(item)} className="bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1">
-                    <Edit2 size={12} /> Edit
-                  </button>
-                  <button onClick={() => handleDeleteMaterial(item.id)} className="bg-red-600/20 hover:bg-red-600/40 border border-red-600/30 px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1 text-red-400">
-                    <Trash2 size={12} /> Delete
-                  </button>
-                </div>
+                <>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{item.title || item.description || 'Untitled'}</p>
+                      {item.description && type !== 'video' && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
+                      )}
+                      {item.videoDescription && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.videoDescription}</p>
+                      )}
+                      {renderLink(item)}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => handleEditClick(item)} className="bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1">
+                        <Edit2 size={12} /> Edit
+                      </button>
+                      <button onClick={() => promptDelete(item.id)} className="bg-red-600/20 hover:bg-red-600/40 border border-red-600/30 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1 text-red-400">
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  {renderPreview(item)}
+                </>
               )}
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmLabel="Delete"
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

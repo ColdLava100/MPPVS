@@ -12,6 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles, Role } from '../common/decorators/roles.decorator';
@@ -20,7 +21,10 @@ import { prisma } from '@repo/database';
 @Controller('candidates')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CandidatesController {
-  constructor(private readonly candidatesService: CandidatesService) {}
+  constructor(
+    private readonly candidatesService: CandidatesService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Get()
   @Roles(
@@ -119,7 +123,7 @@ export class CandidatesController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR, Role.CANDIDATE)
   async updateCandidate(
     @Param('id') candidateId: string,
     @Body()
@@ -234,5 +238,65 @@ export class CandidatesController {
       materialId,
       req.user.id,
     );
+  }
+
+  @Delete(':id/profile-picture')
+  @Roles(Role.CANDIDATE, Role.SUPERADMIN, Role.ADMIN)
+  async deleteProfilePicture(@Param('id') candidateId: string, @Req() req: any) {
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId },
+    });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    const currentUserId = req.user.id || req.user.sub;
+    if (
+      req.user.role !== Role.SUPERADMIN &&
+      req.user.role !== Role.ADMIN &&
+      candidate.userId !== currentUserId
+    ) {
+      throw new ForbiddenException('You can only modify your own profile.');
+    }
+
+    if (candidate.profilePicture) {
+      const publicId = this.cloudinaryService.extractPublicId(candidate.profilePicture);
+      if (publicId) await this.cloudinaryService.deleteImage(publicId);
+    }
+
+    await prisma.candidate.update({
+      where: { id: candidateId },
+      data: { profilePicture: null },
+    });
+
+    return { message: 'Profile picture removed' };
+  }
+
+  @Delete(':id/spotlight-banner')
+  @Roles(Role.CANDIDATE, Role.SUPERADMIN, Role.ADMIN)
+  async deleteSpotlightBanner(@Param('id') candidateId: string, @Req() req: any) {
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId },
+    });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    const currentUserId = req.user.id || req.user.sub;
+    if (
+      req.user.role !== Role.SUPERADMIN &&
+      req.user.role !== Role.ADMIN &&
+      candidate.userId !== currentUserId
+    ) {
+      throw new ForbiddenException('You can only modify your own banner.');
+    }
+
+    if (candidate.spotlightBanner) {
+      const publicId = this.cloudinaryService.extractPublicId(candidate.spotlightBanner);
+      if (publicId) await this.cloudinaryService.deleteImage(publicId);
+    }
+
+    await prisma.candidate.update({
+      where: { id: candidateId },
+      data: { spotlightBanner: null },
+    });
+
+    return { message: 'Spotlight banner removed' };
   }
 }

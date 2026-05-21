@@ -256,14 +256,6 @@ return (
                     onRefresh={fetchActiveData}
                   />
                 </div>
-
-                <div className="p-4 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-sm">
-                  <h2 className="text-lg font-bold uppercase tracking-tighter text-black mb-4 flex items-center gap-2">
-                    <Shield size={16} className="text-[#4c0519]" />
-                    Audit Logs
-                  </h2>
-                  <AuditLogTable />
-                </div>
               </>
             ) : (
               /* Workflow View */
