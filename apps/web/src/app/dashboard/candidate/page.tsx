@@ -96,6 +96,13 @@ export default function CandidateDashboard() {
     onConfirm: () => void;
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
+  const [qualEditMode, setQualEditMode] = useState<'view' | 'edit' | 'create'>('view');
+  const [qualPositions, setQualPositions] = useState<string[]>([]);
+  const [qualPositionInput, setQualPositionInput] = useState('');
+  const [qualCgpa, setQualCgpa] = useState('');
+  const [qualJustification, setQualJustification] = useState('');
+  const [isQualSaving, setIsQualSaving] = useState(false);
+
   const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
   useEffect(() => {
@@ -252,6 +259,94 @@ export default function CandidateDashboard() {
     }
   };
 
+  const initQualificationEdit = () => {
+    const qual = candidateProfile?.qualification;
+    if (qual) {
+      setQualPositions(qual.positions || []);
+      setQualCgpa(qual.cgpa || '');
+      setQualJustification(qual.justification || '');
+      setQualEditMode('edit');
+    } else {
+      setQualPositions([]);
+      setQualCgpa('');
+      setQualJustification('');
+      setQualEditMode('create');
+    }
+  };
+
+  const addQualPosition = () => {
+    const trimmed = qualPositionInput.trim();
+    if (trimmed && !qualPositions.includes(trimmed)) {
+      setQualPositions([...qualPositions, trimmed]);
+      setQualPositionInput('');
+    }
+  };
+
+  const removeQualPosition = (position: string) => {
+    setQualPositions(qualPositions.filter(p => p !== position));
+  };
+
+  const handleQualSave = async () => {
+    if (!candidateProfile?.id || qualPositions.length === 0 || !qualCgpa || !qualJustification) {
+      alert('Please fill in all fields and add at least one position.');
+      return;
+    }
+    setIsQualSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateProfile.id}/qualification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ positions: qualPositions, cgpa: qualCgpa, justification: qualJustification }),
+      });
+      if (res.ok) {
+        await fetchCandidateProfile();
+        setQualEditMode('view');
+      } else {
+        const err = await res.json();
+        alert(`Failed: ${err.message || res.status}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setIsQualSaving(false);
+    }
+  };
+
+  const promptDeleteQualification = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Qualification',
+      message: 'Are you sure you want to delete your qualification? This action cannot be undone.',
+      onConfirm: () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        handleDeleteQualification();
+      },
+    });
+  };
+
+  const handleDeleteQualification = async () => {
+    if (!candidateProfile?.id) return;
+    setIsQualSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidates/${candidateProfile.id}/qualification`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        await fetchCandidateProfile();
+        setQualEditMode('view');
+      } else {
+        const err = await res.json();
+        alert(`Failed: ${err.message || res.status}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setIsQualSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -310,101 +405,64 @@ export default function CandidateDashboard() {
               </div>
             </div>
 
-            {/* 3-Card Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-blue-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="text-slate-300"><Presentation size={24} /></div>
-                </div>
-                <div className="text-2xl font-bold mb-2 tracking-tighter text-slate-900">
-                  {candidateProfile?.qualification?.positions?.join(', ') || 'No Position'}
-                </div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Position(s)</p>
-              </div>
-
-              <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-red-700 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="text-slate-300"><FileText size={24} /></div>
-                </div>
-                <div className="text-2xl font-bold mb-2 tracking-tighter text-slate-900">
-                  {getCoursePrefix(candidateProfile?.user?.studentId)}
-                </div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Course Prefix</p>
-              </div>
-
-              <div className="p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-yellow-600 shadow-2xl group hover:-translate-y-2 transition-all duration-500 rounded-sm">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="text-slate-300"><Activity size={24} /></div>
-                </div>
-                <div className="text-2xl font-bold mb-2 tracking-tighter text-slate-900">
-                  {candidateProfile?.election?.title || 'No Election'}
-                </div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Election</p>
-              </div>
-            </div>
-
-            {/* Profile & Banner Section */}
-            <section>
-              <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter italic leading-none text-white mb-8 md:mb-12">
-                Profile & Banner
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Profile Picture Card */}
-                <div className="md:col-span-1 p-6 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#4c0519] shadow-2xl rounded-sm">
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-32 h-32 mb-6">
+            {/* 2-Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              {/* Left Column: Compact Info Card */}
+              <div className="lg:col-span-1 space-y-6">
+                {/* Compact Info Card */}
+                <div className="p-6 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm">
+                  {/* Profile Picture */}
+                  <div className="flex flex-col items-center mb-6 pb-6 border-b border-slate-200">
+                    <div className="relative w-20 h-20 mb-3">
                       {candidateProfile?.profilePicture ? (
                         <img
                           src={candidateProfile.profilePicture}
                           alt="Profile"
-                          className="w-full h-full rounded-full object-cover border-4 border-[#c5a021]/30"
+                          className="w-full h-full rounded-full object-cover border-2 border-[#c5a021]/30"
                         />
                       ) : (
-                        <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center border-4 border-slate-200">
-                          <Camera size={40} className="text-slate-400" />
+                        <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                          <Camera size={24} className="text-slate-400" />
                         </div>
                       )}
                       {isUploading && cropTarget === 'profile' && (
                         <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-                          <Loader2 size={24} className="text-white animate-spin" />
+                          <Loader2 size={16} className="text-white animate-spin" />
                         </div>
                       )}
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">
-                      Profile Picture
-                    </p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Profile Picture</p>
                     {editMode === 'profile' ? (
                       <div className="flex gap-2 w-full">
                         <button
                           onClick={() => profileInputRef.current?.click()}
                           disabled={isUploading}
-                          className="flex-1 flex items-center justify-center gap-2 bg-[#c5a021] text-black py-2.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-1 bg-[#c5a021] text-black py-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
                         >
-                          <Upload size={12} /> Update
+                          <Upload size={10} /> Update
                         </button>
                         {candidateProfile?.profilePicture && (
                           <button
                             onClick={() => promptRemoveImage('profile')}
                             disabled={isUploading}
-                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
+                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={10} />
                           </button>
                         )}
                         <button
                           onClick={() => setEditMode(null)}
-                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => setEditMode('profile')}
-                        className="w-full flex items-center justify-center gap-2 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
+                        className="w-full flex items-center justify-center gap-1 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2 rounded text-[8px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
                       >
-                        <Edit2 size={12} /> Edit
+                        <Edit2 size={10} /> Edit
                       </button>
                     )}
                     <input
@@ -415,12 +473,10 @@ export default function CandidateDashboard() {
                       onChange={(e) => handleFileSelect('profile', e)}
                     />
                   </div>
-                </div>
 
-                {/* Spotlight Banner Card */}
-                <div className="md:col-span-2 p-6 md:p-8 bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-yellow-600 shadow-2xl rounded-sm">
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-full aspect-[16/9] mb-6 bg-slate-100 rounded-sm overflow-hidden border-2 border-slate-200">
+                  {/* Spotlight Banner */}
+                  <div className="flex flex-col items-center mb-6 pb-6 border-b border-slate-200">
+                    <div className="relative w-full aspect-[16/9] mb-3 bg-slate-100 rounded-sm overflow-hidden border border-slate-200">
                       {candidateProfile?.spotlightBanner ? (
                         <img
                           src={candidateProfile.spotlightBanner}
@@ -429,50 +485,48 @@ export default function CandidateDashboard() {
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center">
-                          <Image size={40} className="text-slate-400 mb-2" />
-                          <p className="text-[10px] text-slate-400 uppercase tracking-widest">No Banner</p>
+                          <Image size={20} className="text-slate-400 mb-1" />
+                          <p className="text-[8px] text-slate-400 uppercase tracking-widest">No Banner</p>
                         </div>
                       )}
                       {isUploading && cropTarget === 'banner' && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 size={24} className="text-white animate-spin" />
+                          <Loader2 size={16} className="text-white animate-spin" />
                         </div>
                       )}
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">
-                      Spotlight Banner (16:9)
-                    </p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Banner (16:9)</p>
                     {editMode === 'banner' ? (
-                      <div className="flex gap-2 w-full max-w-xs">
+                      <div className="flex gap-2 w-full">
                         <button
                           onClick={() => bannerInputRef.current?.click()}
                           disabled={isUploading}
-                          className="flex-1 flex items-center justify-center gap-2 bg-[#c5a021] text-black py-2.5 rounded text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-1 bg-[#c5a021] text-black py-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
                         >
-                          <Upload size={12} /> Update
+                          <Upload size={10} /> Update
                         </button>
                         {candidateProfile?.spotlightBanner && (
                           <button
                             onClick={() => promptRemoveImage('banner')}
                             disabled={isUploading}
-                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
+                            className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={10} />
                           </button>
                         )}
                         <button
                           onClick={() => setEditMode(null)}
-                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2.5 px-3 rounded text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                          className="flex items-center justify-center gap-1 bg-white/10 text-white py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => setEditMode('banner')}
-                        className="w-full max-w-xs flex items-center justify-center gap-2 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2.5 rounded text-[9px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
+                        className="w-full flex items-center justify-center gap-1 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2 rounded text-[8px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
                       >
-                        <Edit2 size={12} /> Edit
+                        <Edit2 size={10} /> Edit
                       </button>
                     )}
                     <input
@@ -483,52 +537,184 @@ export default function CandidateDashboard() {
                       onChange={(e) => handleFileSelect('banner', e)}
                     />
                   </div>
+
+                  {/* Qualification */}
+                  <div className="mb-6 pb-6 border-b border-slate-200">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Qualification</p>
+                    {qualEditMode === 'view' ? (
+                      candidateProfile?.qualification ? (
+                        <div>
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {(candidateProfile.qualification.positions || []).map((pos, i) => (
+                              <span key={i} className="px-2 py-1 bg-[#4c0519]/10 text-[#4c0519] rounded text-[8px] font-black uppercase tracking-widest border border-[#4c0519]/20">
+                                {pos}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-lg font-bold text-slate-900 mb-1">CGPA: {candidateProfile.qualification.cgpa}</p>
+                          <p className="text-xs text-slate-600 line-clamp-2 mb-3">{candidateProfile.qualification.justification}</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={initQualificationEdit}
+                              className="flex-1 flex items-center justify-center gap-1 bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-2 rounded text-[8px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
+                            >
+                              <Edit2 size={10} /> Edit
+                            </button>
+                            <button
+                              onClick={promptDeleteQualification}
+                              disabled={isQualSaving}
+                              className="flex items-center justify-center gap-1 bg-red-600/20 text-red-400 py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-red-600/40 transition-all disabled:opacity-50"
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-3">
+                          <p className="text-xs text-slate-400 mb-2">No qualification added</p>
+                          <button
+                            onClick={initQualificationEdit}
+                            className="flex items-center justify-center gap-1 bg-[#c5a021] text-black py-2 px-4 rounded text-[8px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all"
+                          >
+                            <Plus size={10} /> Add
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <div>
+                        <div className="mb-3">
+                          <div className="flex gap-1 mb-2">
+                            <input
+                              type="text"
+                              value={qualPositionInput}
+                              onChange={(e) => setQualPositionInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addQualPosition(); } }}
+                              placeholder="Position + Enter"
+                              className="flex-1 bg-slate-50 border-b border-slate-200 px-1 py-1 text-[10px] outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
+                            />
+                            <button
+                              type="button"
+                              onClick={addQualPosition}
+                              className="bg-[#4c0519]/80 hover:bg-[#4c0519] text-white py-1 px-2 rounded text-[8px] font-black uppercase tracking-widest transition-all border border-[#4c0519]"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          {qualPositions.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {qualPositions.map((pos, i) => (
+                                <span key={i} className="flex items-center gap-1 px-2 py-1 bg-[#4c0519]/10 text-[#4c0519] rounded text-[8px] font-black uppercase tracking-widest border border-[#4c0519]/20">
+                                  {pos}
+                                  <button onClick={() => removeQualPosition(pos)} className="ml-1 hover:text-red-500">
+                                    <X size={10} />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="mb-3">
+                          <input
+                            type="text"
+                            value={qualCgpa}
+                            onChange={(e) => setQualCgpa(e.target.value)}
+                            placeholder="CGPA"
+                            className="w-full bg-slate-50 border-b border-slate-200 px-1 py-1 text-[10px] outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <textarea
+                            value={qualJustification}
+                            onChange={(e) => setQualJustification(e.target.value)}
+                            placeholder="Justification"
+                            rows={2}
+                            className="w-full bg-slate-50 border-b border-slate-200 px-1 py-1 text-[10px] outline-none focus:border-[#4c0519] transition-colors font-bold text-black resize-none"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleQualSave}
+                            disabled={isQualSaving}
+                            className="flex-1 flex items-center justify-center gap-1 bg-[#c5a021] text-black py-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
+                          >
+                            {isQualSaving ? <Loader2 size={10} className="animate-spin" /> : <Save size={10} />}
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setQualEditMode('view')}
+                            className="flex items-center justify-center gap-1 bg-white/10 text-white py-2 px-2 rounded text-[8px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Metrics */}
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Info</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="text-center">
+                        <p className="text-xs font-bold text-slate-900 truncate">{candidateProfile?.qualification?.positions?.[0] || 'N/A'}</p>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Position</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs font-bold text-slate-900">{getCoursePrefix(candidateProfile?.user?.studentId)}</p>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Course</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs font-bold text-slate-900 truncate">{candidateProfile?.election?.title?.replace('Election', '') || 'N/A'}</p>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Election</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </section>
 
-            {/* Campaign Materials Section */}
-            <section>
-              <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter italic leading-none text-white mb-8 md:mb-12">
-                Campaign Materials
-              </h2>
+              {/* Right Column: Campaign Materials */}
+              <div className="lg:col-span-2">
+                <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-tighter italic leading-none text-white mb-6 lg:mb-8">
+                  Campaign Materials
+                </h2>
 
-              <MaterialList 
-                candidateId={candidateProfile?.id}
-                materials={candidateProfile?.manifestos || []}
-                type="manifesto"
-                icon={<FileText size={20} />}
-                title="Manifestos"
-                refreshData={fetchCandidateProfile}
-              />
+                <MaterialList 
+                  candidateId={candidateProfile?.id}
+                  materials={candidateProfile?.manifestos || []}
+                  type="manifesto"
+                  icon={<FileText size={20} />}
+                  title="Manifestos"
+                  refreshData={fetchCandidateProfile}
+                />
 
-              <MaterialList 
-                candidateId={candidateProfile?.id}
-                materials={candidateProfile?.videos || []}
-                type="video"
-                icon={<Video size={20} />}
-                title="Videos"
-                refreshData={fetchCandidateProfile}
-              />
+                <MaterialList 
+                  candidateId={candidateProfile?.id}
+                  materials={candidateProfile?.videos || []}
+                  type="video"
+                  icon={<Video size={20} />}
+                  title="Videos"
+                  refreshData={fetchCandidateProfile}
+                />
 
-              <MaterialList 
-                candidateId={candidateProfile?.id}
-                materials={candidateProfile?.slides || []}
-                type="slide"
-                icon={<Presentation size={20} />}
-                title="Slides"
-                refreshData={fetchCandidateProfile}
-              />
+                <MaterialList 
+                  candidateId={candidateProfile?.id}
+                  materials={candidateProfile?.slides || []}
+                  type="slide"
+                  icon={<Presentation size={20} />}
+                  title="Slides"
+                  refreshData={fetchCandidateProfile}
+                />
 
-              <MaterialList 
-                candidateId={candidateProfile?.id}
-                materials={candidateProfile?.posters || []}
-                type="poster"
-                icon={<Image size={20} />}
-                title="Posters"
-                refreshData={fetchCandidateProfile}
-              />
-            </section>
+                <MaterialList 
+                  candidateId={candidateProfile?.id}
+                  materials={candidateProfile?.posters || []}
+                  type="poster"
+                  icon={<Image size={20} />}
+                  title="Posters"
+                  refreshData={fetchCandidateProfile}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="relative z-10 w-full mt-auto">

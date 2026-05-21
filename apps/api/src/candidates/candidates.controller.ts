@@ -107,12 +107,21 @@ export class CandidatesController {
   }
 
   @Post(':id/qualification')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.SRC_ADVISOR, Role.CANDIDATE)
   async upsertQualification(
     @Param('id') candidateId: string,
     @Body() body: { positions: string[]; cgpa: string; justification: string },
     @Req() req: any,
   ) {
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId },
+    });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    if (req.user.role !== Role.SUPERADMIN && req.user.role !== Role.ADMIN && candidate.userId !== req.user.id) {
+      throw new ForbiddenException('You can only modify your own qualification.');
+    }
+
     return this.candidatesService.upsertQualification(
       candidateId,
       body.positions,
@@ -149,8 +158,17 @@ export class CandidatesController {
   }
 
   @Delete(':id/qualification')
-  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MPP_ADVISOR, Role.CANDIDATE)
   async deleteQualification(@Param('id') candidateId: string, @Req() req: any) {
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId },
+    });
+    if (!candidate) throw new NotFoundException('Candidate not found.');
+
+    if (req.user.role !== Role.SUPERADMIN && req.user.role !== Role.ADMIN && candidate.userId !== req.user.id) {
+      throw new ForbiddenException('You can only delete your own qualification.');
+    }
+
     return this.candidatesService.deleteQualification(candidateId, req.user.id);
   }
 
