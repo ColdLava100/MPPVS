@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
 
 const CATEGORIES = [
-  { id: 'Staff', roles: ['SUPERADMIN', 'ADMIN'] },
+  { id: 'Staff', roles: ['ADMIN'] },
   { id: 'Advisor', roles: ['SRC_ADVISOR', 'EC_ADVISOR'] },
   { id: 'EC', roles: ['EC_VOLUNTEER'] },
   { id: 'Student', roles: ['CANDIDATE', 'STUDENT'] },

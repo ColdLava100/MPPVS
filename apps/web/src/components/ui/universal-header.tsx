@@ -19,10 +19,18 @@ import {
   LucideIcon
 } from 'lucide-react';
 
+interface ExtraNavItem {
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  isActive?: boolean;
+}
+
 interface HeaderProps {
   role?: 'student' | 'candidate' | 'admin' | 'superadmin' | 'mpp_advisor' | 'ec';
   userName?: string;
   onLogout?: () => void;
+  extraNavItems?: ExtraNavItem[];
 }
 
 interface NavItem {
@@ -53,7 +61,7 @@ const navConfigs: Record<string, NavItem[]> = {
   ],
 };
 
-export default function UniversalHeader({ role = 'student', userName, onLogout }: HeaderProps) {
+export default function UniversalHeader({ role = 'student', userName, onLogout, extraNavItems }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const navItems = navConfigs[role] || navConfigs.student;
@@ -204,7 +212,7 @@ export default function UniversalHeader({ role = 'student', userName, onLogout }
               </div>
             )}
 
-            {/* Nav Items */}
+            {/* Default Nav Items */}
             <nav className="flex-1 overflow-y-auto py-4 px-3">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -226,6 +234,28 @@ export default function UniversalHeader({ role = 'student', userName, onLogout }
                   </Link>
                 );
               })}
+
+              {/* Extra Nav Items (injected by page) */}
+              {extraNavItems && extraNavItems.length > 0 && (
+                <>
+                  <div className="mx-4 my-2 border-t border-white/10" />
+                  {extraNavItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => { item.onClick(); setMenuOpen(false); }}
+                      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all mb-1 ${
+                        item.isActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/60 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <item.icon size={18} className={item.isActive ? 'text-yellow-500' : 'text-white/50'} />
+                      <span className="text-[12px] font-black uppercase tracking-[0.15em]">{item.label}</span>
+                      {item.isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-yellow-500" />}
+                    </button>
+                  ))}
+                </>
+              )}
             </nav>
 
             {/* Logout button at bottom */}

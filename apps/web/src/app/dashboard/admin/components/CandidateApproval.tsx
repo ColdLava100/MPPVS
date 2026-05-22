@@ -152,7 +152,18 @@ export default function CandidateApproval({ candidates, elections, onRefresh }: 
             className="bg-[#4c0519]/80 hover:bg-[#4c0519] text-white px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
             <UserPlus size={14} /> Register
           </button>
-          <div className="flex flex-col md:flex-row gap-1.5">
+          {/* Mobile dropdown */}
+          <div className="md:hidden">
+            <select value={filter} onChange={(e) => setFilter(e.target.value as any)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 font-medium outline-none focus:border-[#c5a021] transition-colors">
+              <option value="ALL">ALL ({candidates.length})</option>
+              <option value="PENDING">PENDING ({candidates.filter(c => c.status === 'PENDING').length})</option>
+              <option value="APPROVED">APPROVED ({candidates.filter(c => c.status === 'APPROVED').length})</option>
+              <option value="REJECTED">REJECTED ({candidates.filter(c => c.status === 'REJECTED').length})</option>
+            </select>
+          </div>
+          {/* Desktop buttons */}
+          <div className="hidden md:flex flex-row gap-1.5">
             {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition ${

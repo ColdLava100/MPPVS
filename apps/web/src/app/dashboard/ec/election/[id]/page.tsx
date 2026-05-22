@@ -181,8 +181,8 @@ export default function ElectionDetailPage() {
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-sm p-1 w-fit">
+            {/* Tabs — Desktop */}
+            <div className="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 rounded-sm p-1 w-fit">
               <button
                 onClick={() => setActiveTab('voters')}
                 className={`px-6 py-3 rounded-sm transition-all flex items-center gap-2 ${
@@ -227,6 +227,20 @@ export default function ElectionDetailPage() {
                 <Shield size={16} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Audit Logs</span>
               </button>
+            </div>
+
+            {/* Tabs — Mobile dropdown */}
+            <div className="md:hidden">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabType)}
+                className="w-full bg-white/10 border border-white/20 rounded-sm px-4 py-3 text-white text-sm font-medium outline-none focus:border-[#c5a021] transition-colors"
+              >
+                <option value="voters" className="text-black">Voters</option>
+                <option value="sessions" className="text-black">Sessions</option>
+                <option value="candidates" className="text-black">Candidates</option>
+                <option value="audit" className="text-black">Audit Logs</option>
+              </select>
             </div>
 
             {/* Tab Content */}

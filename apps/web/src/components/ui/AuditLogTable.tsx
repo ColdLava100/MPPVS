@@ -20,6 +20,7 @@ interface AuditLog {
 
 interface AuditLogTableProps {
   electionId?: string | null;
+  elections?: Array<{ id: string; title: string }>;
 }
 
 const LABEL_MAP: Record<string, string> = {
@@ -84,7 +85,7 @@ function formatDetailsPills(
   );
 }
 
-export default function AuditLogTable({ electionId }: AuditLogTableProps) {
+export default function AuditLogTable({ electionId, elections }: AuditLogTableProps) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [electionFilter, setElectionFilter] = useState(electionId || 'all');
@@ -193,7 +194,7 @@ export default function AuditLogTable({ electionId }: AuditLogTableProps) {
                   value={eId}
                   className="text-slate-700"
                 >
-                  Election {eId.slice(0, 8)}...
+                  {elections?.find((e: any) => e.id === eId)?.title || `Election ${eId.slice(0, 8)}...`}
                 </option>
               ))}
             </select>

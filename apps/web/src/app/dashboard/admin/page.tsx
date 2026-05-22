@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Activity, UserCog, Clock, Users, UserPlus, BookOpen, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Background from '@/components/ui/background';
+import AuditLogTable from '@/components/ui/AuditLogTable';
 import { AdminMetricsGrid, ElectionManager, VotingSessionManager, AccountManagement, CourseManagement, VotingSimulation } from './components';
 import CandidateReviewGrid from '../srcadvisor/components/CandidateReviewGrid';
 import CandidateDetailModal from '../srcadvisor/components/CandidateDetailModal';
@@ -14,7 +15,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'src' | 'ec' | 'accounts' | 'courses' | 'simulation'>('src');
+  const [activeTab, setActiveTab] = useState<'src' | 'ec' | 'accounts' | 'courses' | 'simulation' | 'audit'>('src');
 
   // Data state
   const [elections, setElections] = useState<any[]>([]);
@@ -30,6 +31,22 @@ export default function AdminDashboard() {
 
   // EC tab state
   const [ecSelectedElectionId, setEcSelectedElectionId] = useState<string | null>(null);
+
+  // Auto-select ACTIVE election for SRC tab
+  useEffect(() => {
+    if (elections.length > 0 && !selectedElectionId) {
+      const active = elections.find((e: any) => e.status === 'ACTIVE');
+      if (active) setSelectedElectionId(active.id);
+    }
+  }, [elections]);
+
+  // Auto-select ACTIVE election for EC tab
+  useEffect(() => {
+    if (elections.length > 0 && !ecSelectedElectionId) {
+      const active = elections.find((e: any) => e.status === 'ACTIVE');
+      if (active) setEcSelectedElectionId(active.id);
+    }
+  }, [elections]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -99,7 +116,15 @@ export default function AdminDashboard() {
     { id: 'accounts' as const, label: 'Accounts', icon: UserCog },
     { id: 'courses' as const, label: 'Courses', icon: BookOpen },
     { id: 'simulation' as const, label: 'Simulation', icon: Vote },
+    { id: 'audit' as const, label: 'Audit Logs', icon: Shield },
   ];
+
+  const extraNavItems = tabs.map(t => ({
+    label: t.label,
+    icon: t.icon,
+    onClick: () => setActiveTab(t.id as any),
+    isActive: activeTab === t.id,
+  }));
 
   if (isLoading) {
     return (
@@ -123,28 +148,23 @@ export default function AdminDashboard() {
         </button>
       )}
 
-      <UniversalHeader role="admin" userName={currentUser?.name} />
+      <UniversalHeader role="admin" userName={currentUser?.name} extraNavItems={extraNavItems} />
 
       <main className="flex-grow overflow-y-auto relative custom-scrollbar">
         <Background />
 
         <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8">
           {/* Hero Section */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                <Activity size={14} className="text-red-600 animate-pulse" /> Admin Control Panel
-              </p>
-              <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
-                Welcome, <span className="italic">{currentUser?.name || 'Admin'}</span>
-              </h1>
-            </div>
-            <button
-              onClick={() => router.push('/dashboard/admin/audit-logs')}
-              className="bg-[#4c0519]/80 hover:bg-[#4c0519] text-white px-4 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 w-full md:w-auto justify-center"
-            >
-              <Shield size={14} /> Audit Logs
-            </button>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
+              <Activity size={14} className="text-red-600 animate-pulse" /> Admin Control Panel
+            </p>
+            <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+              Welcome, <span className="italic">{currentUser?.name || 'Admin'}</span>
+            </h1>
+            <span className="inline-block mt-3 text-[11px] md:text-[12px] font-black uppercase tracking-[0.2em] text-[#c5a021]/80">
+              {tabs.find(t => t.id === activeTab)?.label || activeTab.toUpperCase()}
+            </span>
           </div>
 
           {/* Single Large Card */}
@@ -156,8 +176,8 @@ export default function AdminDashboard() {
               candidates={candidates}
             />
 
-            {/* Role Tabs */}
-            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-6">
+            {/* Role Tabs — Desktop */}
+            <div className="hidden md:flex flex-wrap gap-1.5 md:gap-2 mb-6">
               {tabs.map(tab => {
                 const Icon = tab.icon;
                 return (
@@ -232,9 +252,9 @@ export default function AdminDashboard() {
 
             {activeTab === 'ec' && (
               <div className="space-y-8">
-                {/* Election Selector for Voting Sessions */}
+                {/* Election Selector */}
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Select Election for Sessions</label>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Select Election</label>
                   <select
                     value={ecSelectedElectionId || ''}
                     onChange={(e) => setEcSelectedElectionId(e.target.value || null)}
@@ -247,18 +267,27 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <ElectionManager
-                  elections={elections}
-                  courses={courses}
-                  onRefresh={fetchActiveData}
-                />
-                <VotingSessionManager
-                  votingSessions={votingSessions}
-                  elections={elections}
-                  courses={courses}
-                  onRefresh={fetchActiveData}
-                  selectedElectionId={ecSelectedElectionId || undefined}
-                />
+                {ecSelectedElectionId ? (
+                  <>
+                    <ElectionManager
+                      elections={elections.filter((e: any) => e.id === ecSelectedElectionId)}
+                      courses={courses}
+                      onRefresh={fetchActiveData}
+                    />
+                    <VotingSessionManager
+                      votingSessions={votingSessions}
+                      elections={elections}
+                      courses={courses}
+                      onRefresh={fetchActiveData}
+                      selectedElectionId={ecSelectedElectionId}
+                    />
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <Clock size={48} className="mx-auto text-slate-300 mb-4" />
+                    <p className="text-slate-500 text-sm font-medium">Select an election above to manage it</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -283,6 +312,10 @@ export default function AdminDashboard() {
                 elections={elections}
                 candidates={candidates}
               />
+            )}
+
+            {activeTab === 'audit' && (
+              <AuditLogTable elections={elections} />
             )}
           </div>
         </div>

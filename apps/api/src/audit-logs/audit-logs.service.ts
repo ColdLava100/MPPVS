@@ -31,7 +31,7 @@ export class AuditLogsService {
   }
 
   async findAll(role: string) {
-    if (role === 'SUPERADMIN') {
+    if (role === 'SUPERADMIN' || role === 'ADMIN') {
       return prisma.auditLog.findMany({
         include: {
           user: {
