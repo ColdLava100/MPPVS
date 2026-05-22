@@ -54,7 +54,7 @@ interface ElectionData {
 
 function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(0);
-  const frameRef = useRef<number>();
+  const frameRef = useRef<number>(0);
 
   useEffect(() => {
     const duration = 1500;
