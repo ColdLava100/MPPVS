@@ -171,23 +171,28 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
 
-      {/* BACKGROUND LAYER */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${mainBgUrl})`,
-          filter: 'blur(8px) brightness(0.45)'
-        }}
-      />
+      {/* BACKGROUND — 3-layer design, no filter on fixed element (fixes iOS Safari) */}
+      <div className="fixed inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${mainBgUrl})`,
+            filter: 'blur(8px) brightness(0.3)'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#4c0519]/70 via-[#4c0519]/50 to-black/80" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.12) 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }}
+        />
+      </div>
 
       {/* HEADER — consistent with landing page */}
       <nav className="flex justify-between items-center px-4 md:px-10 py-4 md:py-5 border-b border-red-950 bg-[#4c0519] shadow-2xl">
         <Link href="/"><img src="/logo/fulllogo2.svg" alt="MPP" className="h-8 md:h-10 w-auto" /></Link>
-        <Link href="/">
-          <button className="bg-white text-[#4c0519] px-5 md:px-8 py-2 md:py-2.5 rounded-sm text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-100 transition-all shadow-xl active:scale-95 flex items-center gap-2">
-            ← Back
-          </button>
-        </Link>
       </nav>
 
       {/* FLOATING MAIN CARD */}

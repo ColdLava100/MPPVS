@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: "Official MPP Student Representative Council Election Voting Platform",
   icons: {
     icon: '/icon-192.svg',
-    apple: '/icon-512.svg',
+    apple: '/icon-512-maskable.svg',
   },
 };
 
