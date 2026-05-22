@@ -14,18 +14,7 @@ export default function StudentHeader({ onVoteClick }: HeaderProps) {
       {/* LEFT SIDE: LOGO & BRANDING */}
       <div className="flex items-center gap-6 shrink-0">
         <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all hover:scale-105 active:scale-95 my-2">
-          <svg 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="#4c0519" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="w-8 h-8"
-          >
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
+          <img src="/logo/shortenlogo.svg" alt="MPP" className="w-8 h-8" />
         </div>
         
         <div className="flex flex-col">

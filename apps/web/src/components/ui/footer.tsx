@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Brand and Copyright */}
           <div className="flex items-center gap-4">
             <div className="bg-[#c5a021] p-2 rounded-lg shadow-inner flex items-center justify-center">
-              <Shield className="text-white w-6 h-6" strokeWidth={2.5} />
+              <img src="/logo/shortenlogo.svg" alt="MPP" className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-tight uppercase leading-none mb-2">

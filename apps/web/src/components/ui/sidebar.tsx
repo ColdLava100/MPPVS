@@ -110,7 +110,7 @@ export default function UniversalSidebar({ role }: SidebarProps) {
       {/* Top Branding / Logo */}
       <div className="p-8 mb-4 flex justify-center">
         <div className="w-14 h-14 bg-gradient-to-br from-white/20 to-transparent backdrop-blur-md rounded-[1.25rem] flex items-center justify-center border border-white/20 shadow-lg">
-           <span className="text-white font-black text-2xl tracking-tighter italic uppercase">W</span>
+           <img src="/logo/shortenlogo.svg" alt="MPP" className="w-8 h-8" />
         </div>
       </div>
 

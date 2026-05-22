@@ -103,7 +103,7 @@ export default function UniversalHeader({ role = 'student', userName, onLogout, 
             className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
             onClick={() => router.push('/dashboard')}
           >
-            <Vote className="w-5 h-5 md:w-6 md:h-6 text-[#4c0519]" />
+            <img src="/logo/shortenlogo.svg" alt="MPP" className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           
           <div className="flex flex-col">

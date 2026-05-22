@@ -437,8 +437,8 @@ export default function LoginPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">
-              <div className="bg-[#c5a021] p-2 rounded shadow-lg">
-                <Shield className="text-white w-5 h-5" strokeWidth={2.5} />
+              <div className="bg-[#c5a021] p-2 rounded shadow-lg flex items-center justify-center">
+                <img src="/logo/shortenlogo.svg" alt="MPP" className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="text-[13px] font-bold tracking-tight uppercase leading-none">SRC Voting System</h2>
