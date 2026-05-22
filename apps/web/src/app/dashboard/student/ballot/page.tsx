@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Activity, Vote } from 'lucide-react';
+import UniversalHeader from '@/components/ui/universal-header';
+import Background from '@/components/ui/background';
 
 export default function BallotTracerBullet() {
   const [elections, setElections] = useState<any[]>([]);
@@ -73,54 +76,95 @@ export default function BallotTracerBullet() {
   const relevantCandidates = candidates.filter(c => c.electionId === selectedElectionId);
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', backgroundColor: '#fff', color: '#000', minHeight: '100vh' }}>
-      <h1>Ballot Tracer Bullet</h1>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p><strong>Status:</strong> {status}</p>
-      </div>
+    <div className="min-h-screen overflow-hidden relative font-sans text-white">
+      <UniversalHeader role="student" />
 
-      <div style={{ marginBottom: '2rem' }}>
-        <label>Select Election: </label>
-        <select 
-          value={selectedElectionId} 
-          onChange={e => {
-            setSelectedElectionId(e.target.value);
-            setSelectedCandidates([]);
-          }}
-        >
-          <option value="">-- Choose Election --</option>
-          {elections.map(e => (
-            <option key={e.id} value={e.id}>{e.title}</option>
-          ))}
-        </select>
-      </div>
+      <main className="flex-grow overflow-y-auto relative custom-scrollbar">
+        <Background />
 
-      {selectedElectionId && (
-        <div style={{ marginBottom: '2rem' }}>
-          <h2>Candidates</h2>
-          {relevantCandidates.length === 0 ? <p>No candidates for this election.</p> : (
-            <ul>
-              {relevantCandidates.map(c => (
-                <li key={c.id} style={{ marginBottom: '0.5rem', listStyle: 'none' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                    <input  
-                      type="checkbox" 
-                      checked={selectedCandidates.includes(c.id)}
-                      onChange={() => handleCheckboxChange(c.id)}
-                    />
-                    {c.user?.name || c.id} (Position: {c.qualifications?.[0]?.position || 'N/A'})
-                  </label>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8">
+          {/* Hero Section */}
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
+              <Activity size={14} className="text-red-600 animate-pulse" /> Ballot
+            </p>
+            <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+              Cast Your Vote
+            </h1>
+          </div>
+
+          {/* Main Card */}
+          <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8 text-slate-900">
+            <div className="mb-6 pb-6 border-b border-slate-200">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
+                Select Election
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedElectionId}
+                  onChange={e => {
+                    setSelectedElectionId(e.target.value);
+                    setSelectedCandidates([]);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-sm px-4 py-3 text-slate-900 text-sm font-medium outline-none focus:border-[#c5a021] transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="">-- Choose Election --</option>
+                  {elections.map(e => (
+                    <option key={e.id} value={e.id}>{e.title}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {selectedElectionId && (
+              <div className="mb-6">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
+                  Candidates
+                </h2>
+                {relevantCandidates.length === 0 ? (
+                  <p className="text-sm text-slate-400">No candidates for this election.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {relevantCandidates.map(c => (
+                      <label
+                        key={c.id}
+                        className="flex items-center gap-3 p-3 rounded-sm border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCandidates.includes(c.id)}
+                          onChange={() => handleCheckboxChange(c.id)}
+                          className="accent-[#c5a021] w-4 h-4"
+                        />
+                        <span className="text-sm font-medium text-slate-900">
+                          {c.user?.name || c.id}
+                          <span className="text-slate-400 ml-2 text-xs">
+                            (Position: {c.qualifications?.[0]?.position || 'N/A'})
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center gap-4 pt-4 border-t border-slate-200">
+              <button
+                onClick={submitVote}
+                className="bg-[#c5a021] hover:bg-yellow-400 text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 active:scale-95"
+              >
+                <Vote size={14} /> Submit Vote
+              </button>
+              {status && (
+                <span className={`text-xs font-bold uppercase tracking-wider ${status.startsWith('Success') ? 'text-green-600' : status.startsWith('Error') || status.startsWith('Failed') ? 'text-red-600' : 'text-slate-500'}`}>
+                  {status}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-
-      <button onClick={submitVote} style={{ padding: '0.5rem 1rem', background: '#000', color: '#fff', border: 'none', cursor: 'pointer' }}>
-        Submit Vote
-      </button>
+      </main>
     </div>
   );
 }

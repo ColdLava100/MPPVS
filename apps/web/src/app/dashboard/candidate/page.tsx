@@ -394,7 +394,7 @@ export default function CandidateDashboard() {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
                   <Activity size={14} className="text-red-600 animate-pulse" /> Campaign Headquarters
                 </p>
-                <h1 className="text-3xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+                <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
                   Welcome, <span className="italic">{currentUser?.name || 'Candidate'}</span>
                 </h1>
               </div>

@@ -9,7 +9,7 @@ export default function Header() {
     <nav className="flex justify-between items-center px-4 md:px-10 py-4 md:py-5 border-b border-red-950 bg-[#4c0519] sticky top-0 z-50 shadow-2xl">
       
       {/* Brand / Logo Section */}
-      <img src="/logo/fulllogo2.svg" alt="MPP" className="h-10 md:h-12 w-auto" />
+      <Link href="/"><img src="/logo/fulllogo2.svg" alt="MPP" className="h-8 md:h-10 w-auto" /></Link>
 
       {/* Navigation Links */}
       <div className="flex items-center gap-4 md:gap-8">

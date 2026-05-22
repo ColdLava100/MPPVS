@@ -110,7 +110,7 @@ export default function SRCVotingPortal() {
 
         {/* 1. LIVE METRICS SECTION */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
-          <div style={{ fontFamily: 'Arial, sans-serif' }}>
+          <div>
             <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
               <Activity size={12} className="text-red-500" /> {activeTitle} Live Metrics
             </p>

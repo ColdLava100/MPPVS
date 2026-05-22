@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Eye, FileText, Video, Presentation, Image, CheckCircle, XCircle, EyeOff, Clock } from 'lucide-react';
+import { Users, Eye, FileText, Video, Presentation, Image, CheckCircle, XCircle, EyeOff, Clock, UserPlus } from 'lucide-react';
 
 interface CandidateReviewGridProps {
   electionId: string;
   candidates: any[];
   onViewDetails: (candidate: any) => void;
   onRefresh?: () => void;
+  onAddCandidate?: () => void;
 }
 
-export default function CandidateReviewGrid({ electionId, candidates, onViewDetails, onRefresh }: CandidateReviewGridProps) {
+export default function CandidateReviewGrid({ electionId, candidates, onViewDetails, onRefresh, onAddCandidate }: CandidateReviewGridProps) {
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showCode, setShowCode] = useState<string | null>(null);
@@ -91,17 +92,25 @@ export default function CandidateReviewGrid({ electionId, candidates, onViewDeta
         </div>
 
         {/* Filter Tabs — dropdown on mobile, buttons on desktop */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-sm px-4 py-2.5 text-sm text-slate-900 font-medium outline-none focus:border-[#c5a021] transition-colors"
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-sm px-4 py-2.5 text-sm text-slate-900 font-medium outline-none focus:border-[#c5a021] transition-colors"
           >
             <option value="ALL">ALL ({candidates.filter(c => c.electionId === electionId).length})</option>
             <option value="PENDING">PENDING ({candidates.filter(c => c.electionId === electionId && c.status === 'PENDING').length})</option>
             <option value="APPROVED">APPROVED ({candidates.filter(c => c.electionId === electionId && c.status === 'APPROVED').length})</option>
             <option value="REJECTED">REJECTED ({candidates.filter(c => c.electionId === electionId && c.status === 'REJECTED').length})</option>
           </select>
+          {onAddCandidate && (
+            <button
+              onClick={onAddCandidate}
+              className="shrink-0 bg-[#c5a021] hover:bg-yellow-400 text-black px-3 py-2.5 rounded-sm text-[9px] font-black uppercase tracking-widest transition flex items-center gap-1"
+            >
+              <UserPlus size={14} /> Add
+            </button>
+          )}
         </div>
         <div className="hidden md:flex flex-row gap-1.5 md:gap-2">
           {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(f => (
@@ -117,6 +126,14 @@ export default function CandidateReviewGrid({ electionId, candidates, onViewDeta
               {f}
             </button>
           ))}
+          {onAddCandidate && (
+            <button
+              onClick={onAddCandidate}
+              className="px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest bg-[#c5a021] text-black hover:bg-yellow-400 transition flex items-center gap-1.5"
+            >
+              <UserPlus size={14} /> Add Candidate
+            </button>
+          )}
         </div>
       </div>
 

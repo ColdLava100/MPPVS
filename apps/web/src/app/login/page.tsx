@@ -180,22 +180,15 @@ export default function LoginPage() {
         }}
       />
 
-      {/* HEADER */}
-      <header className="relative z-50 px-4 md:px-10 py-5 flex justify-between items-center bg-[#4c0519]/90 backdrop-blur-md border-b border-white/5 shadow-2xl">
+      {/* HEADER — consistent with landing page */}
+      <nav className="flex justify-between items-center px-4 md:px-10 py-4 md:py-5 border-b border-red-950 bg-[#4c0519] shadow-2xl">
+        <Link href="/"><img src="/logo/fulllogo2.svg" alt="MPP" className="h-8 md:h-10 w-auto" /></Link>
         <Link href="/">
-          <button className="group flex items-center gap-3 text-white/80 hover:text-white transition-all">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/20 group-hover:border-white/40 group-hover:bg-white/10 transition-all">
-              <span className="text-lg">←</span>
-            </div>
-            <span className="text-[13px] font-black uppercase tracking-[0.2em]">Back</span>
+          <button className="bg-white text-[#4c0519] px-5 md:px-8 py-2 md:py-2.5 rounded-sm text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-100 transition-all shadow-xl active:scale-95 flex items-center gap-2">
+            ← Back
           </button>
         </Link>
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-<h1 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">
-              SRC <span className="opacity-50 font-light">Voting Portal</span>
-            </h1>
-        </div>
-      </header>
+      </nav>
 
       {/* FLOATING MAIN CARD */}
       <main className="relative z-10 flex-grow flex items-center justify-center p-6">
@@ -223,9 +216,9 @@ export default function LoginPage() {
 
           {/* RIGHT FORM PANEL */}
           <div className="w-full md:w-7/12 p-6 md:p-12 flex flex-col justify-center">
-            <h3 className="text-4xl md:text-6xl font-black text-slate-900 mb-1 tracking-tighter leading-none">
+            <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-1 tracking-tighter leading-none">
               LOGIN
-            </h3>
+            </h1>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
               Select your role and enter credentials to proceed.
             </p>
@@ -441,8 +434,7 @@ export default function LoginPage() {
                 <img src="/logo/shortenlogo.svg" alt="MPP" className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-[13px] font-bold tracking-tight uppercase leading-none">SRC Voting System</h2>
-                <p className="text-[9px] text-slate-400 font-medium tracking-[0.15em] mt-1 uppercase opacity-80">
+                <p className="text-[9px] text-slate-400 font-medium tracking-[0.15em] uppercase opacity-80">
                   © 2026 DevOps KitaBuild Studio
                 </p>
               </div>

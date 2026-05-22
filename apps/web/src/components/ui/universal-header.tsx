@@ -54,7 +54,7 @@ const navConfigs: Record<string, NavItem[]> = {
     { label: 'System Admin', href: '/dashboard/superadmin', icon: LayoutDashboard },
   ],
   mpp_advisor: [
-    { label: 'Dashboard', href: '/dashboard/mppadvisor', icon: LayoutDashboard },
+    { label: 'Dashboard', href: '/dashboard/srcadvisor', icon: LayoutDashboard },
   ],
   ec: [
     { label: 'EC Operations', href: '/dashboard/ec', icon: LayoutDashboard },
@@ -95,25 +95,11 @@ export default function UniversalHeader({ role = 'student', userName, onLogout, 
 
   return (
     <>
-      <header className="h-[72px] md:h-[100px] bg-[#4c0519]/95 backdrop-blur-2xl text-white flex items-center justify-between px-4 md:px-8 w-full sticky top-0 z-[100] shadow-2xl border-b border-white/10">
+      <header className="py-4 md:py-5 bg-[#4c0519] text-white flex items-center justify-between px-4 md:px-8 w-full sticky top-0 z-[100] shadow-2xl border-b border-red-950">
         
-        {/* LEFT SIDE: LOGO & BRANDING */}
+        {/* LEFT SIDE: LOGO */}
         <div className="flex items-center gap-3 md:gap-4 shrink-0">
-          <div 
-            className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            onClick={() => router.push('/dashboard')}
-          >
-            <img src="/logo/shortenlogo.svg" alt="MPP" className="w-5 h-5 md:w-6 md:h-6" />
-          </div>
-          
-          <div className="flex flex-col">
-            <span className="text-[11px] md:text-[12px] font-black uppercase tracking-[0.2em] leading-tight">
-              SRC Voting
-            </span>
-            <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.3em] text-white/40">
-              {role === 'ec' ? 'EC Operations' : role === 'admin' ? 'Administrator' : role === 'superadmin' ? 'Super Admin' : role === 'mpp_advisor' ? 'SRC Advisor' : role === 'candidate' ? 'Candidate' : 'Student Portal'}
-            </span>
-          </div>
+          <Link href="/"><img src="/logo/fulllogo2.svg" alt="MPP" className="h-8 md:h-10 w-auto" /></Link>
         </div>
 
         {/* CENTER: HORIZONTAL NAVIGATION - DESKTOP ONLY */}

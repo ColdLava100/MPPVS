@@ -111,28 +111,22 @@ export default function AdvisorDashboard() {
 
         <div className="relative z-10 p-4 md:p-12 max-w-7xl mx-auto w-full flex-grow flex flex-col gap-8">
           {/* Hero Section */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                <Activity size={14} className="text-red-600 animate-pulse" /> Advisor Dashboard
-              </p>
-              <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
-                Welcome, <span className="italic">{currentUser?.name || 'Advisor'}</span>
-              </h1>
-            </div>
-            <button
-              onClick={() => setShowCandidateModal(true)}
-              className="bg-[#c5a021] hover:bg-yellow-400 text-black px-4 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 w-full md:w-auto justify-center"
-            >
-              <UserPlus size={14} /> Add Candidate
-            </button>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
+              <Activity size={14} className="text-red-600 animate-pulse" /> Advisor Dashboard
+            </p>
+            <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter leading-none text-white">
+              Welcome, <span className="italic">{currentUser?.name || 'Advisor'}</span>
+            </h1>
           </div>
 
           {/* Single Large Card */}
           <div className="bg-white/95 backdrop-blur-xl border border-white/20 border-b-[6px] border-b-[#c5a021] shadow-2xl rounded-sm p-6 md:p-8">
             {/* Election Selector */}
             <div className="mb-6 pb-6 border-b border-slate-200">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Select Election</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Select Election</label>
+              </div>
               <div className="relative">
                 <select
                   value={selectedElectionId || ''}
@@ -161,6 +155,7 @@ export default function AdvisorDashboard() {
                 candidates={candidates}
                 onViewDetails={handleViewDetails}
                 onRefresh={fetchActiveData}
+                onAddCandidate={() => setShowCandidateModal(true)}
               />
             ) : (
               <div className="text-center py-16">

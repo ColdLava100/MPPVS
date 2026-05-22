@@ -104,7 +104,7 @@ export default function StudentDashboard({
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
             Welcome, Student
           </p>
-          <h1 className="text-2xl md:text-4xl font-bold uppercase tracking-tighter text-white">
+          <h1 className="text-2xl md:text-6xl font-bold uppercase tracking-tighter text-white">
             {user?.name || 'Student'}
           </h1>
           <p className="text-sm text-slate-300 mt-1">

@@ -12,9 +12,6 @@ export default function Footer() {
               <img src="/logo/shortenlogo.svg" alt="MPP" className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight uppercase leading-none mb-2">
-                SRC Voting System
-              </h2>
               <p className="text-[10px] text-slate-300 font-medium tracking-widest opacity-80 uppercase">
                 © 2026 DevOps KitaBuild Studio
               </p>

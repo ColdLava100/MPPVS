@@ -11,7 +11,7 @@ import {
   Award,
   CheckCircle2
 } from 'lucide-react';
-import StudentHeader from '@/components/ui/header2';
+import UniversalHeader from '@/components/ui/universal-header';
 
 // 1. DYNAMIC DATA SIMULATION
 // In a real scenario, this would be a fetch() call to your backend
@@ -45,7 +45,7 @@ export default function CandidateProfile() {
 
   return (
     <div className="h-screen bg-black text-white overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar selection:bg-[#c5a021] selection:text-black">
-      <StudentHeader />
+      <UniversalHeader role="student" />
 
       {/* FIXED NAVIGATION CONTROLS */}
       <div className="fixed top-32 left-8 z-50 flex flex-col gap-4">
