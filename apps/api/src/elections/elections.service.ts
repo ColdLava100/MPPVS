@@ -688,6 +688,7 @@ export class ElectionsService {
           course,
           votes: votesForCourse,
           seats,
+          candidateCount: courseCandidates.length,
         };
       },
     );
@@ -700,6 +701,7 @@ export class ElectionsService {
           c.user?.course?.studentPrefix || c.user?.course?.code || 'N/A',
         info: c.information || '',
         imageUrl: c.profilePicture || null,
+        spotlightBanner: c.spotlightBanner || null,
         voteCount: voteCountsByCandidate[c.id] || 0,
       }))
       .sort((a, b) => b.voteCount - a.voteCount)
