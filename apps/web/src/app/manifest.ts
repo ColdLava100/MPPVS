@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'MPP Voting System',
-    short_name: 'MPP Vote',
-    description: 'Official MPP Student Representative Council Election Voting Platform',
+    name: 'VoxVote',
+    short_name: 'VoxVote',
+    description: 'Official VoxVote Student Representative Council Election Voting Platform',
     start_url: '/',
     display: 'standalone',
     background_color: '#fdfdfd',
