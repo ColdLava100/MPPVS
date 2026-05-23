@@ -84,7 +84,8 @@ export default function CandidateModal({ elections, selectedElectionId, onClose,
       });
 
       if (!candidateRes.ok) {
-        setError('User created but candidate registration failed.');
+        const err = await candidateRes.json().catch(() => ({}));
+        setError(err.message || 'User created but candidate registration failed.');
         setSubmitting(false);
         return;
       }

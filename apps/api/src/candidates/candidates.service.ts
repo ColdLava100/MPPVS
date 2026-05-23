@@ -44,9 +44,10 @@ export class CandidatesService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found.');
     if (user.role !== 'CANDIDATE') {
-      throw new BadRequestException(
-        'User must have the CANDIDATE role to be registered as a candidate.',
-      );
+      await prisma.user.update({
+        where: { id: userId },
+        data: { role: 'CANDIDATE' },
+      });
     }
 
     const existing = await prisma.candidate.findUnique({ where: { userId } });
