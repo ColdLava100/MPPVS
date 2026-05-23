@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MPP Voting System",
+  title: "VoxVote",
   description: "Official MPP Student Representative Council Election Voting Platform",
   icons: {
     icon: '/icon-192.svg',
