@@ -6,5 +6,5 @@
 		.s0 { fill: #4c0519 } 
 	</style>
 	<path fill-rule="evenodd" class="s0" d="m80 0h352c44.18 0 80 35.82 80 80v352c0 44.18-35.82 80-80 80h-352c-44.18 0-80-35.82-80-80v-352c0-44.18 35.82-80 80-80z"/>
-	<use id="VoxVote Logo (512 x 512 px)" href="#img1" transform="matrix(1.676,0,0,1.676,-173,-174)"/>
+	<use id="VoxVote Logo (512 x 512 px)" href="#img1" transform="matrix(1.359,0,0,1.359,-92,-92)"/>
 </svg>
