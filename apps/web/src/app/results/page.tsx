@@ -451,7 +451,7 @@ export default function ResultsPage() {
         )}
       </main>
 
-      <footer className="relative z-50 bg-[#4c0519] text-white px-10 py-5 border-t border-white/5">
+      <footer className="hidden md:block relative z-50 bg-[#4c0519] text-white px-10 py-5 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">

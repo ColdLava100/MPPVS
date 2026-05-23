@@ -3,7 +3,7 @@ import { Shield, HelpCircle, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#4c0519] text-white p-6 mt-auto">
+    <footer className="hidden md:block bg-[#4c0519] text-white p-6 mt-auto">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
           {/* Brand and Copyright */}
