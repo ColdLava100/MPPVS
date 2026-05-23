@@ -2,8 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
+
   return (
     /* Changed bg-white to bg-[#4c0519] and border color to match */
     <nav className="flex justify-between items-center px-4 md:px-10 py-4 md:py-5 border-b border-red-950 bg-[#4c0519] sticky top-0 z-50 shadow-2xl">
@@ -13,15 +16,22 @@ export default function Header() {
 
       {/* Navigation Links */}
       <div className="flex items-center gap-4 md:gap-8">
-        {['Candidates', 'Results'].map((link) => (
-          <a 
-            key={link} 
-            href="#" 
-            className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors"
-          >
-            {link}
-          </a>
-        ))}
+        <Link
+          href="/"
+          className={`text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-colors ${
+            pathname === '/' ? 'text-yellow-400' : 'text-white/70 hover:text-white'
+          }`}
+        >
+          Home
+        </Link>
+        <Link
+          href="/results"
+          className={`text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-colors ${
+            pathname === '/results' ? 'text-yellow-400' : 'text-white/70 hover:text-white'
+          }`}
+        >
+          Results
+        </Link>
         
         {/* Login Button */}
         <Link href="/login">
