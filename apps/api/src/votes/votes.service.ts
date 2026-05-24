@@ -29,21 +29,42 @@ export class VotesService {
       throw new ForbiddenException('You are not registered for this election.');
     }
 
-    // Rule 0.5: Check voting session time window
+    // Rule 0.5: Check voting session time window & student range
     const sessions = await prisma.votingSession.findMany({
       where: { electionId },
     });
 
     if (sessions.length > 0) {
+      const user = await prisma.user.findUnique({ where: { id: voterId } });
       const now = new Date();
-      const activeSession = sessions.find((s) => {
+
+      // Filter sessions by student range FIRST (mirrors auth.service.ts), so
+      // overlapping sessions with different course ranges don't collide.
+      const assignedSessions = sessions.filter((s) => {
+        if (!s.studentIdStart || !s.studentIdEnd || !user?.studentId) {
+          // No range constraints — include the session for everyone
+          return true;
+        }
+        return (
+          user.studentId >= s.studentIdStart &&
+          user.studentId <= s.studentIdEnd
+        );
+      });
+
+      if (assignedSessions.length === 0) {
+        throw new ForbiddenException(
+          'Your student ID is not within the allowed range for any voting session.',
+        );
+      }
+
+      const activeSession = assignedSessions.find((s) => {
         const start = new Date(s.startTime);
         const end = new Date(s.endTime);
         return now >= start && now <= end;
       });
 
       if (!activeSession) {
-        const sortedSessions = sessions.sort(
+        const sortedSessions = assignedSessions.sort(
           (a, b) =>
             new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
         );
@@ -58,23 +79,6 @@ export class VotesService {
         }
 
         throw new ForbiddenException('Your voting session has ended.');
-      }
-
-      // Check student ID range if specified
-      const user = await prisma.user.findUnique({ where: { id: voterId } });
-      if (
-        user?.studentId &&
-        activeSession.studentIdStart &&
-        activeSession.studentIdEnd
-      ) {
-        if (
-          user.studentId < activeSession.studentIdStart ||
-          user.studentId > activeSession.studentIdEnd
-        ) {
-          throw new ForbiddenException(
-            'Your student ID is not within the allowed range for this session.',
-          );
-        }
       }
     }
 
