@@ -203,6 +203,8 @@ export class ElectionsService {
         qualification: true,
         manifestos: true,
         posters: true,
+        videos: true,
+        slides: true,
       },
     });
 
@@ -246,6 +248,8 @@ export class ElectionsService {
         qualification: candidate.qualification || null,
         manifestos: candidate.manifestos || [],
         posters: candidate.posters || [],
+        videos: candidate.videos || [],
+        slides: candidate.slides || [],
         user: {
           name: candidate.user?.name,
           studentId: candidate.user?.studentId,

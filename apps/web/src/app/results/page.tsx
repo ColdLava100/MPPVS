@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Header from '@/components/ui/header1';
 import Link from 'next/link';
-import { Medal, Users, Vote, BarChart3, CalendarX, FileText, Image as ImageIcon, Award, ExternalLink } from 'lucide-react';
+import { Medal, Users, Vote, BarChart3, CalendarX, FileText, Image as ImageIcon, Award, ExternalLink, Video, Play } from 'lucide-react';
 
 interface Manifesto {
   id: string;
@@ -14,6 +14,19 @@ interface Manifesto {
 interface Poster {
   id: string;
   posterLink: string;
+}
+
+interface Video {
+  id: string;
+  videoTitle: string;
+  videoDescription: string;
+  videoLink: string;
+}
+
+interface Slide {
+  id: string;
+  slideTitle: string;
+  slideLink: string;
 }
 
 interface Qualification {
@@ -33,6 +46,8 @@ interface CandidateData {
   information: string | null;
   manifestos: Manifesto[];
   posters: Poster[];
+  videos: Video[];
+  slides: Slide[];
   qualification: Qualification | null;
 }
 
@@ -250,7 +265,65 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
           </div>
         )}
 
-        {!candidate.information && !candidate.qualification && candidate.manifestos.length === 0 && candidate.posters.length === 0 && (
+        {candidate.videos.length > 0 && (
+          <div>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-2 flex items-center gap-2">
+              <Video size={12} /> Video{candidate.videos.length > 1 ? 's' : ''}
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {candidate.videos.map((v) => (
+                <a
+                  key={v.id}
+                  href={v.videoLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-black/30 rounded-sm p-4 border border-red-950/30 hover:border-yellow-500/50 transition-colors group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded bg-red-950/50 flex items-center justify-center shrink-0 group-hover:bg-red-900/50 transition-colors">
+                      <Play size={16} className="text-yellow-500/60 group-hover:text-yellow-400 transition-colors ml-0.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white mb-0.5 group-hover:text-yellow-400 transition-colors truncate">{v.videoTitle}</p>
+                      {v.videoDescription && <p className="text-xs text-white/50 leading-relaxed line-clamp-2">{v.videoDescription}</p>}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <ExternalLink size={10} className="text-yellow-500/60 shrink-0" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-yellow-500/60">Watch Video</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {candidate.slides.length > 0 && (
+          <div>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-2 flex items-center gap-2">
+              <FileText size={12} /> Slide{candidate.slides.length > 1 ? 's' : ''}
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {candidate.slides.map((s) => (
+                <a
+                  key={s.id}
+                  href={s.slideLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-black/50 rounded-sm overflow-hidden border border-red-950/30 hover:border-yellow-500/50 transition-colors group relative p-5 flex flex-col items-center justify-center aspect-[4/3]"
+                >
+                  <FileText size={28} className="text-white/20 group-hover:text-yellow-500/50 transition-colors mb-2" />
+                  <span className="text-[10px] font-bold text-white/40 group-hover:text-white/70 text-center transition-colors leading-tight line-clamp-2">{s.slideTitle}</span>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <ExternalLink size={16} className="text-white/0 group-hover:text-white/80 transition-all" />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!candidate.information && !candidate.qualification && candidate.manifestos.length === 0 && candidate.posters.length === 0 && candidate.videos.length === 0 && candidate.slides.length === 0 && (
           <p className="text-sm text-white/30 text-center py-8">No additional information available for this candidate.</p>
         )}
       </div>
