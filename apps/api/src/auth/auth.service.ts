@@ -31,19 +31,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid student credentials');
     }
 
-    if (user.role === 'CANDIDATE' && role === 'STUDENT') {
-      throw new ForbiddenException(
-        'You are registered as a candidate. Please login with the Candidate role.',
-      );
-    }
-
     if (user.role === 'STUDENT' && role === 'CANDIDATE') {
       throw new ForbiddenException(
         'You are not registered as a candidate.',
       );
     }
 
-    if (user.role === 'CANDIDATE') {
+    if (user.role === 'CANDIDATE' && role === 'CANDIDATE') {
       const registration = await prisma.voterRegistration.findFirst({
         where: {
           userId: user.id,
@@ -297,6 +291,11 @@ export class AuthService {
     }
 
     if (!canVote) {
+      if (user.role === 'CANDIDATE' && role === 'STUDENT') {
+        throw new ForbiddenException(
+          'You are registered as a candidate. Please login using the Candidate role to access your campaign dashboard.',
+        );
+      }
       throw new ForbiddenException({
         error: 'SESSION_NOT_ACTIVE',
         message: reason || 'Your session is not active yet.',
