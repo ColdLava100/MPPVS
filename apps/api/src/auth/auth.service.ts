@@ -305,6 +305,13 @@ export class AuthService {
         election: null,
         session: null,
         hasVoted: false,
+        user: {
+          id: user.id,
+          name: user.name,
+          studentId: user.studentId,
+          role: user.role,
+          course: user.course?.studentPrefix || null,
+        },
       };
     }
 
@@ -356,6 +363,13 @@ export class AuthService {
         election: null,
         session: null,
         hasVoted: false,
+        user: {
+          id: user.id,
+          name: user.name,
+          studentId: user.studentId,
+          role: user.role,
+          course: user.course?.studentPrefix || null,
+        },
       };
     }
 
@@ -497,6 +511,13 @@ export class AuthService {
       hasAssignedSession,
       isWithinSessionTime,
       timeUntilStart,
+      user: {
+        id: user.id,
+        name: user.name,
+        studentId: user.studentId,
+        role: user.role,
+        course: user.course?.studentPrefix || null,
+      },
     };
   }
 
