@@ -696,12 +696,14 @@ export class ElectionsService {
 
     const sessionVoterStats = sessions.map(session => {
       const matching = registrations.filter(reg => {
-        if (reg.user?.course?.studentPrefix !== session.courseCode) return false;
+        const courseMatch = reg.user?.course?.studentPrefix === session.courseCode ||
+                            reg.user?.course?.code === session.courseCode;
+        if (!courseMatch) return false;
         if (session.studentIdStart && session.studentIdEnd && reg.user.studentId) {
           return reg.user.studentId >= session.studentIdStart &&
                  reg.user.studentId <= session.studentIdEnd;
         }
-        return true;
+        return false;
       });
       return {
         sessionId: session.id,
