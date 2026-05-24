@@ -43,20 +43,12 @@ export default function StudentPage() {
         if (statusData.hasVoted) {
           setHasVoted(true);
           setVotedAt(statusData.votedAt);
-          setCurrentUser({ name: 'Student' });
+          setCurrentUser(statusData.user || { name: 'Student' });
           setIsLoading(false);
           return;
         }
 
-        // Get user data from /auth/me
-        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-          credentials: 'include',
-        });
-        if (meRes.ok) {
-          const userData = await meRes.json();
-          setCurrentUser(userData);
-        }
-
+        setCurrentUser(statusData.user);
         setCanVote(statusData.canVote);
         setReason(statusData.reason);
         setElection(statusData.election);

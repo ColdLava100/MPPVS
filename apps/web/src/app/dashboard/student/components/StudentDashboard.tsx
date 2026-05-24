@@ -205,7 +205,7 @@ export default function StudentDashboard({
       {/* Candidates */}
       {canVote && (
         <div>
-          <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tighter mb-4">
+          <h3 className="text-lg font-bold text-white uppercase tracking-tighter mb-4">
             Candidates
           </h3>
 
@@ -218,7 +218,7 @@ export default function StudentDashboard({
             return (
               <div key={prefix} className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h4 className="text-base font-bold text-slate-800 uppercase tracking-tight">
+                  <h4 className="text-base font-bold text-white/80 uppercase tracking-tight">
                     {prefix}
                   </h4>
                   <div className="h-px flex-1 bg-slate-200" />
