@@ -701,7 +701,7 @@ export class ElectionsService {
           return reg.user.studentId >= session.studentIdStart &&
                  reg.user.studentId <= session.studentIdEnd;
         }
-        return false;
+        return true;
       });
       return {
         sessionId: session.id,

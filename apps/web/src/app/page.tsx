@@ -260,7 +260,7 @@ export default function SRCVotingPortal() {
         {/* 2. STATS BAR — WITH TURNOUT */}
         <div className="grid grid-cols-2 md:grid-cols-4 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 mb-6 overflow-hidden shadow-2xl">
           <StatItem label="Total Population" value={totalPop} light />
-          <StatItem label="Voted Population" value={`${metrics.totalVotes.toLocaleString()} voted · ${(metrics.totalVoters - metrics.totalVotes).toLocaleString()} haven't`} color="text-red-400" light />
+          <StatItem label="Voted Population" value={`${metrics.totalVotes.toLocaleString()}/${totalPop}`} color="text-red-400" light />
           <StatItem label="Turnout" value={`${turnoutPct.toFixed(1)}%`} color="text-yellow-400" light />
           <StatItem label="Closed In" value={countdown} color="text-red-400" light />
         </div>
