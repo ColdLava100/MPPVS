@@ -209,83 +209,98 @@ export default function StudentDashboard({
             Candidates
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {candidates.map((candidate: any) => {
-              const isSelected = selectedCandidates.includes(candidate.id);
-              return (
-                <div
-                  key={candidate.id}
-                  onClick={() => onToggleCandidate(candidate.id)}
-                  className={`relative overflow-hidden p-6 rounded-sm border transition-all duration-300 cursor-pointer ${
-                    isSelected
-                      ? 'border-green-500 bg-green-50 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
-                      : 'border-slate-200 bg-slate-50 hover:border-[#c5a021]/50 hover:bg-white'
-                  }`}
-                >
-                  {/* Selection Status Badge */}
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    isSelected
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-slate-100 text-slate-500'
-                  }`}>
-                    {isSelected ? 'SELECTED' : 'SELECT'}
-                  </div>
+          {coursePrefixes.map(prefix => {
+            const courseCandidates = candidates.filter((c: any) =>
+              (c.user?.course?.studentPrefix || c.courseCode) === prefix
+            );
+            if (courseCandidates.length === 0) return null;
 
-                  {/* Candidate Info */}
-                  <div className="flex items-start gap-4 mt-2">
-                    {/* Circular Checkbox */}
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                        isSelected
-                          ? 'border-green-500 bg-green-500'
-                          : 'border-[#4c0519]/30 bg-white'
-                      }`}
-                    >
-                      {isSelected && <Check size={16} className="text-white font-bold" />}
-                    </div>
-
-                    {/* Profile + Name + Course */}
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {candidate.profilePicture ? (
-                        <img src={candidate.profilePicture} alt={candidate.name || 'Candidate'} className="w-11 h-11 rounded-full object-cover border-2 border-[#c5a021]/30 flex-shrink-0" />
-                      ) : (
-                        <div className="w-11 h-11 bg-[#4c0519]/10 rounded-full flex items-center justify-center text-[#4c0519] font-bold flex-shrink-0">
-                          {candidate.name?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <h5 className="text-sm font-bold text-slate-900 truncate">
-                          {candidate.name || 'Unknown'}
-                        </h5>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">
-                          {candidate.user?.course?.studentPrefix || candidate.courseCode || 'N/A'} • {candidate.studentId || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Information Preview */}
-                  {candidate.information && (
-                    <p className="text-xs text-slate-600 mt-4 line-clamp-2 leading-relaxed">
-                      {candidate.information}
-                    </p>
-                  )}
-
-                  {/* View Profile Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewProfile(candidate);
-                    }}
-                    className="mt-4 w-full bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 px-4 py-2.5 rounded text-[10px] font-black uppercase tracking-widest transition flex items-center justify-center gap-2"
-                  >
-                    <User size={14} />
-                    View Profile
-                  </button>
+            return (
+              <div key={prefix} className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="text-base font-bold text-slate-800 uppercase tracking-tight">
+                    {prefix}
+                  </h4>
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {getSelectedCount(prefix)}/{courseSettings[prefix]} seats
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {courseCandidates.map((candidate: any) => {
+                    const isSelected = selectedCandidates.includes(candidate.id);
+                    return (
+                      <div
+                        key={candidate.id}
+                        onClick={() => onToggleCandidate(candidate.id)}
+                        className={`relative overflow-hidden p-6 rounded-sm border transition-all duration-300 cursor-pointer ${
+                          isSelected
+                            ? 'border-green-500 bg-green-50 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+                            : 'border-slate-200 bg-slate-50 hover:border-[#c5a021]/50 hover:bg-white'
+                        }`}
+                      >
+                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                          isSelected
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          {isSelected ? 'SELECTED' : 'SELECT'}
+                        </div>
+
+                        <div className="flex items-start gap-4 mt-2">
+                          <div
+                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                              isSelected
+                                ? 'border-green-500 bg-green-500'
+                                : 'border-[#4c0519]/30 bg-white'
+                            }`}
+                          >
+                            {isSelected && <Check size={16} className="text-white font-bold" />}
+                          </div>
+
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {candidate.profilePicture ? (
+                              <img src={candidate.profilePicture} alt={candidate.name || 'Candidate'} className="w-11 h-11 rounded-full object-cover border-2 border-[#c5a021]/30 flex-shrink-0" />
+                            ) : (
+                              <div className="w-11 h-11 bg-[#4c0519]/10 rounded-full flex items-center justify-center text-[#4c0519] font-bold flex-shrink-0">
+                                {candidate.name?.[0]?.toUpperCase() || '?'}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <h5 className="text-sm font-bold text-slate-900 truncate">
+                                {candidate.name || 'Unknown'}
+                              </h5>
+                              <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">
+                                {candidate.user?.course?.studentPrefix || candidate.courseCode || 'N/A'} • {candidate.studentId || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {candidate.information && (
+                          <p className="text-xs text-slate-600 mt-4 line-clamp-2 leading-relaxed">
+                            {candidate.information}
+                          </p>
+                        )}
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewProfile(candidate);
+                          }}
+                          className="mt-4 w-full bg-[#4c0519]/10 text-[#4c0519] hover:bg-[#4c0519]/20 px-4 py-2.5 rounded text-[10px] font-black uppercase tracking-widest transition flex items-center justify-center gap-2"
+                        >
+                          <User size={14} />
+                          View Profile
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
           {candidates.length === 0 && (
             <div className="text-center py-12 bg-slate-50 border border-slate-200 rounded-sm">
