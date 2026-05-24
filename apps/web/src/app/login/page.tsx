@@ -80,8 +80,8 @@ export default function LoginPage() {
 
     const payload = isStudentRole
       ? requiresCode
-        ? { studentId, icNumber, securityCode }
-        : { studentId, icNumber }
+        ? { studentId, icNumber, role: selectedRole, securityCode }
+        : { studentId, icNumber, role: selectedRole }
       : { email, password };
 
     try {

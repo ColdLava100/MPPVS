@@ -19,6 +19,7 @@ export class AuthService {
   async studentLogin(
     studentId: string,
     icNumber: string,
+    role: string,
     securityCode?: string,
   ) {
     const user = await prisma.user.findUnique({
@@ -28,6 +29,18 @@ export class AuthService {
 
     if (!user || user.icNumber !== icNumber) {
       throw new UnauthorizedException('Invalid student credentials');
+    }
+
+    if (user.role === 'CANDIDATE' && role === 'STUDENT') {
+      throw new ForbiddenException(
+        'You are registered as a candidate. Please login with the Candidate role.',
+      );
+    }
+
+    if (user.role === 'STUDENT' && role === 'CANDIDATE') {
+      throw new ForbiddenException(
+        'You are not registered as a candidate.',
+      );
     }
 
     if (user.role === 'CANDIDATE') {
