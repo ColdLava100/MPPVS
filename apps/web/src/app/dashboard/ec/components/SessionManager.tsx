@@ -51,8 +51,7 @@ export default function SessionManager({ election, courses, votingSessions, onRe
   const [bulkTitle, setBulkTitle] = useState('');
   const [bulkStartTime, setBulkStartTime] = useState('');
   const [bulkEndTime, setBulkEndTime] = useState('');
-  const [bulkIdStart, setBulkIdStart] = useState('');
-  const [bulkIdEnd, setBulkIdEnd] = useState('');
+  const [courseRanges, setCourseRanges] = useState<Record<string, { start: string; end: string }>>({});
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
 
   const [editTitle, setEditTitle] = useState('');
@@ -80,8 +79,7 @@ export default function SessionManager({ election, courses, votingSessions, onRe
     setBulkTitle('');
     setBulkStartTime('');
     setBulkEndTime('');
-    setBulkIdStart('');
-    setBulkIdEnd('');
+    setCourseRanges({});
     setSelectedCourses([]);
     setShowAddForm(false);
   };
@@ -127,14 +125,19 @@ export default function SessionManager({ election, courses, votingSessions, onRe
       return;
     }
 
+    if (!bulkStartTime || !bulkEndTime) {
+      alert('Start time and end time are required');
+      return;
+    }
+
     const sessionsToCreate = selectedCourses.map(courseId => ({
       electionId: election.id,
       title: bulkTitle || `${getCourseInfo(courseId)?.studentPrefix} Session`,
       courseId,
-      startTime: bulkStartTime ? new Date(bulkStartTime).toISOString() : null,
-      endTime: bulkEndTime ? new Date(bulkEndTime).toISOString() : null,
-      studentIdStart: bulkIdStart || null,
-      studentIdEnd: bulkIdEnd || null,
+      startTime: new Date(bulkStartTime).toISOString(),
+      endTime: new Date(bulkEndTime).toISOString(),
+      studentIdStart: courseRanges[courseId]?.start || null,
+      studentIdEnd: courseRanges[courseId]?.end || null,
     }));
 
     try {
@@ -160,11 +163,12 @@ export default function SessionManager({ election, courses, votingSessions, onRe
   const getBulkPreview = () => {
     return selectedCourses.map(courseId => {
       const course = getCourseInfo(courseId);
+      const range = courseRanges[courseId];
       return {
         course: course?.studentPrefix,
         title: bulkTitle || `${course?.studentPrefix} Session`,
-        startId: bulkIdStart || 'All',
-        endId: bulkIdEnd || 'Open-ended',
+        startId: range?.start || 'All',
+        endId: range?.end || 'Open-ended',
       };
     });
   };
@@ -459,30 +463,7 @@ export default function SessionManager({ election, courses, votingSessions, onRe
                 className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                Student ID Start (Full Format)
-              </label>
-              <input 
-                type="text" 
-                value={bulkIdStart}
-                onChange={(e) => setBulkIdStart(e.target.value)}
-                placeholder="e.g., BCS2311-001"
-                className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                Student ID End (Full Format)
-              </label>
-              <input 
-                type="text" 
-                value={bulkIdEnd}
-                onChange={(e) => setBulkIdEnd(e.target.value)}
-                placeholder="e.g., BCS2311-050"
-                className="w-full bg-white border-b border-slate-300 px-0 py-3 text-sm outline-none focus:border-[#4c0519] transition-colors font-bold text-black"
-              />
-            </div>
+
           </div>
 
           <div className="mb-4">
