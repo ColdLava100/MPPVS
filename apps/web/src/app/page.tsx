@@ -211,8 +211,6 @@ export default function SRCVotingPortal() {
   const totalCandidates = courseMetrics.reduce((s, m) => s + m.candidateCount, 0);
   const totalSeats = courseMetrics.reduce((s, m) => s + m.seats, 0);
 
-  const heroBgImageUrl = topCandidates[0]?.spotlightBanner || topCandidates[0]?.imageUrl || null;
-
   const dynamicIcons = [
     <Briefcase key="1" size={20} />,
     <Cpu key="2" size={20} />,
@@ -239,16 +237,8 @@ export default function SRCVotingPortal() {
       <main className="flex-grow max-w-7xl mx-auto px-4 md:px-10 py-4 md:py-10 w-full relative z-10">
 
         {/* 1. HERO — DYNAMIC ELECTION BANNER */}
-        <section
-          className="relative rounded-xl p-6 md:p-16 text-white mb-8 overflow-hidden shadow-2xl border border-white/5"
-          style={heroBgImageUrl ? {
-            backgroundImage: `url(${heroBgImageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          } : {}}
-        >
-          {/* Dark overlay for readability */}
-          <div className={`absolute inset-0 ${heroBgImageUrl ? 'bg-gradient-to-br from-[#4c0519]/95 via-[#2d0a0a]/85 to-black/90' : 'bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black'}`} />
+        <section className="relative rounded-xl p-6 md:p-16 text-white mb-8 overflow-hidden shadow-2xl border border-white/5">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black" />
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none hidden md:block">
             <div className="w-full h-full border-[40px] border-white/20 rounded-full -mr-40 mt-10" />
           </div>
