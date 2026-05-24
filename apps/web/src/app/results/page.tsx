@@ -277,7 +277,7 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
                 return (
                   <div key={v.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
                     {embedUrl ? (
-                      <div className="h-44">
+                      <div className="w-44 h-44 mx-auto">
                         <iframe
                           src={embedUrl}
                           title={v.videoTitle}
@@ -330,7 +330,7 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
                         <p className="text-xs text-yellow-500/80">{warning}</p>
                       </div>
                     ) : embedUrl ? (
-                      <div className="h-44">
+                      <div className="w-44 h-44 mx-auto">
                         <iframe
                           src={embedUrl}
                           title={s.slideTitle}
