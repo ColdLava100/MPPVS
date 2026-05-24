@@ -86,7 +86,7 @@ function CandidateCard({ candidate, rank, isSelected, onSelect }: { candidate: C
     .toUpperCase()
     .slice(0, 2);
 
-  const rankMedal = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-300' : rank === 3 ? 'text-amber-600' : '';
+  const rankMedal = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-300' : rank === 3 ? 'text-amber-600' : 'text-white/60';
 
   return (
     <button
