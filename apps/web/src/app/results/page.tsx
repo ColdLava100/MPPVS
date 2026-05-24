@@ -78,7 +78,7 @@ function AnimatedCounter({ value, className }: { value: number; className?: stri
   return <span className={className}>{display}</span>;
 }
 
-function CandidateCard({ candidate, rank, isSelected, onSelect }: { candidate: CandidateData; rank: number; isSelected: boolean; onSelect: () => void }) {
+function CandidateCard({ candidate, rank, isSelected, onSelect, className = '' }: { candidate: CandidateData; rank: number; isSelected: boolean; onSelect: () => void; className?: string }) {
   const initials = candidate.name
     .split(' ')
     .map((n) => n[0])
@@ -89,7 +89,7 @@ function CandidateCard({ candidate, rank, isSelected, onSelect }: { candidate: C
   const rankMedal = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-300' : rank === 3 ? 'text-amber-600' : 'text-white/60';
 
   return (
-    <div className="relative flex flex-col">
+    <div className={`relative flex flex-col ${className}`}>
       <button
         onClick={onSelect}
         className={`group bg-gradient-to-b from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border text-left w-full transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none ${
@@ -430,6 +430,7 @@ export default function ResultsPage() {
                   rank={index + 1}
                   isSelected={selectedCandidate?.id === candidate.id}
                   onSelect={() => setSelectedCandidate(selectedCandidate?.id === candidate.id ? null : candidate)}
+                  className={selectedCandidate?.id === candidate.id ? 'sm:col-span-2 lg:col-span-3 xl:col-span-2' : ''}
                 />
               ))}
             </div>
