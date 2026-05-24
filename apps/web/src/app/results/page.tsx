@@ -266,107 +266,103 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
           </div>
         )}
 
-        {(candidate.videos?.length > 0 || candidate.slides?.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {candidate.videos?.length > 0 && (
-              <div>
-                <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-3 flex items-center gap-2">
-                  <Video size={12} /> Video{candidate.videos?.length > 1 ? 's' : ''}
-                </h4>
-                <div className="space-y-3">
-                  {candidate.videos?.map((v) => {
-                    const embedUrl = getYouTubeEmbedUrl(v.videoLink);
-                    return (
-                      <div key={v.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
-                        {embedUrl ? (
-                          <div className="h-44">
-                            <iframe
-                              src={embedUrl}
-                              title={v.videoTitle}
-                              className="w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                            />
-                          </div>
-                        ) : (
-                          <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-black/20 transition-colors group">
-                            <div className="w-9 h-9 rounded bg-red-950/50 flex items-center justify-center shrink-0">
-                              <Play size={14} className="text-yellow-500/60 ml-0.5" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-white">{v.videoTitle}</p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <ExternalLink size={9} className="text-yellow-500/60 shrink-0" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-yellow-500/60">Watch on External Site</span>
-                              </div>
-                            </div>
-                          </a>
-                        )}
-                        <div className="p-2.5 md:p-3 border-t border-red-950/30">
-                          <p className="text-xs font-bold text-white mb-0.5">{v.videoTitle}</p>
-                          {v.videoDescription && <p className="text-[11px] text-white/60 leading-relaxed">{v.videoDescription}</p>}
-                          <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[9px] text-yellow-500/60 hover:text-yellow-400 transition-colors">
-                            <ExternalLink size={9} />
-                            {v.videoLink}
-                          </a>
-                        </div>
+        {candidate.videos?.length > 0 && (
+          <div>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-3 flex items-center gap-2">
+              <Video size={12} /> Video{candidate.videos?.length > 1 ? 's' : ''}
+            </h4>
+            <div className="space-y-3">
+              {candidate.videos?.map((v) => {
+                const embedUrl = getYouTubeEmbedUrl(v.videoLink);
+                return (
+                  <div key={v.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
+                    {embedUrl ? (
+                      <div className="h-44">
+                        <iframe
+                          src={embedUrl}
+                          title={v.videoTitle}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {candidate.slides?.length > 0 && (
-              <div>
-                <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-3 flex items-center gap-2">
-                  <FileText size={12} /> Slide{candidate.slides?.length > 1 ? 's' : ''}
-                </h4>
-                <div className="space-y-3">
-                  {candidate.slides?.map((s) => {
-                    const { embedUrl, warning } = getSlideEmbedUrl(s.slideLink);
-                    const slideType = detectSlideType(s.slideLink);
-                    return (
-                      <div key={s.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
-                        {warning ? (
-                          <div className="p-3 bg-yellow-500/10 border-b border-yellow-500/20">
-                            <p className="text-xs text-yellow-500/80">{warning}</p>
-                          </div>
-                        ) : embedUrl ? (
-                          <div className={slideType === 'pdf' ? 'h-44' : 'h-44'}>
-                            <iframe
-                              src={embedUrl}
-                              title={s.slideTitle}
-                              className="w-full h-full"
-                              allowFullScreen
-                            />
-                          </div>
-                        ) : (
-                          <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-black/20 transition-colors group">
-                            <div className="w-9 h-9 rounded bg-red-950/50 flex items-center justify-center shrink-0">
-                              <Monitor size={14} className="text-yellow-500/60" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-white">{s.slideTitle}</p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <ExternalLink size={9} className="text-yellow-500/60 shrink-0" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-yellow-500/60">View on External Site</span>
-                              </div>
-                            </div>
-                          </a>
-                        )}
-                        <div className="p-2.5 md:p-3 border-t border-red-950/30">
-                          <p className="text-xs font-bold text-white mb-0.5">{s.slideTitle}</p>
-                          <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[9px] text-yellow-500/60 hover:text-yellow-400 transition-colors">
-                            <ExternalLink size={9} />
-                            {s.slideLink}
-                          </a>
+                    ) : (
+                      <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-black/20 transition-colors group">
+                        <div className="w-9 h-9 rounded bg-red-950/50 flex items-center justify-center shrink-0">
+                          <Play size={14} className="text-yellow-500/60 ml-0.5" />
                         </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-white">{v.videoTitle}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <ExternalLink size={9} className="text-yellow-500/60 shrink-0" />
+                            <span className="text-[8px] font-black uppercase tracking-widest text-yellow-500/60">Watch on External Site</span>
+                          </div>
+                        </div>
+                      </a>
+                    )}
+                    <div className="p-2.5 md:p-3 border-t border-red-950/30">
+                      <p className="text-xs font-bold text-white mb-0.5">{v.videoTitle}</p>
+                      {v.videoDescription && <p className="text-[11px] text-white/60 leading-relaxed">{v.videoDescription}</p>}
+                      <a href={v.videoLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[9px] text-yellow-500/60 hover:text-yellow-400 transition-colors">
+                        <ExternalLink size={9} />
+                        {v.videoLink}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {candidate.slides?.length > 0 && (
+          <div>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-3 flex items-center gap-2">
+              <FileText size={12} /> Slide{candidate.slides?.length > 1 ? 's' : ''}
+            </h4>
+            <div className="space-y-3">
+              {candidate.slides?.map((s) => {
+                const { embedUrl, warning } = getSlideEmbedUrl(s.slideLink);
+                const slideType = detectSlideType(s.slideLink);
+                return (
+                  <div key={s.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
+                    {warning ? (
+                      <div className="p-3 bg-yellow-500/10 border-b border-yellow-500/20">
+                        <p className="text-xs text-yellow-500/80">{warning}</p>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    ) : embedUrl ? (
+                      <div className="h-44">
+                        <iframe
+                          src={embedUrl}
+                          title={s.slideTitle}
+                          className="w-full h-full"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-black/20 transition-colors group">
+                        <div className="w-9 h-9 rounded bg-red-950/50 flex items-center justify-center shrink-0">
+                          <Monitor size={14} className="text-yellow-500/60" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-white">{s.slideTitle}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <ExternalLink size={9} className="text-yellow-500/60 shrink-0" />
+                            <span className="text-[8px] font-black uppercase tracking-widest text-yellow-500/60">View on External Site</span>
+                          </div>
+                        </div>
+                      </a>
+                    )}
+                    <div className="p-2.5 md:p-3 border-t border-red-950/30">
+                      <p className="text-xs font-bold text-white mb-0.5">{s.slideTitle}</p>
+                      <a href={s.slideLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[9px] text-yellow-500/60 hover:text-yellow-400 transition-colors">
+                        <ExternalLink size={9} />
+                        {s.slideLink}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
