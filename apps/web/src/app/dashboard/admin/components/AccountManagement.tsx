@@ -20,6 +20,8 @@ const ALL_ROLES = [
   { value: 'CANDIDATE', label: 'Candidate' },
 ];
 
+const ASSIGNABLE_ROLES = ALL_ROLES.filter(r => r.value !== 'SUPERADMIN');
+
 export default function AccountManagement({ courses, users, onRefresh }: AccountManagementProps) {
   const router = useRouter();
   // User creation form
@@ -225,7 +227,7 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
                   <select value={role} onChange={(e) => { setRole(e.target.value); setCoursePrefix(''); setStudentId(''); }}
                     className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors" required>
                     <option value="">Select role...</option>
-                    {ALL_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    {ASSIGNABLE_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
                 {needsCourse && (
@@ -295,7 +297,7 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
                       className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]" />
                     <select value={modRole} onChange={(e) => { setModRole(e.target.value); }}
                       className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]">
-                      {ALL_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                      {ASSIGNABLE_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                     </select>
                     <input type="text" value={modIcNumber} onChange={(e) => setModIcNumber(e.target.value)} placeholder="IC Number"
                       className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]" />
@@ -430,7 +432,7 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
                 <select value={role} onChange={(e) => { setRole(e.target.value); setCoursePrefix(''); setStudentId(''); }}
                   className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors" required>
                   <option value="">Select role...</option>
-                  {ALL_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  {ASSIGNABLE_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </div>
               {needsCourse && (
@@ -504,7 +506,7 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
                     className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]" />
                   <select value={modRole} onChange={(e) => { setModRole(e.target.value); }}
                     className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]">
-                    {ALL_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    {ASSIGNABLE_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                   <input type="text" value={modIcNumber} onChange={(e) => setModIcNumber(e.target.value)} placeholder="IC Number"
                     className="bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021]" />
