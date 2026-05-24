@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
-import Footer from '@/components/ui/footer';
 import Background from '@/components/ui/background';
 import ElectionOverview from './components/ElectionOverview';
 import ElectionSetup from './components/ElectionSetup';
@@ -349,7 +348,6 @@ return (
           </div>
 
           <div className="relative z-10 w-full mt-auto">
-            <Footer />
           </div>
         </main>
       </div>

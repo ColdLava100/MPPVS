@@ -15,7 +15,6 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import UniversalHeader from '@/components/ui/universal-header';
-import Footer from '@/components/ui/footer';
 
 interface Candidate {
   id: number;
@@ -197,10 +196,6 @@ export default function BallotPage() {
             ))}
           </div>
         </main>
-
-        <div className="mt-auto relative z-20 border-t border-white/5 bg-black/60 backdrop-blur-lg">
-          <Footer />
-        </div>
 
         {/* FLOATING BALLOT BAR */}
         {selectedCandidateIds.length > 0 && !isCourseVoted && (

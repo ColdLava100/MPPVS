@@ -14,11 +14,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* PWA standalone: hide footers */
-@media (display-mode: standalone) {
-  footer { display: none !important; }
-}
-
 /* Metric Card Borders */
 .metric-card {
   @apply bg-white p-5 rounded-sm shadow-sm border-b-4 transition-transform hover:-translate-y-1;
@@ -41,9 +36,4 @@ body {
 
 .font-mono-metrics {
   font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', monospace;
-}
-
-/* Footer Links */
-.footer-link {
-  @apply hover:text-slate-900 transition-colors cursor-pointer;
 }

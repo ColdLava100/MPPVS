@@ -18,7 +18,6 @@ import {
   Award,
 } from 'lucide-react';
 import Header from '@/components/ui/header1';
-import Footer from '@/components/ui/footer';
 
 interface CourseMetric {
   course: string;
@@ -382,7 +381,6 @@ export default function SRCVotingPortal() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

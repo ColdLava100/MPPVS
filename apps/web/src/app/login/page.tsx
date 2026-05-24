@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Header from '@/components/ui/header1';
-import { Shield, HelpCircle, Phone, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
+import { Shield, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'Staff', roles: ['ADMIN'] },
@@ -414,45 +413,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="hidden md:block relative z-50 bg-[#4c0519] text-white px-10 py-5 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <div className="bg-[#c5a021] p-2 rounded shadow-lg flex items-center justify-center">
-                <img src="/logo/shortenlogo.svg" alt="MPP" className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-[9px] text-slate-400 font-medium tracking-[0.15em] uppercase opacity-80">
-                  © 2026 DevOps KitaBuild Studio
-                </p>
-              </div>
-            </div>
-            <div className="hidden lg:block h-6 w-px bg-white/10" />
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300">
-              Kolej Professional Mara Beranang
-            </span>
-          </div>
-
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <HelpCircle className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" />
-                FAQ
-              </button>
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2.5 group">
-                <Phone className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" />
-                Contact Support
-              </button>
-            </div>
-
-            <div className="hidden md:flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.6)]"></span>
-              <span>Server Status: <span className="text-white font-bold">Optimal</span></span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {}
     </div>
   );
 }

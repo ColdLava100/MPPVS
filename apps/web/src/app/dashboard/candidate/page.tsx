@@ -22,7 +22,6 @@ import {
   Monitor
 } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
-import Footer from '@/components/ui/footer';
 import CropModal from '@/components/ui/crop-modal';
 import ConfirmationModal from '@/components/ui/confirmation-modal';
 import Background from '@/components/ui/background';
@@ -796,7 +795,6 @@ export default function CandidateDashboard() {
           </div>
 
           <div className="relative z-10 w-full mt-auto">
-            <Footer />
           </div>
         </main>
 
