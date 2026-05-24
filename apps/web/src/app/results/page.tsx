@@ -106,7 +106,7 @@ function CandidateCard({ candidate, rank, isSelected, onSelect }: { candidate: C
   return (
     <button
       onClick={onSelect}
-      className={`group bg-gradient-to-b from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border text-left w-full transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none ${
+      className={`group relative bg-gradient-to-b from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border text-left w-full transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none ${
         isSelected ? 'ring-2 ring-yellow-500 border-yellow-500' : 'border-red-950/50 hover:border-red-900'
       }`}
     >
@@ -265,13 +265,13 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
           </div>
         )}
 
-        {candidate.videos.length > 0 && (
+        {candidate.videos?.length > 0 && (
           <div>
             <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-2 flex items-center gap-2">
-              <Video size={12} /> Video{candidate.videos.length > 1 ? 's' : ''}
+              <Video size={12} /> Video{candidate.videos?.length > 1 ? 's' : ''}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {candidate.videos.map((v) => (
+              {candidate.videos?.map((v) => (
                 <a
                   key={v.id}
                   href={v.videoLink}
@@ -298,13 +298,13 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
           </div>
         )}
 
-        {candidate.slides.length > 0 && (
+        {candidate.slides?.length > 0 && (
           <div>
             <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-500/70 mb-2 flex items-center gap-2">
-              <FileText size={12} /> Slide{candidate.slides.length > 1 ? 's' : ''}
+              <FileText size={12} /> Slide{candidate.slides?.length > 1 ? 's' : ''}
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {candidate.slides.map((s) => (
+              {candidate.slides?.map((s) => (
                 <a
                   key={s.id}
                   href={s.slideLink}
@@ -323,7 +323,7 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
           </div>
         )}
 
-        {!candidate.information && !candidate.qualification && candidate.manifestos.length === 0 && candidate.posters.length === 0 && candidate.videos.length === 0 && candidate.slides.length === 0 && (
+        {!candidate.information && !candidate.qualification && candidate.manifestos.length === 0 && candidate.posters.length === 0 && !candidate.videos?.length && !candidate.slides?.length && (
           <p className="text-sm text-white/30 text-center py-8">No additional information available for this candidate.</p>
         )}
       </div>
