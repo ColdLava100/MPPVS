@@ -34,6 +34,7 @@ interface TopCandidate {
   info: string;
   imageUrl: string | null;
   spotlightBanner: string | null;
+  posters: string[];
   voteCount: number;
 }
 
@@ -360,7 +361,7 @@ export default function SRCVotingPortal() {
                   key={c.id}
                   name={c.name}
                   dept={c.coursePrefix}
-                  img={c.imageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'}
+                  img={c.posters?.[0] || c.imageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'}
                   quote={c.info || 'Committed to serving the student body with integrity and dedication.'}
                   voteCount={c.voteCount}
                 />

@@ -672,6 +672,7 @@ export class ElectionsService {
       where: { electionId, status: 'APPROVED' },
       include: {
         user: { include: { course: true } },
+        posters: { select: { posterLink: true } },
       },
     });
 
@@ -702,6 +703,7 @@ export class ElectionsService {
         info: c.information || '',
         imageUrl: c.profilePicture || null,
         spotlightBanner: c.spotlightBanner || null,
+        posters: c.posters?.map(p => p.posterLink) || [],
         voteCount: voteCountsByCandidate[c.id] || 0,
       }))
       .sort((a, b) => b.voteCount - a.voteCount)
