@@ -233,9 +233,11 @@ export class ElectionsService {
     });
 
     return candidates.map((candidate) => {
-      const voteCount = votes.filter(
-        (v) => v.candidateId === candidate.id,
-      ).length;
+      const voteCount = new Set(
+        votes
+          .filter((v) => v.candidateId === candidate.id)
+          .map((v) => v.voterId),
+      ).size;
       return {
         id: candidate.id,
         name: candidate.user?.name || 'Unknown',
@@ -716,10 +718,11 @@ export class ElectionsService {
 
     const voteCountsByCandidate = votes.reduce(
       (acc, vote) => {
-        acc[vote.candidateId] = (acc[vote.candidateId] || 0) + 1;
+        if (!acc[vote.candidateId]) acc[vote.candidateId] = new Set<string>();
+        acc[vote.candidateId].add(vote.voterId);
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, Set<string>>,
     );
 
     const candidates = await prisma.candidate.findMany({
@@ -737,7 +740,7 @@ export class ElectionsService {
           (c) => c.user?.course?.studentPrefix === course,
         );
         const votesForCourse = courseCandidates.reduce(
-          (sum, c) => sum + (voteCountsByCandidate[c.id] || 0),
+          (sum, c) => sum + (voteCountsByCandidate[c.id]?.size || 0),
           0,
         );
         return {
@@ -760,7 +763,7 @@ export class ElectionsService {
         spotlightBanner: c.spotlightBanner || null,
         posters: c.posters?.map(p => p.posterLink) || [],
         manifestos: c.manifestos?.map(m => m.description).filter(Boolean) || [],
-        voteCount: voteCountsByCandidate[c.id] || 0,
+        voteCount: voteCountsByCandidate[c.id]?.size || 0,
       }))
       .sort((a, b) => b.voteCount - a.voteCount)
       .slice(0, 3);
