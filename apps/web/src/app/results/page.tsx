@@ -279,9 +279,12 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
                     {embedUrl ? (
                       <div className="aspect-video">
                         <iframe
+                          src={embedUrl}
+                          title={v.videoTitle}
                           className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
                           allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
                         />
                       </div>
                     ) : (
