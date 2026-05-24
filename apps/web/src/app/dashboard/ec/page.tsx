@@ -77,7 +77,14 @@ function SprDashboardContent() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/voting-sessions`, { credentials: 'include' }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, { credentials: 'include' })
       ]);
-      if (eRes.ok) setElections(await eRes.json());
+      if (eRes.ok) {
+        const data = await eRes.json();
+        setElections(data);
+        if (activeElectionId) {
+          const updated = data.find((e: any) => e.id === activeElectionId);
+          if (updated) setActiveElection(updated);
+        }
+      }
       if (vsRes.ok) setVotingSessions(await vsRes.json());
       if (cRes.ok) setCourses(await cRes.json());
     } catch (err) {

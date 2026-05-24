@@ -80,12 +80,14 @@ export default function ElectionSetup({
 
     const payload: any = {
       title,
-      courseSettings,
       status,
       startDate: startDate || null,
       endDate: endDate || null,
       requireSecurityCode,
     };
+    if (!isEditMode) {
+      payload.courseSettings = courseSettings;
+    }
 
     try {
       let res;
