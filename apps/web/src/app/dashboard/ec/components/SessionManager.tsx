@@ -468,34 +468,65 @@ export default function SessionManager({ election, courses, votingSessions, onRe
 
           <div className="mb-4">
             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Select Courses</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {courses.map(c => (
-                <label 
-                  key={c.id} 
-                  className={`flex items-center gap-2 p-3 border rounded-sm cursor-pointer transition-all ${
-                    selectedCourses.includes(c.id) 
-                      ? 'border-[#4c0519] bg-[#4c0519]/5' 
-                      : 'border-slate-200 bg-white/50'
-                  }`}
-                >
-                  <input 
-                    type="checkbox"
-                    checked={selectedCourses.includes(c.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedCourses([...selectedCourses, c.id]);
-                      } else {
-                        setSelectedCourses(selectedCourses.filter(id => id !== c.id));
-                      }
-                    }}
-                    className="w-4 h-4 accent-[#4c0519]"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-black">{c.studentPrefix}</p>
-                    <p className="text-[9px] text-slate-500">{c.name}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {courses.map(c => {
+                const isSelected = selectedCourses.includes(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    className={`p-3 border rounded-sm transition-all ${
+                      isSelected
+                        ? 'border-[#4c0519] bg-[#4c0519]/5'
+                        : 'border-slate-200 bg-white/50'
+                    }`}
+                  >
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCourses([...selectedCourses, c.id]);
+                          } else {
+                            setSelectedCourses(selectedCourses.filter(id => id !== c.id));
+                          }
+                        }}
+                        className="w-4 h-4 accent-[#4c0519]"
+                      />
+                      <div>
+                        <p className="text-sm font-bold text-black">{c.studentPrefix}</p>
+                        <p className="text-[9px] text-slate-500">{c.name}</p>
+                      </div>
+                    </label>
+                    {isSelected && (
+                      <div className="mt-3 ml-6 flex items-center gap-2">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">ID:</span>
+                        <input
+                          type="text"
+                          value={courseRanges[c.id]?.start || ''}
+                          onChange={(e) => setCourseRanges({
+                            ...courseRanges,
+                            [c.id]: { start: e.target.value, end: courseRanges[c.id]?.end || '' }
+                          })}
+                          placeholder={'e.g., ' + c.studentPrefix + '2311-001'}
+                          className="flex-1 bg-white border-b border-slate-300 px-1 py-1 text-[11px] outline-none focus:border-[#4c0519] text-black font-mono"
+                        />
+                        <span className="text-[9px] text-slate-400">-</span>
+                        <input
+                          type="text"
+                          value={courseRanges[c.id]?.end || ''}
+                          onChange={(e) => setCourseRanges({
+                            ...courseRanges,
+                            [c.id]: { start: courseRanges[c.id]?.start || '', end: e.target.value }
+                          })}
+                          placeholder={'e.g., ' + c.studentPrefix + '2311-050'}
+                          className="flex-1 bg-white border-b border-slate-300 px-1 py-1 text-[11px] outline-none focus:border-[#4c0519] text-black font-mono"
+                        />
+                      </div>
+                    )}
                   </div>
-                </label>
-              ))}
+                );
+              })}
             </div>
           </div>
 
