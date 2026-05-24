@@ -78,7 +78,7 @@ function AnimatedCounter({ value, className }: { value: number; className?: stri
   return <span className={className}>{display}</span>;
 }
 
-function CandidateCard({ candidate, rank, isSelected, onSelect, className = '' }: { candidate: CandidateData; rank: number; isSelected: boolean; onSelect: () => void; className?: string }) {
+function CandidateCard({ candidate, rank, isSelected, onSelect }: { candidate: CandidateData; rank: number; isSelected: boolean; onSelect: () => void }) {
   const initials = candidate.name
     .split(' ')
     .map((n) => n[0])
@@ -89,60 +89,51 @@ function CandidateCard({ candidate, rank, isSelected, onSelect, className = '' }
   const rankMedal = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-300' : rank === 3 ? 'text-amber-600' : 'text-white/60';
 
   return (
-    <div className={`relative flex flex-col ${className}`}>
-      <button
-        onClick={onSelect}
-        className={`group bg-gradient-to-b from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border text-left w-full transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none ${
-          isSelected ? 'ring-2 ring-yellow-500 border-yellow-500 rounded-b-none' : 'border-red-950/50 hover:border-red-900'
-        }`}
-      >
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/50 px-2 py-1 rounded-sm z-10">
-          <Medal size={12} className={rankMedal} />
-          <span className={`text-[10px] font-black ${rankMedal}`}>#{rank}</span>
+    <button
+      onClick={onSelect}
+      className={`group bg-gradient-to-b from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border text-left w-full transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none ${
+        isSelected ? 'ring-2 ring-yellow-500 border-yellow-500' : 'border-red-950/50 hover:border-red-900'
+      }`}
+    >
+      <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/50 px-2 py-1 rounded-sm z-10">
+        <Medal size={12} className={rankMedal} />
+        <span className={`text-[10px] font-black ${rankMedal}`}>#{rank}</span>
+      </div>
+
+      <div className="p-5 flex flex-col items-center text-center">
+        <div className="w-20 h-20 rounded-full overflow-hidden bg-[#2d0a0a] border-2 border-red-900/50 mb-4 flex items-center justify-center shrink-0">
+          {candidate.profilePicture ? (
+            <img
+              src={candidate.profilePicture}
+              alt={candidate.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <span className={`text-lg font-black text-white/40 ${candidate.profilePicture ? 'hidden' : ''}`}>
+            {initials}
+          </span>
         </div>
 
-        <div className="p-5 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-[#2d0a0a] border-2 border-red-900/50 mb-4 flex items-center justify-center shrink-0">
-            {candidate.profilePicture ? (
-              <img
-                src={candidate.profilePicture}
-                alt={candidate.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-            ) : null}
-            <span className={`text-lg font-black text-white/40 ${candidate.profilePicture ? 'hidden' : ''}`}>
-              {initials}
-            </span>
-          </div>
+        <h3 className="text-sm font-bold text-white mb-0.5">{candidate.name}</h3>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-yellow-500/80 mb-1">
+          {candidate.courseCode}
+        </p>
+        <p className="text-[8px] font-medium text-white/30 tracking-wider mb-3">
+          {candidate.studentId}
+        </p>
 
-          <h3 className="text-sm font-bold text-white mb-0.5">{candidate.name}</h3>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-yellow-500/80 mb-1">
-            {candidate.courseCode}
-          </p>
-          <p className="text-[8px] font-medium text-white/30 tracking-wider mb-3">
-            {candidate.studentId}
-          </p>
-
-          <div className="w-full pt-3 border-t border-red-950/50">
-            <div className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Votes</div>
-            <div className="text-2xl font-black text-yellow-400">
-              <AnimatedCounter value={candidate.voteCount} />
-            </div>
+        <div className="w-full pt-3 border-t border-red-950/50">
+          <div className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Votes</div>
+          <div className="text-2xl font-black text-yellow-400">
+            <AnimatedCounter value={candidate.voteCount} />
           </div>
         </div>
-      </button>
-      {isSelected && (
-        <CandidateDetail
-          candidate={candidate}
-          rank={rank}
-          onClose={onSelect}
-        />
-      )}
-    </div>
+      </div>
+    </button>
   );
 }
 
@@ -424,14 +415,23 @@ export default function ResultsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filtered.map((candidate, index) => (
-                <CandidateCard
-                  key={candidate.id}
-                  candidate={candidate}
-                  rank={index + 1}
-                  isSelected={selectedCandidate?.id === candidate.id}
-                  onSelect={() => setSelectedCandidate(selectedCandidate?.id === candidate.id ? null : candidate)}
-                  className={selectedCandidate?.id === candidate.id ? 'sm:col-span-2 lg:col-span-3 xl:col-span-2' : ''}
-                />
+                <React.Fragment key={candidate.id}>
+                  <CandidateCard
+                    candidate={candidate}
+                    rank={index + 1}
+                    isSelected={selectedCandidate?.id === candidate.id}
+                    onSelect={() => setSelectedCandidate(selectedCandidate?.id === candidate.id ? null : candidate)}
+                  />
+                  {selectedCandidate?.id === candidate.id && (
+                    <div className="col-span-full mt-4">
+                      <CandidateDetail
+                        candidate={candidate}
+                        rank={index + 1}
+                        onClose={() => setSelectedCandidate(null)}
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
             </div>
 
