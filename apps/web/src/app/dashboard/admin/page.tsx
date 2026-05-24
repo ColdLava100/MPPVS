@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, UserCog, Clock, Users, UserPlus, BookOpen, Vote, Shield } from 'lucide-react';
+import { Activity, UserCog, Clock, Users, UserPlus, BookOpen, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Background from '@/components/ui/background';
 import AuditLogTable from '@/components/ui/AuditLogTable';
-import { AdminMetricsGrid, ElectionManager, VotingSessionManager, AccountManagement, CourseManagement, VotingSimulation } from './components';
+import { AdminMetricsGrid, ElectionManager, VotingSessionManager, AccountManagement, CourseManagement } from './components';
 import CandidateReviewGrid from '../srcadvisor/components/CandidateReviewGrid';
 import CandidateDetailModal from '../srcadvisor/components/CandidateDetailModal';
 import CandidateModal from '../srcadvisor/components/CandidateModal';
@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'src' | 'ec' | 'accounts' | 'courses' | 'simulation' | 'audit'>('src');
+  const [activeTab, setActiveTab] = useState<'src' | 'ec' | 'accounts' | 'courses' | 'audit'>('src');
 
   // Data state
   const [elections, setElections] = useState<any[]>([]);
@@ -115,7 +115,6 @@ export default function AdminDashboard() {
     { id: 'ec' as const, label: 'EC Operations', icon: Clock },
     { id: 'accounts' as const, label: 'Accounts', icon: UserCog },
     { id: 'courses' as const, label: 'Courses', icon: BookOpen },
-    { id: 'simulation' as const, label: 'Simulation', icon: Vote },
     { id: 'audit' as const, label: 'Audit Logs', icon: Shield },
   ];
 
@@ -303,14 +302,6 @@ export default function AdminDashboard() {
               <CourseManagement
                 courses={courses}
                 onRefresh={fetchActiveData}
-              />
-            )}
-
-            {activeTab === 'simulation' && (
-              <VotingSimulation
-                users={users}
-                elections={elections}
-                candidates={candidates}
               />
             )}
 

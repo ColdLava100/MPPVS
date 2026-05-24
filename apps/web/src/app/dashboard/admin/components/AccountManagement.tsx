@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Shield, Loader2, Search, Trash2, Save, Eye, EyeOff, UserCog, KeyRound, LogIn } from 'lucide-react';
+import { UserPlus, Users, Shield, Loader2, Search, Trash2, Save, Eye, EyeOff, UserCog, KeyRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface AccountManagementProps {
@@ -53,16 +53,12 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
   const [twoFactorMessage, setTwoFactorMessage] = useState('');
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
-  // Impersonate State
-  const [impersonateUserId, setImpersonateUserId] = useState('');
-
   // Subtabs
-  const [activeSubTab, setActiveSubTab] = useState<'create' | 'modify' | '2fa' | 'impersonate'>('create');
+  const [activeSubTab, setActiveSubTab] = useState<'create' | 'modify' | '2fa'>('create');
   const subTabs = [
     { id: 'create' as const, label: 'Create User', icon: UserPlus },
     { id: 'modify' as const, label: 'Modify / Delete', icon: UserCog },
     { id: '2fa' as const, label: '2FA', icon: KeyRound },
-    { id: 'impersonate' as const, label: 'Impersonate', icon: LogIn },
   ];
 
   const needsCourse = role === 'STUDENT' || role === 'CANDIDATE';
@@ -199,21 +195,6 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
       else { setTwoFactorMessage('Failed to disable 2FA'); }
     } catch { setTwoFactorMessage('Error disabling 2FA'); }
     setTwoFactorLoading(false);
-  };
-
-  const submitImpersonate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!impersonateUserId) return;
-    const targetUser = users.find((u: any) => u.id === impersonateUserId);
-    if (!targetUser) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/impersonate`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ userId: impersonateUserId })
-      });
-      if (res.ok) { alert(`Impersonating ${targetUser.name} — redirecting...`); router.push(`/dashboard/${targetUser.role.toLowerCase()}`); }
-      else { alert(`Failed: ${res.status}`); }
-    } catch (err: any) { alert(`Error: ${err.message}`); }
   };
 
   const renderSubTabContent = () => {
@@ -395,24 +376,6 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
           </div>
         );
 
-      case 'impersonate':
-        return (
-          <div>
-            <form onSubmit={submitImpersonate} className="bg-slate-50 border border-slate-200 rounded-sm p-5 space-y-3">
-              <select value={impersonateUserId} onChange={(e) => setImpersonateUserId(e.target.value)} required
-                className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors">
-                <option value="">-- Select User to Impersonate --</option>
-                {users.map((u: any) => (
-                  <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                ))}
-              </select>
-              <button type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
-                <Eye size={14} /> Impersonate
-              </button>
-            </form>
-          </div>
-        );
     }
   };
 
@@ -625,28 +588,6 @@ export default function AccountManagement({ courses, users, onRefresh }: Account
           </div>
         </div>
 
-        {/* Impersonate User */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-[#4c0519]/10 rounded-sm">
-              <Eye size={16} className="text-[#4c0519]" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 uppercase tracking-tight">Impersonate User</h3>
-          </div>
-          <form onSubmit={submitImpersonate} className="bg-slate-50 border border-slate-200 rounded-sm p-5 space-y-3">
-            <select value={impersonateUserId} onChange={(e) => setImpersonateUserId(e.target.value)} required
-              className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors">
-              <option value="">-- Select User to Impersonate --</option>
-              {users.map((u: any) => (
-                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-              ))}
-            </select>
-            <button type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
-              <Eye size={14} /> Impersonate
-            </button>
-          </form>
-        </div>
       </div>
     </div>
   );
