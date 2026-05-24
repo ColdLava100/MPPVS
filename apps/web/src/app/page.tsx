@@ -3,14 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  Briefcase,
-  Cpu,
-  Calculator,
-  Leaf,
-  Coins,
   ChevronRight,
   Activity,
-  BarChart3,
   Users,
   Vote,
   Clock,
@@ -93,22 +87,6 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   }, [value]);
 
   return <>{display.toLocaleString()}{suffix}</>;
-}
-
-function MetricBox({ code, votes, seats, candidateCount, color, icon }: any) {
-  return (
-    <div className={`p-4 md:p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="text-slate-400">{icon || <BarChart3 size={20} />}</div>
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{code}</span>
-      </div>
-      <div className="text-4xl font-medium mb-1 tracking-tighter text-slate-900">{votes}</div>
-      <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Verified Ballots</p>
-      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-        {candidateCount} candidate{candidateCount !== 1 ? 's' : ''} · {seats} seat{seats !== 1 ? 's' : ''}
-      </p>
-    </div>
-  );
 }
 
 function StatItem({ label, value, color = "text-white", light = false }: any) {
@@ -218,14 +196,6 @@ export default function SRCVotingPortal() {
   const totalCandidates = courseMetrics.reduce((s, m) => s + m.candidateCount, 0);
   const totalSeats = courseMetrics.reduce((s, m) => s + m.seats, 0);
 
-  const dynamicIcons = [
-    <Briefcase key="1" size={20} />,
-    <Cpu key="2" size={20} />,
-    <Calculator key="3" size={20} />,
-    <Leaf key="4" size={20} />,
-    <Coins key="5" size={20} />,
-  ];
-
   return (
     <div className="min-h-screen flex flex-col relative">
       <div className="fixed inset-0 z-[-1]">
@@ -282,9 +252,8 @@ export default function SRCVotingPortal() {
         </section>
 
         {/* 2. STATS BAR — WITH TURNOUT */}
-        <div className="grid grid-cols-2 md:grid-cols-4 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 mb-6 overflow-hidden shadow-2xl">
+        <div className="grid grid-cols-2 md:grid-cols-3 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 mb-6 overflow-hidden shadow-2xl">
           <StatItem label="Total Population" value={totalPop} light />
-          <StatItem label="Ballots Cast" value={totalVotesFmt} color="text-red-400" light />
           <StatItem label="Turnout" value={`${turnoutPct.toFixed(1)}%`} color="text-yellow-400" light />
           <StatItem label="Closed In" value={countdown} color="text-red-400" light />
         </div>
@@ -387,31 +356,6 @@ export default function SRCVotingPortal() {
             </div>
           </div>
         )}
-
-        {/* 4. METRIC GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          {courseMetrics.length > 0 ? (
-            courseMetrics.map((m, idx) => (
-              <MetricBox
-                key={m.course}
-                code={m.course}
-                votes={m.votes}
-                seats={m.seats}
-                candidateCount={m.candidateCount}
-                color={['border-b-blue-600', 'border-b-red-900', 'border-b-orange-600', 'border-b-green-700', 'border-b-yellow-600'][idx % 5]}
-                icon={dynamicIcons[idx % 5]}
-              />
-            ))
-          ) : (
-            <>
-              <MetricBox code="DBS" votes={0} seats={0} candidateCount={0} color="border-b-blue-600" icon={<Briefcase size={20} />} />
-              <MetricBox code="DCS" votes={0} seats={0} candidateCount={0} color="border-b-red-900" icon={<Cpu size={20} />} />
-              <MetricBox code="DIA" votes={0} seats={0} candidateCount={0} color="border-b-orange-600" icon={<Calculator size={20} />} />
-              <MetricBox code="DLH" votes={0} seats={0} candidateCount={0} color="border-b-green-700" icon={<Leaf size={20} />} />
-              <MetricBox code="CFAB" votes={0} seats={0} candidateCount={0} color="border-b-yellow-600" icon={<Coins size={20} />} />
-            </>
-          )}
-        </div>
 
         {/* 5. TOP CANDIDATES — REAL DATA */}
         {topCandidates.length > 0 && (
