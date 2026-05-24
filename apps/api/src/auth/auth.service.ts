@@ -30,6 +30,54 @@ export class AuthService {
       throw new UnauthorizedException('Invalid student credentials');
     }
 
+    if (user.role === 'CANDIDATE') {
+      const registration = await prisma.voterRegistration.findFirst({
+        where: {
+          userId: user.id,
+          isArchived: false,
+          election: { status: 'ACTIVE' },
+        },
+        include: { election: true },
+      });
+
+      if (!registration) {
+        throw new ForbiddenException(
+          'You are not registered for any active election. Please contact SPR.',
+        );
+      }
+
+      if (registration.election.requireSecurityCode) {
+        if (!securityCode) {
+          throw new UnauthorizedException(
+            'A security code is required for this election. Please check your email.',
+          );
+        }
+        if (user.securityCode !== securityCode) {
+          throw new UnauthorizedException('Invalid security code.');
+        }
+      }
+
+      const payload = { sub: user.id, email: user.email, role: user.role };
+      return {
+        accessToken: this.jwtService.sign(payload),
+        user: {
+          id: user.id,
+          name: user.name,
+          studentId: user.studentId,
+          role: user.role,
+          course: user.course?.studentPrefix || null,
+        },
+        election: {
+          id: registration.election.id,
+          title: registration.election.title,
+          status: registration.election.status,
+          startDate: registration.election.startDate,
+          endDate: registration.election.endDate,
+          courseSettings: registration.election.courseSettings,
+        },
+      };
+    }
+
     const lastVote = await prisma.vote.findFirst({
       where: { voterId: user.id },
       orderBy: { createdAt: 'desc' },
