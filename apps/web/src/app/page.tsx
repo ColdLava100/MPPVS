@@ -44,6 +44,7 @@ interface TopCandidate {
   imageUrl: string | null;
   spotlightBanner: string | null;
   posters: string[];
+  manifestos: string[];
   voteCount: number;
 }
 
@@ -98,7 +99,12 @@ function StatItem({ label, value, color = "text-white", light = false }: any) {
   );
 }
 
-function LeaderCard({ name, dept, quote, img, voteCount }: any) {
+function LeaderCard({ name, dept, img, voteCount, info, manifestos }: any) {
+  const [quote, setQuote] = useState('');
+  useEffect(() => {
+    const pool = manifestos?.length ? manifestos : (info ? [info] : []);
+    setQuote(pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : 'Committed to serving the student body with integrity and dedication.');
+  }, []);
   return (
     <div className="group">
       <div className="relative aspect-[4/5] overflow-hidden mb-6 bg-slate-200 grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl group-hover:shadow-red-900/20 group-hover:-translate-y-2 rounded-sm border border-white/10">
@@ -252,8 +258,9 @@ export default function SRCVotingPortal() {
         </section>
 
         {/* 2. STATS BAR — WITH TURNOUT */}
-        <div className="grid grid-cols-2 md:grid-cols-3 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 mb-6 overflow-hidden shadow-2xl">
+        <div className="grid grid-cols-2 md:grid-cols-4 bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 mb-6 overflow-hidden shadow-2xl">
           <StatItem label="Total Population" value={totalPop} light />
+          <StatItem label="Voted Population" value={`${metrics.totalVotes.toLocaleString()} voted · ${(metrics.totalVoters - metrics.totalVotes).toLocaleString()} haven't`} color="text-red-400" light />
           <StatItem label="Turnout" value={`${turnoutPct.toFixed(1)}%`} color="text-yellow-400" light />
           <StatItem label="Closed In" value={countdown} color="text-red-400" light />
         </div>
@@ -361,7 +368,7 @@ export default function SRCVotingPortal() {
         {topCandidates.length > 0 && (
           <section className="mb-16 md:mb-20">
             <div className="flex items-center gap-4 md:gap-6 mb-10 md:mb-16">
-              <h2 className="text-3xl md:text-5xl font-medium uppercase tracking-tighter italic text-white">Leading Candidates</h2>
+              <h2 className="text-3xl md:text-5xl font-medium uppercase tracking-tighter italic text-white">Top 3 Candidates</h2>
               <div className="flex-grow h-[1px] bg-white/20" />
             </div>
 
@@ -372,7 +379,8 @@ export default function SRCVotingPortal() {
                   name={c.name}
                   dept={c.coursePrefix}
                   img={c.posters?.[0] || c.imageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'}
-                  quote={c.info || 'Committed to serving the student body with integrity and dedication.'}
+                  info={c.info}
+                  manifestos={c.manifestos}
                   voteCount={c.voteCount}
                 />
               ))}

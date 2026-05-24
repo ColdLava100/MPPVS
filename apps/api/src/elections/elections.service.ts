@@ -725,6 +725,7 @@ export class ElectionsService {
       include: {
         user: { include: { course: true } },
         posters: { select: { posterLink: true } },
+        manifestos: { select: { description: true } },
       },
     });
 
@@ -756,6 +757,7 @@ export class ElectionsService {
         imageUrl: c.profilePicture || null,
         spotlightBanner: c.spotlightBanner || null,
         posters: c.posters?.map(p => p.posterLink) || [],
+        manifestos: c.manifestos?.map(m => m.description).filter(Boolean) || [],
         voteCount: voteCountsByCandidate[c.id] || 0,
       }))
       .sort((a, b) => b.voteCount - a.voteCount)
