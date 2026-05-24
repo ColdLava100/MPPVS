@@ -662,7 +662,8 @@ export class ElectionsService {
     const votes = await prisma.vote.findMany({
       where: { electionId },
     });
-    const totalVotes = votes.length;
+    const uniqueVoterIds = new Set(votes.map(v => v.voterId));
+    const totalVotes = uniqueVoterIds.size;
 
     const voteCountsByCandidate = votes.reduce(
       (acc, vote) => {
