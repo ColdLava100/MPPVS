@@ -87,7 +87,7 @@ model VotingSession {
   studentIdStart  String?  // e.g., "BCS2311-001"
   studentIdEnd    String?  // e.g., "BCS2311-100"
 
-  election        Election @relation(fields: [electionId], references: [id])
+  election        Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
 }
 
 // Tracks all system actions for the Superadmin to monitor
@@ -127,7 +127,7 @@ model Candidate {
   updatedAt       DateTime @updatedAt
 
   user            User     @relation(fields: [userId], references: [id])
-  election        Election @relation(fields: [electionId], references: [id])
+  election        Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
   votes           Vote[]
   
   qualification   Qualification? // 1-to-1 relation
@@ -195,7 +195,7 @@ model Vote {
 
   voter       User     @relation(fields: [voterId], references: [id])
   candidate   Candidate @relation(fields: [candidateId], references: [id])
-  election    Election @relation(fields: [electionId], references: [id])
+  election    Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
 
   // A student can only vote for a specific candidate once per election
   @@unique([voterId, electionId, candidateId])
@@ -222,7 +222,7 @@ model VoterRegistration {
   isArchived    Boolean  @default(false)
   archivedAt    DateTime?
 
-  election      Election @relation(fields: [electionId], references: [id])
+  election      Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [id])
 
   @@unique([electionId, userId])

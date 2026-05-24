@@ -159,7 +159,6 @@ export default function SRCVotingPortal() {
   const [electionData, setElectionData] = useState<ElectionData | null>(null);
   const [countdown, setCountdown] = useState('00 : 00 : 00');
   const [isMounted, setIsMounted] = useState(false);
-  const bgImageUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
 
   useEffect(() => {
     setIsMounted(true);
@@ -225,13 +224,6 @@ export default function SRCVotingPortal() {
   return (
     <div className="min-h-screen flex flex-col relative">
       <div className="fixed inset-0 z-[-1]">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${bgImageUrl})`,
-            filter: 'blur(8px) brightness(0.3)',
-          }}
-        />
         <div className="absolute inset-0 bg-gradient-to-b from-[#4c0519]/70 via-[#4c0519]/50 to-black/80" />
         <div
           className="absolute inset-0 opacity-[0.04]"

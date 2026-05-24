@@ -112,13 +112,7 @@ export default function BallotPage() {
 
   return (
     <div className="min-h-screen bg-black relative font-sans text-white overflow-x-hidden">
-      <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: `url('https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/16/images/giantchess1.jpg')`,
-          filter: 'blur(10px) brightness(0.12)' 
-        }}
-      />
+      <div className="fixed inset-0 z-0 bg-black" />
 
       <UniversalHeader role="student" />
 

@@ -165,21 +165,11 @@ export default function LoginPage() {
 
   const isStudentRole = selectedRole === 'STUDENT' || selectedRole === 'CANDIDATE';
 
-  const mainBgUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg";
-  const heroPanelUrl = "https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/20/images/lt-2-4.jpg";
-
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
 
-      {/* BACKGROUND — 3-layer design, no filter on fixed element (fixes iOS Safari) */}
+      {/* BACKGROUND — 2-layer design (gradient + pattern), no external image */}
       <div className="fixed inset-0 z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${mainBgUrl})`,
-            filter: 'blur(8px) brightness(0.3)'
-          }}
-        />
         <div className="absolute inset-0 bg-gradient-to-b from-[#4c0519]/70 via-[#4c0519]/50 to-black/80" />
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -201,12 +191,8 @@ export default function LoginPage() {
 
           {/* LEFT HERO PANEL */}
           <div className="hidden md:flex w-5/12 relative bg-[#2D0A0A]">
-            <img
-              src={heroPanelUrl}
-              alt="Governance"
-              className="absolute inset-0 w-full h-full object-cover opacity-35 grayscale"
-            />
-            <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white bg-gradient-to-t from-[#4c0519]/80 via-transparent to-transparent">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#4c0519]/80 via-[#4c0519]/30 to-[#2D0A0A]" />
+            <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
               <div className="flex items-center gap-2 mb-4 bg-white/10 w-fit px-2 py-1 rounded backdrop-blur-sm">
                 <span className="text-[9px] tracking-[0.2em] font-bold uppercase">Step {step} of 2</span>
               </div>

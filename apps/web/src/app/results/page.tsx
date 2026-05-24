@@ -313,13 +313,6 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
       <div className="fixed inset-0 z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(https://beranang.kpm.edu.my/kpmb/images/speasyimagegallery/albums/7/images/dewan-3.jpg)`,
-            filter: 'blur(8px) brightness(0.3)'
-          }}
-        />
         <div className="absolute inset-0 bg-gradient-to-b from-[#4c0519]/70 via-[#4c0519]/50 to-black/80" />
         <div
           className="absolute inset-0 opacity-[0.04]"
