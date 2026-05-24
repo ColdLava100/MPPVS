@@ -277,7 +277,7 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
                 return (
                   <div key={v.id} className="bg-black/30 rounded-sm overflow-hidden border border-red-950/30">
                     {embedUrl ? (
-                      <div className="h-44">
+                      <div className="aspect-video">
                         <iframe
                           className="w-full h-full"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -328,7 +328,7 @@ function CandidateDetail({ candidate, rank, onClose }: { candidate: CandidateDat
                         <p className="text-xs text-yellow-500/80">{warning}</p>
                       </div>
                     ) : embedUrl ? (
-                      <div className="h-44">
+                      <div className={slideType === 'pdf' ? 'aspect-[3/4]' : 'aspect-video'}>
                         <iframe
                           src={embedUrl}
                           title={s.slideTitle}
