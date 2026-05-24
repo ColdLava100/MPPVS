@@ -16,14 +16,30 @@ import {
   Clock,
   TrendingUp,
   Award,
+  PieChartIcon,
 } from 'lucide-react';
 import Header from '@/components/ui/header1';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface CourseMetric {
   course: string;
   votes: number;
   seats: number;
   candidateCount: number;
+}
+
+interface CourseVoterStat {
+  course: string;
+  registered: number;
+  voted: number;
+}
+
+interface SessionVoterStat {
+  sessionId: string;
+  title: string;
+  course: string;
+  registered: number;
+  voted: number;
 }
 
 interface TopCandidate {
@@ -48,8 +64,11 @@ interface ElectionData {
     totalVoters: number;
     totalVotes: number;
   };
+  courseVoterStats: CourseVoterStat[];
   courseMetrics: CourseMetric[];
   topCandidates: TopCandidate[];
+  sessions: any[];
+  sessionVoterStats: SessionVoterStat[];
 }
 
 function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: string }) {
@@ -76,34 +95,7 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <>{display.toLocaleString()}{suffix}</>;
 }
 
-function TurnoutRing({ pct }: { pct: number }) {
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (pct / 100) * circumference;
-
-  return (
-    <div className="flex items-center gap-4">
-      <svg width="100" height="100" className="transform -rotate-90 shrink-0">
-        <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
-        <circle
-          cx="50" cy="50" r={radius}
-          fill="none" stroke="#c5a021" strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-1000"
-        />
-      </svg>
-      <div>
-        <span className="block text-3xl font-black text-white">{pct.toFixed(1)}%</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Voter Turnout</span>
-      </div>
-    </div>
-  );
-}
-
 function MetricBox({ code, votes, seats, candidateCount, color, icon }: any) {
-  const pct = seats > 0 ? Math.min((votes / seats) * 100, 100) : 0;
   return (
     <div className={`p-4 md:p-6 bg-white/95 backdrop-blur-sm border border-white/20 border-b-4 ${color} shadow-xl hover:shadow-2xl transition-all`}>
       <div className="flex justify-between items-start mb-4">
@@ -112,16 +104,9 @@ function MetricBox({ code, votes, seats, candidateCount, color, icon }: any) {
       </div>
       <div className="text-4xl font-medium mb-1 tracking-tighter text-slate-900">{votes}</div>
       <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Verified Ballots</p>
-      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">
+      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
         {candidateCount} candidate{candidateCount !== 1 ? 's' : ''} · {seats} seat{seats !== 1 ? 's' : ''}
       </p>
-      <div className="flex justify-between text-[9px] font-black uppercase mb-2">
-        <span className="text-slate-400">Seats Filled</span>
-        <span className="text-slate-900">{Math.min(votes, seats)}/{seats}</span>
-      </div>
-      <div className="w-full h-[3px] bg-slate-100 overflow-hidden">
-        <div className="h-full bg-slate-800 transition-all duration-1000" style={{ width: `${pct}%` }} />
-      </div>
     </div>
   );
 }
@@ -154,6 +139,25 @@ function LeaderCard({ name, dept, quote, img, voteCount }: any) {
     </div>
   );
 }
+
+const COURSE_COLORS = ['#3b82f6', '#dc2626', '#f97316', '#16a34a', '#ca8a04', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+const PieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    const notVoted = d.registered - d.voted;
+    const pct = d.registered > 0 ? ((d.voted / d.registered) * 100).toFixed(1) : '0.0';
+    return (
+      <div className="bg-slate-900 border border-white/10 rounded-sm px-4 py-3 shadow-xl">
+        <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500 mb-1">{d.course}</p>
+        <p className="text-sm text-white">{d.voted} voted</p>
+        <p className="text-sm text-slate-400">{notVoted} haven't</p>
+        <p className="text-[10px] text-slate-500">{pct}% turnout</p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function SRCVotingPortal() {
   const [electionData, setElectionData] = useState<ElectionData | null>(null);
@@ -203,6 +207,9 @@ export default function SRCVotingPortal() {
   const activeElection = hasData ? electionData.activeElection : null;
   const metrics = hasData ? electionData.metrics : { totalVoters: 0, totalVotes: 0 };
   const courseMetrics = hasData ? electionData.courseMetrics : [];
+  const courseVoterStats = hasData ? electionData.courseVoterStats : [];
+  const sessions = hasData ? electionData.sessions : [];
+  const sessionVoterStats = hasData ? electionData.sessionVoterStats : [];
   const topCandidates = hasData ? electionData.topCandidates : [];
   const activeTitle = activeElection?.title || 'Awaiting Next Election';
   const totalPop = metrics.totalVoters.toLocaleString();
@@ -308,15 +315,75 @@ export default function SRCVotingPortal() {
             </div>
             <div className="bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 p-6 md:p-8 shadow-2xl">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
-                <Users size={12} /> Voter Engagement
+                <PieChartIcon size={12} /> Voter Breakdown
               </p>
-              <div className="flex items-center gap-6">
-                <TurnoutRing pct={turnoutPct} />
-                <div className="text-center">
-                  <span className="block text-3xl font-black text-white"><AnimatedCounter value={metrics.totalVotes} /></span>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">of <AnimatedCounter value={metrics.totalVoters} /> voted</span>
+              {courseVoterStats.length > 0 ? (
+                <div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={courseVoterStats.map(s => ({ ...s, value: s.registered }))}
+                        cx="50%" cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {courseVoterStats.map((entry, idx) => (
+                          <Cell key={entry.course} fill={COURSE_COLORS[idx % COURSE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<PieTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap gap-3 mt-2 justify-center">
+                    {courseVoterStats.map((s, idx) => (
+                      <div key={s.course} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: COURSE_COLORS[idx % COURSE_COLORS.length] }} />
+                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{s.course}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="text-sm text-slate-400 font-light">No voter data available.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 4. SESSION BREAKDOWN — only if sessions exist */}
+        {sessions.length > 0 && sessionVoterStats.length > 0 && (
+          <div className="bg-gradient-to-br from-[#4c0519]/90 via-[#2d0a0a]/90 to-black rounded-sm border border-white/10 p-6 md:p-8 shadow-2xl mb-8">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
+              <Clock size={12} /> Session Voter Breakdown
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-white/10">
+                    <th className="pb-3 pr-4">Session</th>
+                    <th className="pb-3 pr-4">Course</th>
+                    <th className="pb-3 pr-4">Registered</th>
+                    <th className="pb-3 pr-4">Voted</th>
+                    <th className="pb-3">Turnout</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm text-white">
+                  {sessionVoterStats.map(s => {
+                    const pct = s.registered > 0 ? ((s.voted / s.registered) * 100).toFixed(1) : '0.0';
+                    return (
+                      <tr key={s.sessionId} className="border-b border-white/5 last:border-0">
+                        <td className="py-3 pr-4 font-medium">{s.title}</td>
+                        <td className="py-3 pr-4 text-slate-400">{s.course}</td>
+                        <td className="py-3 pr-4">{s.registered}</td>
+                        <td className="py-3 pr-4">{s.voted}</td>
+                        <td className="py-3 text-yellow-500 font-black">{pct}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

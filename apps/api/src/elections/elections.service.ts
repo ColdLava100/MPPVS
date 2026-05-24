@@ -643,8 +643,11 @@ export class ElectionsService {
       return {
         activeElection: null,
         metrics: { totalVoters: 0, totalVotes: 0 },
+        courseVoterStats: [],
         courseMetrics: [],
         topCandidates: [],
+        sessions: [],
+        sessionVoterStats: [],
       };
     }
 
@@ -656,6 +659,7 @@ export class ElectionsService {
 
     const registrations = await prisma.voterRegistration.findMany({
       where: { electionId, isArchived: false },
+      include: { user: { include: { course: true } } },
     });
     const totalVoters = registrations.length;
 
@@ -664,6 +668,49 @@ export class ElectionsService {
     });
     const uniqueVoterIds = new Set(votes.map(v => v.voterId));
     const totalVotes = uniqueVoterIds.size;
+
+    const courseRegMap = new Map<string, { registered: Set<string>; voted: Set<string> }>();
+    for (const reg of registrations) {
+      const prefix = reg.user?.course?.studentPrefix || 'OTHER';
+      if (!courseRegMap.has(prefix)) {
+        courseRegMap.set(prefix, { registered: new Set(), voted: new Set() });
+      }
+      const entry = courseRegMap.get(prefix)!;
+      entry.registered.add(reg.userId);
+      if (uniqueVoterIds.has(reg.userId)) {
+        entry.voted.add(reg.userId);
+      }
+    }
+
+    const courseVoterStats = Array.from(courseRegMap.entries())
+      .map(([course, data]) => ({
+        course,
+        registered: data.registered.size,
+        voted: data.voted.size,
+      }))
+      .sort((a, b) => b.registered - a.registered);
+
+    const sessions = await prisma.votingSession.findMany({
+      where: { electionId },
+    });
+
+    const sessionVoterStats = sessions.map(session => {
+      const matching = registrations.filter(reg => {
+        if (reg.user?.course?.studentPrefix !== session.courseCode) return false;
+        if (session.studentIdStart && session.studentIdEnd && reg.user.studentId) {
+          return reg.user.studentId >= session.studentIdStart &&
+                 reg.user.studentId <= session.studentIdEnd;
+        }
+        return false;
+      });
+      return {
+        sessionId: session.id,
+        title: session.title,
+        course: session.courseCode,
+        registered: matching.length,
+        voted: matching.filter(r => uniqueVoterIds.has(r.userId)).length,
+      };
+    });
 
     const voteCountsByCandidate = votes.reduce(
       (acc, vote) => {
@@ -725,8 +772,11 @@ export class ElectionsService {
         totalVoters,
         totalVotes,
       },
+      courseVoterStats,
       courseMetrics,
       topCandidates: sortedCandidates,
+      sessions,
+      sessionVoterStats,
     };
   }
 }
