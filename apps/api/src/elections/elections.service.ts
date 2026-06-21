@@ -138,7 +138,7 @@ export class ElectionsService {
         const user = reg.user;
         if (!user || user.isArchived) return false;
 
-        if (course && user.course?.code !== course) return false;
+        if (course && user.course?.code !== course && user.course?.studentPrefix !== course) return false;
 
         if (search) {
           const searchLower = search.toLowerCase();
