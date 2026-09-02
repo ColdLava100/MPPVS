@@ -70,11 +70,28 @@ export class UsersService {
           if (course) linkedCourseId = course.id;
         }
 
+        // If the linked user has no IC on file (e.g. created by self-registration)
+        // and the submitted IC does not belong to another user, store it so the
+        // strict candidate IC check can be enforced on their next login.
+        if (data.icNumber && !existing.icNumber) {
+          const icHolder = await prisma.user.findUnique({
+            where: { icNumber: data.icNumber },
+          });
+          if (icHolder && icHolder.id !== existing.id) {
+            throw new ConflictException(
+              'User with this email, Student ID, or IC Number already exists.',
+            );
+          }
+        }
+
         const linked = await prisma.user.update({
           where: { id: existing.id },
           data: {
             ...(data.name ? { name: data.name } : {}),
             ...(linkedCourseId ? { courseId: linkedCourseId } : {}),
+            ...(data.icNumber && !existing.icNumber
+              ? { icNumber: data.icNumber }
+              : {}),
             isArchived: false,
             archivedAt: null,
           },

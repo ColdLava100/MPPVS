@@ -18,6 +18,7 @@ export class AuthService {
 
   async studentLogin(
     studentId: string,
+    icNumber: string | undefined,
     role: string,
     securityCode?: string,
   ) {
@@ -52,6 +53,11 @@ export class AuthService {
     }
 
     if (user.role === 'CANDIDATE' && role === 'CANDIDATE') {
+      // Strict identity: a candidate must have an IC on file and it must match.
+      if (!user.icNumber || user.icNumber !== icNumber) {
+        throw new UnauthorizedException('Invalid candidate credentials.');
+      }
+
       const registration = await prisma.voterRegistration.findFirst({
         where: {
           userId: user.id,

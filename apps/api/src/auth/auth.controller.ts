@@ -62,6 +62,7 @@ export class AuthController {
   ) {
     const result = await this.authService.studentLogin(
       body.studentId,
+      body.icNumber,
       body.role,
       body.securityCode,
     );
