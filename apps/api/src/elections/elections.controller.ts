@@ -43,6 +43,7 @@ export class ElectionsController {
     Role.CANDIDATE,
     Role.SPR_ADVISOR,
     Role.SPR_VOLUNTEER,
+    Role.SRC_ADVISOR,
   )
   async getElections() {
     return this.electionsService.getElections();
@@ -56,6 +57,7 @@ export class ElectionsController {
     Role.MPP_ADVISOR,
     Role.SPR_ADVISOR,
     Role.SPR_VOLUNTEER,
+    Role.SRC_ADVISOR,
   )
   async getElectionById(@Param('id') id: string) {
     return this.electionsService.getElectionById(id);

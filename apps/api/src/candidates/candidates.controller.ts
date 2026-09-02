@@ -33,6 +33,7 @@ export class CandidatesController {
     Role.MPP_ADVISOR,
     Role.STUDENT,
     Role.CANDIDATE,
+    Role.SRC_ADVISOR,
   )
   async getCandidates() {
     return this.candidatesService.getCandidates();
