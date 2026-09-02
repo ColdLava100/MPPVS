@@ -84,7 +84,7 @@ export default function ElectionCard({ election, onViewDetails, onEdit }: Electi
         <div className="flex items-center gap-2 text-slate-500">
           <Users size={14} />
           <span className="text-xs font-bold">
-            {courseCount} course{courseCount !== 1 ? 's' : ''} configured
+            {courseCount} bureau{courseCount !== 1 ? 's' : ''} configured
           </span>
         </div>
       </div>

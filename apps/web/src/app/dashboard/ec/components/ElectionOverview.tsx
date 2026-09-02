@@ -128,7 +128,7 @@ export default function ElectionOverview({ elections, courses, onEditElection, o
                           {formatDateOnly(election.startDate)} - {formatDateOnly(election.endDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600">
-                          {courseCount} course{courseCount !== 1 ? 's' : ''}
+                          {courseCount} bureau{courseCount !== 1 ? 's' : ''}
                         </td>
                         <td className="px-4 py-3">
                           <button 
@@ -200,7 +200,7 @@ export default function ElectionOverview({ elections, courses, onEditElection, o
                           {formatDateOnly(election.startDate)} - {formatDateOnly(election.endDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600">
-                          {courseCount} course{courseCount !== 1 ? 's' : ''}
+                          {courseCount} bureau{courseCount !== 1 ? 's' : ''}
                         </td>
                         <td className="px-4 py-3">
                           <button 
@@ -272,7 +272,7 @@ export default function ElectionOverview({ elections, courses, onEditElection, o
                           {formatDateOnly(election.startDate)} - {formatDateOnly(election.endDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600">
-                          {courseCount} course{courseCount !== 1 ? 's' : ''}
+                          {courseCount} bureau{courseCount !== 1 ? 's' : ''}
                         </td>
                         <td className="px-4 py-3">
                           <button 

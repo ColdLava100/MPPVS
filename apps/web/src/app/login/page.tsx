@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/ui/header1';
-import { Shield, UserCog, Building2, GraduationCap, Mic, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
+import { Shield, UserCog, Building2, GraduationCap, Users, ClipboardCheck, AlertTriangle, Calendar, Clock, Timer, CalendarX } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'Staff', roles: ['ADMIN'] },
   { id: 'Advisor', roles: ['SRC_ADVISOR', 'EC_ADVISOR'] },
   { id: 'EC', roles: ['EC_VOLUNTEER'] },
-  { id: 'Student', roles: ['CANDIDATE', 'STUDENT'] },
+  { id: 'Student', roles: ['STUDENT'] },
 ];
 
 const ROLES = [
@@ -19,14 +19,12 @@ const ROLES = [
   { id: 'EC_ADVISOR', label: 'EC ADVISOR', icon: ClipboardCheck, inputLabel: 'Official Email', placeholder: 'advisor@ec.edu' },
   { id: 'EC_VOLUNTEER', label: 'EC VOLUNTEER', icon: Users, inputLabel: 'Volunteer ID', placeholder: 'ECXXX' },
   { id: 'STUDENT', label: 'STUDENT', icon: GraduationCap, inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
-  { id: 'CANDIDATE', label: 'CANDIDATE', icon: Mic, inputLabel: 'Candidate ID', placeholder: 'BCSXXXX-XXX' },
 ];
 
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState('STUDENT');
   const [activeCategory, setActiveCategory] = useState('Student');
   const [studentId, setStudentId] = useState('');
-  const [icNumber, setIcNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState(1);
@@ -80,8 +78,8 @@ export default function LoginPage() {
 
     const payload = isStudentRole
       ? requiresCode
-        ? { studentId, icNumber, role: selectedRole, securityCode }
-        : { studentId, icNumber, role: selectedRole }
+        ? { studentId, role: selectedRole, securityCode }
+        : { studentId, role: selectedRole }
       : { email, password };
 
     try {
@@ -301,7 +299,7 @@ export default function LoginPage() {
                     ) : (
                     <>
                       <div className="space-y-1.5">
-                        <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID Identification</label>
+                        <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Student ID</label>
                         <input
                           type="text"
                           value={studentId}
@@ -311,17 +309,9 @@ export default function LoginPage() {
                           required
                         />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">National IC Number</label>
-                        <input
-                          type="text"
-                          value={icNumber}
-                          onChange={(e) => setIcNumber(e.target.value)}
-                          placeholder="000000-00-0000"
-                          className="w-full bg-slate-50 border-b border-slate-200 px-0 py-2 text-xs outline-none focus:border-[#4c0519] transition-colors tracking-[0.2em] font-bold"
-                          required
-                        />
-                      </div>
+                      <p className="text-[9px] text-slate-400 -mt-2">
+                        You will be registered as a voter automatically the first time you log in.
+                      </p>
                       {requiresCode && (
                         <div className="space-y-1.5">
                           <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">6-Digit Security Code</label>

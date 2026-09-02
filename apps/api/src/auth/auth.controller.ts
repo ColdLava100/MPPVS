@@ -21,7 +21,7 @@ import { prisma } from '@repo/database';
 
 class StudentLoginDto {
   studentId: string;
-  icNumber: string;
+  icNumber?: string;
   role: string;
   securityCode?: string;
 }
@@ -62,7 +62,6 @@ export class AuthController {
   ) {
     const result = await this.authService.studentLogin(
       body.studentId,
-      body.icNumber,
       body.role,
       body.securityCode,
     );

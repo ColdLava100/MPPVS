@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Activity, Settings, BookOpen, Users, Clock, Vote, Shield } from 'lucide-react';
+import { Activity, Settings, BookOpen, Clock, Shield } from 'lucide-react';
 import UniversalHeader from '@/components/ui/universal-header';
 import Background from '@/components/ui/background';
 import ElectionOverview from './components/ElectionOverview';
 import ElectionSetup from './components/ElectionSetup';
 import CourseConfig from './components/CourseConfig';
-import VoterImport from './components/VoterImport';
 import SessionManager from './components/SessionManager';
 import AuditLogTable from '@/components/ui/AuditLogTable';
 import ElectionSetupButton from './components/ElectionSetupButton';
@@ -16,8 +15,7 @@ import ElectionSetupButton from './components/ElectionSetupButton';
 const STEPS = [
   { id: 1, label: 'Election Setup' },
   { id: 2, label: 'Course Config' },
-  { id: 3, label: 'Voter Import' },
-  { id: 4, label: 'Voting Sessions' },
+  { id: 3, label: 'Voting Sessions' },
 ];
 
 type ViewMode = 'overview' | 'workflow';
@@ -151,7 +149,7 @@ function SprDashboardContent() {
   };
 
   const handleNextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -194,8 +192,6 @@ function SprDashboardContent() {
       case 2:
         return !!activeElectionId;
       case 3:
-        return true;
-      case 4:
         return true;
       default:
         return false;
@@ -309,9 +305,8 @@ return (
                     <div className="flex items-center justify-start gap-2 pb-4 mb-6 border-b border-slate-200 overflow-x-auto">
                       <button onClick={() => setCurrentStep(1)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 1 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Settings size={14} />Settings</button>
                       <button onClick={() => setCurrentStep(2)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 2 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><BookOpen size={14} />Courses</button>
-                      <button onClick={() => setCurrentStep(3)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 3 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Users size={14} />Voters</button>
-                      <button onClick={() => setCurrentStep(4)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 4 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Clock size={14} />Sessions</button>
-                      <button onClick={() => setCurrentStep(5)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 5 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Shield size={14} />Audit Logs</button>
+                      <button onClick={() => setCurrentStep(3)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 3 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Clock size={14} />Sessions</button>
+                      <button onClick={() => setCurrentStep(4)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-medium uppercase tracking-wide transition-all ${currentStep === 4 ? 'bg-[#4c0519] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}><Shield size={14} />Audit Logs</button>
                     </div>
                   )}
 
@@ -323,12 +318,14 @@ return (
                     <CourseConfig election={activeElection} courses={courses} onRefresh={fetchActiveData} />
                   )}
                   {currentStep === 3 && (
-                    <VoterImport electionId={activeElectionId} onRefresh={fetchActiveData} />
+                    <>
+                      <div className="mb-6 p-4 rounded-sm border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px] font-medium leading-relaxed">
+                        Voters register automatically on their first login with a student ID — no CSV import needed.
+                      </div>
+                      <SessionManager election={activeElection} courses={courses} votingSessions={votingSessions} onRefresh={fetchActiveData} />
+                    </>
                   )}
-                  {currentStep === 4 && (
-                    <SessionManager election={activeElection} courses={courses} votingSessions={votingSessions} onRefresh={fetchActiveData} />
-                  )}
-                  {currentStep === 5 && activeElectionId && (
+                  {currentStep === 4 && activeElectionId && (
                     <AuditLogTable electionId={activeElectionId} />
                   )}
                 </div>
@@ -339,7 +336,7 @@ return (
                     <button onClick={currentStep === 1 ? handleBackToOverview : handlePrevStep} className={`bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2`}>
                       ← {currentStep === 1 ? 'Back to Overview' : 'Back'}
                     </button>
-                    {currentStep < 4 ? (
+                    {currentStep < 3 ? (
                       <button onClick={handleNextStep} disabled={!canProceed(currentStep)} className={`bg-[#c5a021] text-black px-8 md:px-14 py-4 md:py-6 rounded-sm text-[11px] md:text-[12px] font-black uppercase tracking-[0.3em] hover:bg-yellow-400 transition-all shadow-2xl flex items-center justify-center gap-4 ${!canProceed(currentStep) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         Next Step →
                       </button>

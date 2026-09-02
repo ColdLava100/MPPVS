@@ -165,11 +165,11 @@ export default function CandidateModal({ elections, selectedElectionId, onClose,
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Course</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Bureau</label>
             <select value={coursePrefix} onChange={(e) => setCoursePrefix(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#c5a021] transition-colors"
               disabled={!electionId}>
-              <option value="">Select course...</option>
+              <option value="">Select bureau...</option>
               {courseKeys.map((c: string) => (
                 <option key={c} value={c}>{c}</option>
               ))}

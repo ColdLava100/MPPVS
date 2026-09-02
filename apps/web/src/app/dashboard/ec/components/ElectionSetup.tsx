@@ -230,9 +230,9 @@ return (
           </div>
         </div>
 
-        {/* Course Configuration */}
+        {/* Bureau Configuration */}
         <div className="p-6 bg-white/95 border border-slate-200 rounded-sm">
-          <h4 className="text-sm font-black text-[#4c0519] uppercase tracking-widest mb-4">Course Configuration</h4>
+          <h4 className="text-sm font-black text-[#4c0519] uppercase tracking-widest mb-4">Bureau Configuration</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {courses.map(course => (
               <div key={course.id} className="p-3 bg-slate-50 rounded border border-slate-200">

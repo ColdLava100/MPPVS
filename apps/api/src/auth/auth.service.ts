@@ -18,17 +18,31 @@ export class AuthService {
 
   async studentLogin(
     studentId: string,
-    icNumber: string,
     role: string,
     securityCode?: string,
   ) {
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { studentId },
       include: { course: true },
     });
 
-    if (!user || user.icNumber !== icNumber) {
-      throw new UnauthorizedException('Invalid student credentials');
+    // Self-registration: if the student ID is unknown and the requester is a
+    // regular student, create the user on the fly. No IC number is required.
+    if (!user) {
+      if (role !== 'STUDENT') {
+        throw new UnauthorizedException('Invalid student credentials');
+      }
+
+      const activeForRegistration = await prisma.election.findFirst({
+        where: { status: 'ACTIVE' },
+      });
+      if (!activeForRegistration) {
+        throw new ForbiddenException(
+          'There is no active election at this time. Please check back later.',
+        );
+      }
+
+      user = await this.selfRegisterStudent(studentId);
     }
 
     if (user.role === 'STUDENT' && role === 'CANDIDATE') {
@@ -85,33 +99,40 @@ export class AuthService {
       };
     }
 
-    const lastVote = await prisma.vote.findFirst({
-      where: { voterId: user.id },
-      orderBy: { createdAt: 'desc' },
+    // The active election drives the rest of the student flow. Voting is gated
+    // per-election: a student who voted in a PREVIOUS election can still log in
+    // for a new one (the old cross-election "already voted" block is removed).
+    const election = await prisma.election.findFirst({
+      where: { status: 'ACTIVE' },
     });
 
-    if (lastVote) {
+    if (!election) {
       throw new ForbiddenException(
-        `You have already voted on ${new Date(lastVote.createdAt).toLocaleString()}. Contact SPR if this is an error.`,
+        'There is no active election at this time. Please check back later.',
       );
     }
 
-    const registration = await prisma.voterRegistration.findFirst({
+    // Auto-register the voter for the active election (idempotent) and
+    // un-archive the user if they were archived after a past election.
+    await prisma.voterRegistration.upsert({
       where: {
-        userId: user.id,
-        isArchived: false,
-        election: { status: 'ACTIVE' },
+        electionId_userId: {
+          electionId: election.id,
+          userId: user.id,
+        },
       },
-      include: { election: true },
+      update: { isArchived: false, archivedAt: null },
+      create: { electionId: election.id, userId: user.id },
     });
 
-    if (!registration) {
-      throw new ForbiddenException(
-        'You are not registered for any active election. Please contact SPR.',
-      );
+    if (user.isArchived) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { isArchived: false, archivedAt: null },
+        include: { course: true },
+      });
     }
 
-    const election = registration.election;
     const now = new Date();
 
     let electionDateBlocked = false;
@@ -156,7 +177,10 @@ export class AuthService {
       throw new ForbiddenException(electionDateMessage);
     }
 
-    if (election.requireSecurityCode) {
+    // Self-registered students have no pre-distributed code (no email/CSV
+    // import), so the security-code gate only applies to users who actually
+    // hold a code assigned by staff.
+    if (election.requireSecurityCode && user.securityCode) {
       if (!securityCode) {
         throw new UnauthorizedException(
           'A security code is required for this election. Please check your email.',
@@ -337,6 +361,44 @@ export class AuthService {
       isWithinSessionTime,
       timeUntilStart,
     };
+  }
+
+  /**
+   * Creates a User on the fly from a bare student ID (no IC, no CSV import).
+   * Uses an upsert so concurrent first-logins from the same ID are safe.
+   */
+  private async selfRegisterStudent(studentId: string) {
+    let courseId: string | null = null;
+    const match = studentId.match(/^[A-Za-z]+/);
+    if (match) {
+      const course = await prisma.course.findUnique({
+        where: { studentPrefix: match[0] },
+      });
+      if (course) courseId = course.id;
+    }
+
+    const created = await prisma.user.upsert({
+      where: { studentId },
+      update: {},
+      create: {
+        studentId,
+        name: studentId,
+        email: `${studentId.toLowerCase()}@selfreg.local`,
+        password: 'not-used-for-students',
+        role: 'STUDENT',
+        courseId,
+      },
+    });
+
+    await this.auditLogsService.logAction(created.id, 'SELF_REGISTERED', {
+      studentId,
+    });
+
+    const withCourse = await prisma.user.findUnique({
+      where: { id: created.id },
+      include: { course: true },
+    });
+    return withCourse!;
   }
 
   async getStudentStatus(userId: string) {

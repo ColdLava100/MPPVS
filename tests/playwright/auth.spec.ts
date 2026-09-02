@@ -13,9 +13,8 @@ test.describe('MPP Voting System - Authentication', () => {
     // Intercept the API call to wait for it
     const apiCall = page.waitForResponse('**/auth/student/login');
 
-    // Fill Student ID and IC Number (Matches STUDENT role in seed.ts)
+    // Fill Student ID (Matches STUDENT role in seed.ts). IC number is no longer required.
     await page.getByPlaceholder('BCSXXXX-XXX').fill('S1230');
-    await page.getByPlaceholder('000000-00-0000').fill('010203040500');
     
     // Click Login button
     await page.getByRole('button', { name: /login/i }).click();
@@ -29,34 +28,27 @@ test.describe('MPP Voting System - Authentication', () => {
   });
 
   /**
-   * 2. Failed Student Login (Invalid Credentials)
+   * 2. Self-Registration on First Login
    */
-  test('should fail login with invalid student credentials', async ({ page }) => {
+  test('should self-register a new student on first login', async ({ page }) => {
     const apiCall = page.waitForResponse('**/auth/student/login');
 
-    await page.getByPlaceholder('BCSXXXX-XXX').fill('INVALID-ID');
-    await page.getByPlaceholder('000000-00-0000').fill('999999-99-9999');
+    // A brand-new student ID is accepted and registered on the fly (no IC number).
+    await page.getByPlaceholder('BCSXXXX-XXX').fill(`SELFR${Date.now()}`);
     
     await page.getByRole('button', { name: /login/i }).click();
 
     const response = await apiCall;
-    expect(response.status()).toBe(401);
-
-    // Verify error message is displayed
-    const errorMessage = page.locator('text=/invalid credentials|error/i');
-    await expect(errorMessage).toBeVisible();
-    
-    // Ensure we are still on the login page
-    expect(page.url()).toContain('/login');
+    // 201 = logged in & registered; 403 = registered but outside the active session window
+    expect([200, 201, 403]).toContain(response.status());
   });
 
   /**
    * 3. Role Switching
    */
   test('should switch roles and update form fields', async ({ page }) => {
-    // Initial state: Student (Student ID & IC Number fields)
+    // Initial state: Student (Student ID field only - no IC number anymore)
     await expect(page.getByPlaceholder('BCSXXXX-XXX')).toBeVisible();
-    await expect(page.getByPlaceholder('000000-00-0000')).toBeVisible();
     await expect(page.getByPlaceholder('username@university.edu')).toBeHidden();
 
     // Switch to ADMIN role

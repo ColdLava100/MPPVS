@@ -50,6 +50,49 @@ export class UsersService {
     });
 
     if (existing) {
+      // A user created by student self-registration may already exist for this
+      // studentId. Link to it instead of failing - refresh the name, re-derive
+      // the course/bureau linkage from the submitted prefix, and un-archive.
+      if (
+        existing.studentId &&
+        data.studentId &&
+        existing.studentId === data.studentId
+      ) {
+        const coursePrefix =
+          data.coursePrefix ||
+          (data.studentId ? data.studentId.match(/^[A-Za-z]+/)?.[0] : null);
+
+        let linkedCourseId = null;
+        if (coursePrefix) {
+          const course = await prisma.course.findUnique({
+            where: { studentPrefix: coursePrefix },
+          });
+          if (course) linkedCourseId = course.id;
+        }
+
+        const linked = await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            ...(data.name ? { name: data.name } : {}),
+            ...(linkedCourseId ? { courseId: linkedCourseId } : {}),
+            isArchived: false,
+            archivedAt: null,
+          },
+        });
+
+        await this.auditLogsService.logAction(
+          adminId,
+          'LINKED_EXISTING_USER',
+          {
+            linkedUserId: linked.id,
+            studentId: linked.studentId,
+          },
+        );
+
+        const { password: _, ...result } = linked;
+        return result;
+      }
+
       throw new ConflictException(
         'User with this email, Student ID, or IC Number already exists.',
       );
