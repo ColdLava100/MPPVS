@@ -108,7 +108,15 @@ function LeaderCard({ name, dept, img, voteCount, info, manifestos }: any) {
   return (
     <div className="group">
       <div className="relative aspect-[4/5] overflow-hidden mb-6 bg-slate-200 grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl group-hover:shadow-red-900/20 group-hover:-translate-y-2 rounded-sm border border-white/10">
-        <img src={img} alt={name} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" />
+        {img ? (
+          <img src={img} alt={name} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-700">
+            <span className="text-6xl font-black text-white/30 uppercase tracking-tighter select-none">
+              {name.split(' ').filter(Boolean).map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-90" />
         <div className="absolute bottom-0 left-0 w-full p-8">
           <p className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-2">{dept}</p>
@@ -378,7 +386,7 @@ export default function SRCVotingPortal() {
                   key={c.id}
                   name={c.name}
                   dept={c.coursePrefix}
-                  img={c.posters?.[0] || c.imageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'}
+                  img={c.posters?.[0] || c.imageUrl}
                   info={c.info}
                   manifestos={c.manifestos}
                   voteCount={c.voteCount}
