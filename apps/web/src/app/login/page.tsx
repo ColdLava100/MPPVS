@@ -9,7 +9,7 @@ const CATEGORIES = [
   { id: 'Staff', roles: ['ADMIN'] },
   { id: 'Advisor', roles: ['SRC_ADVISOR', 'EC_ADVISOR'] },
   { id: 'EC', roles: ['EC_VOLUNTEER'] },
-  { id: 'Student', roles: ['STUDENT'] },
+  { id: 'Student', roles: ['STUDENT', 'CANDIDATE'] },
 ];
 
 const ROLES = [
@@ -19,6 +19,7 @@ const ROLES = [
   { id: 'EC_ADVISOR', label: 'EC ADVISOR', icon: ClipboardCheck, inputLabel: 'Official Email', placeholder: 'advisor@ec.edu' },
   { id: 'EC_VOLUNTEER', label: 'EC VOLUNTEER', icon: Users, inputLabel: 'Volunteer ID', placeholder: 'ECXXX' },
   { id: 'STUDENT', label: 'STUDENT', icon: GraduationCap, inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
+  { id: 'CANDIDATE', label: 'CANDIDATE', icon: GraduationCap, inputLabel: 'Student ID', placeholder: 'BCSXXXX-XXX' },
 ];
 
 export default function LoginPage() {
